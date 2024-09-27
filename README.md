@@ -1,19 +1,20 @@
-Sure, I'll rewrite the README file to make it more user-friendly and clear.
-
 ```md
 # Hodos Hackathon
 
-## Installation
+## Backend API
+
+### Installation
 
 First, install the dependencies:
 
 ```bash
+cd Backend/API
 yarn install
 ```
 
-## Running the App
+### Running the App
 
-### Development Mode
+#### Development Mode
 
 To run the app in development mode with hot-reloading:
 
@@ -21,7 +22,7 @@ To run the app in development mode with hot-reloading:
 yarn run start:dev
 ```
 
-### Production Mode
+#### Production Mode
 
 To run the app in production mode:
 
@@ -29,7 +30,7 @@ To run the app in production mode:
 yarn run start:prod
 ```
 
-### Debug Mode
+#### Debug Mode
 
 To run the app in debug mode:
 
@@ -37,7 +38,7 @@ To run the app in debug mode:
 yarn run start:debug
 ```
 
-## Environment Variables
+### Environment Variables
 
 Make sure to set up your `.env` file with the necessary environment variables. Here is an example:
 
@@ -58,11 +59,7 @@ MODEL_API_LINK='http://103.216.117.115:3005'
 GEMINI_API_KEY='AIzaSyCZBg2Jr7v0EMkugfmEoA9ujyU52S_nVKA'
 ```
 
-
-
-##
-
- Building the App
+### Building the App
 
 To build the app:
 
@@ -70,9 +67,9 @@ To build the app:
 yarn run build
 ```
 
-## Testing
+### Testing
 
-### Unit Tests
+#### Unit Tests
 
 To run unit tests:
 
@@ -80,7 +77,7 @@ To run unit tests:
 yarn run test
 ```
 
-### End-to-End Tests
+#### End-to-End Tests
 
 To run end-to-end tests:
 
@@ -88,7 +85,7 @@ To run end-to-end tests:
 yarn run test:e2e
 ```
 
-### Test Coverage
+#### Test Coverage
 
 To generate test coverage reports:
 
@@ -96,35 +93,25 @@ To generate test coverage reports:
 yarn run test:cov
 ```
 
-## Docker
+### Docker
 
 To run the app using Docker, you can use the provided Dockerfile.
 
-### Build Docker Image
+#### Build Docker Image
 
 ```bash
 docker build -t hodos-hackathon-api .
 ```
 
-### Run Docker Container
+#### Run Docker Container
 
 ```bash
 docker run -p 3000:3000 hodos-hackathon-api
 ```
 
-## Support
+## Front End Mobile App
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
----
-
-# Front End Mobile App
-
-## Prerequisites
+### Prerequisites
 
 - Node.js (version 14.x or higher)
 - npm (version 6.x or higher) or yarn (version 1.x or higher)
@@ -132,13 +119,13 @@ Nest is [MIT licensed](LICENSE).
 - Android Studio (for Android development)
 - Xcode (for iOS development)
 
-## Setup
+### Setup
 
 1. **Clone the repository:**
 
     ```sh
     git clone git@github.com:Tran-Huu-Tai-12-04-23/hodos-hackathon.git
-    cd App
+    cd Front-end
     ```
 
 2. **Install dependencies:**
@@ -157,9 +144,9 @@ Nest is [MIT licensed](LICENSE).
 
     Create a `.env` file in the root directory and add the necessary environment variables. You can use the `.env.example` file as a reference.
 
-## Running the Project
+### Running the Project
 
-### Running on iOS
+#### Running on iOS
 
 1. **Start the Expo development server:**
 
@@ -179,7 +166,7 @@ Nest is [MIT licensed](LICENSE).
     npm run ios
     ```
 
-### Running on Android
+#### Running on Android
 
 1. **Start the Expo development server:**
 
@@ -199,9 +186,9 @@ Nest is [MIT licensed](LICENSE).
     npm run android
     ```
 
-## Building for Distribution
+### Building for Distribution
 
-### iOS
+#### iOS
 
 To build the iOS app for distribution, run:
 
@@ -209,7 +196,7 @@ To build the iOS app for distribution, run:
 npm run distribution:ios
 ```
 
-### Android
+#### Android
 
 To build the Android app for distribution, run:
 
@@ -217,17 +204,41 @@ To build the Android app for distribution, run:
 npm run distribution:android
 ```
 
-Feel free to customize this README further based on your specific needs.
+## Model_API_Swim
+
+### Prerequisites
+- Docker installed on your system. If you don't have Docker installed, please follow the official Docker installation guide for your operating system: [Get Docker](https://docs.docker.com/get-docker/)
+
+### Building and Running the Docker Image
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/your-username/Model_API_Swim.git
+   cd Backend/Model-API
+   ```
+
+2. Build the Docker image:
+   ```bash
+   docker build -t model-api-swim .
+   ```
+
+3. Run the Docker container:
+   ```bash
+   docker run -p 8000:8000 model-api-swim
+   ```
+
+   This command will start the container and map port 8000 from the container to port 8000 on your host machine.
+
+4. Access the application by opening a web browser and navigating to:
+   ```bash
+   http://localhost:8000
+   ```
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## License
+
+Nest is [MIT licensed](LICENSE).
 ```
-
-### Explanation:
-1. **Installation**: Clear instructions on how to install dependencies.
-2. **Running the App**: Separate sections for development, production, and debug modes.
-3. **Environment Variables**: Example `.env` file for setting up environment variables.
-4. **Building the App**: Instructions for building the app.
-5. **Testing**: Separate sections for unit tests, end-to-end tests, and test coverage.
-6. **Docker**: Instructions for building and running the Docker image.
-7. **Support and License**: Information about support and licensing.
-8. **Front End Mobile App**: Separate section for setting up and running the mobile app, including prerequisites, setup, and running instructions for both iOS and Android.
-
-This structure should make it easier for users to understand and follow the instructions.
