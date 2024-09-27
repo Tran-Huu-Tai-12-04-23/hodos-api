@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Model API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: block;
+            padding: 10px;
+            white-space: pre-wrap;
+        }
+        .endpoint {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Travel Model API Documentation</h1>
+    
+    <h2>Base URL</h2>
+    <p>The base URL for all API endpoints is: <code>http://0.0.0.0:8000</code></p>
+    
+    <h2>Endpoints</h2>
+    
+    <h3>1. Classification</h3>
+    
+    <div class="endpoint">
+        <h4>Classify Location</h4>
+        <p><strong>URL:</strong> /classifyLocation</p>
+        <p><strong>Method:</strong> POST</p>
+        <p><strong>Request Body:</strong></p>
+        <code>
+{
+  "image": file (image file)
+}
+        </code>
+        <p><strong>Response:</strong></p>
+        <code>
+{
+  "result": "string"
+}
+        </code>
+        <p><strong>Description:</strong> Classifies the location in the provided image using a machine learning model.</p>
+        <p><strong>Possible Results:</strong> Bao_Tang_Chung_Tich_Chien_Tranh, Bao_Tang_Lich_Su, Bao_Tang_My_Thuat, Bao_Tang_Thanh_Pho, Ben_Nha_Rong, Bitexco, Bui_Vien_Tay, Buu_Dien_TPHCM, Cau_Mong, Cho_Ben_Thanh, Cho_Binh_Tay, Chua_Ba_Thien_Hau, Chua_Buu_Long, Chua_Ngoc_Hoang, Chua_Phap_Hoa, Chua_Vinh_Nghiem, Cot_Co_Thu_Ngu, Dinh_Doc_Lap, Ho_Con_Rua, Landmark_81, Nha_Hat_Thanh_Pho, Nha_Tho_Duc_Ba, Nha_Tho_Giao_Xu_Tan_Dinh, Thao_Cam_Vien, UBND_TPHCM, Unknown</p>
+    </div>
+    
+    <div class="endpoint">
+        <h4>Classify Food</h4>
+        <p><strong>URL:</strong> /classifyFood</p>
+        <p><strong>Method:</strong> POST</p>
+        <p><strong>Request Body:</strong></p>
+        <code>
+{
+  "image": file (image file)
+}
+        </code>
+        <p><strong>Response:</strong></p>
+        <code>
+{
+  "result": "string"
+}
+        </code>
+        <p><strong>Description:</strong> Classifies the food in the provided image using a machine learning model.</p>
+        <p><strong>Possible Results:</strong> Banh_Beo, Banh_Can, Banh_Gio, Banh_Mi, Banh_Trang_Nuong, Banh_Xeo, Bap_Xao, Bun_Bo, Bun_Cha, Bun_Dau, Bun_Mam, Bun_Thit_Nuong, Cao_Lau, Chao_Long, Com_Tam, Goi_Cuon, Hu_Tieu, Mi_Quang, Pha_Lau, Pho, Unknown</p>
+    </div>
+    
+    <div class="endpoint">
+        <h4>Classify Location (Gemini)</h4>
+        <p><strong>URL:</strong> /classifyLocationGemini</p>
+        <p><strong>Method:</strong> POST</p>
+        <p><strong>Request Body:</strong></p>
+        <code>
+{
+  "image": file (image file)
+}
+        </code>
+        <p><strong>Response:</strong></p>
+        <code>
+{
+  "result": ["string", "string", "string"]
+}
+        </code>
+        <p><strong>Description:</strong> Classifies the location in the provided image using the Gemini model. Returns up to 3 most confident predictions.</p>
+    </div>
+    
+    <div class="endpoint">
+        <h4>Classify Food (Gemini)</h4>
+        <p><strong>URL:</strong> /classifyFoodGemini</p>
+        <p><strong>Method:</strong> POST</p>
+        <p><strong>Request Body:</strong></p>
+        <code>
+{
+  "image": file (image file)
+}
+        </code>
+        <p><strong>Response:</strong></p>
+        <code>
+{
+  "result": ["string", "string", "string"]
+}
+        </code>
+        <p><strong>Description:</strong> Classifies the food in the provided image using the Gemini model. Returns up to 3 most confident predictions.</p>
+    </div>
+    
+    <h3>2. Translation</h3>
+    
+    <div class="endpoint">
+        <h4>Translate Text</h4>
+        <p><strong>URL:</strong> /translation</p>
+        <p><strong>Method:</strong> POST</p>
+        <p><strong>Request Body:</strong></p>
+        <code>
+{
+  "text": "string",
+  "option": "string"
+}
+        </code>
+        <p><strong>Response:</strong></p>
+        <code>
+{
+  "result": "string"
+}
+        </code>
+        <p><strong>Description:</strong> Translates the provided text based on the specified option.</p>
+        <p><strong>Options:</strong></p>
+        <ul>
+            <li><code>"eng-vn"</code>: Translate from English to Vietnamese</li>
+            <li><code>"vn-eng"</code>: Translate from Vietnamese to English</li>
+        </ul>
+    </div>
+    <h2>Error Handling</h2>
+    <p>All endpoints may return appropriate HTTP status codes for different error scenarios. Common error codes include:</p>
+    <ul>
+        <li>400: Bad Request (e.g., missing required parameters)</li>
+        <li>500: Internal Server Error</li>
+    </ul>
+    <p>For specific error messages, refer to the response body of the failed request.</p>
+</body>
+</html>
