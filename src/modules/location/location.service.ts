@@ -3,16 +3,18 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { locations } from 'src/constants/data';
+import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationEntity } from 'src/entities/location.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationRepository } from 'src/repositories/location.repository';
-import { In } from 'typeorm';
+import { In, Like } from 'typeorm';
+import { LocationFilter } from './dto/location.pagination.dto';
 
 @Injectable()
 export class LocationService {
   constructor(
     public readonly configService: ConfigService,
-    private readonly locationRepo: LocationRepository,
+    private readonly repo: LocationRepository,
   ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
   MODEL_API_LINK = this.configService.get<string>('MODEL_API_LINK') || '';
@@ -20,7 +22,7 @@ export class LocationService {
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   async initLocation() {
-    const isCheckExist = await this.locationRepo.find();
+    const isCheckExist = await this.repo.find();
 
     if (isCheckExist.length > 0) {
       return {};
@@ -32,7 +34,7 @@ export class LocationService {
       locationEntity.lstImgs = location.lstImgs.join(',');
       locationEntity.label = location.label;
       locationEntity.address = location.address;
-      await this.locationRepo.save(locationEntity);
+      await this.repo.save(locationEntity);
     }
     return {
       message: 'Init food success',
@@ -40,7 +42,7 @@ export class LocationService {
   }
 
   async find(data: { where: any; skip: number; take: number }) {
-    const [result, total] = await this.locationRepo.findAndCount({
+    const [result, total] = await this.repo.findAndCount({
       where: data.where,
       skip: data.skip,
       take: data.take,
@@ -59,7 +61,7 @@ export class LocationService {
       },
     );
 
-    const lstLocation = await this.locationRepo.find({
+    const lstLocation = await this.repo.find({
       where: {
         label: In(res?.result || []),
       },
@@ -68,13 +70,47 @@ export class LocationService {
     return lstLocation;
   }
 
-  async findAndCountTop(top?: 10) {
-    const [result, total] = await this.locationRepo.findAndCount({
+  async findAndCountTop(top?: number) {
+    const [result, total] = await this.repo.findAndCount({
       order: {
         name: 'ASC',
       },
-      take: top,
+      take: top || 10,
     });
+    return [result, total];
+  }
+
+  async pagination(body: PaginationDto<LocationFilter>) {
+    const where: any = [];
+    if (body.where?.name) {
+      where.push({
+        name: Like(`%${body.where.name}%`),
+        isDeleted: false,
+      });
+      where.push({
+        label: Like(`%${body.where.name}%`),
+        isDeleted: false,
+      });
+      where.push({
+        description: Like(`%${body.where.name}%`),
+        isDeleted: false,
+      });
+      where.push({
+        address: Like(`%${body.where.name}%`),
+        isDeleted: false,
+      });
+    }
+
+    const [result, total]: any = await this.repo.findAndCount({
+      where: where,
+      order: body.order,
+      skip: body.skip,
+      take: body.take,
+    });
+    for (const food of result) {
+      food.img =
+        food.lstImgs.split(',')?.length > 0 ? food.lstImgs.split(',')[0] : '';
+    }
     return [result, total];
   }
 }

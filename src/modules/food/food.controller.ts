@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination.dto';
+import { FoodFilter } from './dto/food.pagination.dto';
 import { FoodService } from './food.service';
 
 @ApiTags('Food API')
@@ -32,5 +34,14 @@ export class FoodController {
   @Post('predict')
   async predict(@Body() data: { imgUrl: string }) {
     return await this.service.predict(data);
+  }
+
+  @ApiOperation({
+    summary: 'Food pagination',
+  })
+  @ApiResponse({ status: 201 })
+  @Post('pagination')
+  async pagination(@Body() body: PaginationDto<FoodFilter>) {
+    return await this.service.pagination(body);
   }
 }

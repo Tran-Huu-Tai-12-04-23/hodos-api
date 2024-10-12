@@ -11,8 +11,8 @@ export class CommonService {
 
   async dashBoardData() {
     const [top10Food, top10Location] = await Promise.all([
-      this.foodService.findAndCountTop(),
-      this.locationService.findAndCountTop(),
+      this.foodService.findAndCountTop(9),
+      this.locationService.findAndCountTop(9),
     ]);
 
     return {

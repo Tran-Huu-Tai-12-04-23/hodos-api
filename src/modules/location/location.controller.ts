@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination.dto';
+import { LocationFilter } from './dto/location.pagination.dto';
 import { LocationService } from './location.service';
 
 @ApiTags('Location API')
@@ -32,5 +34,11 @@ export class LocationController {
   @Post('predict')
   async predict(@Body() data: { imgUrl: string }) {
     return await this.service.predict(data);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Post('pagination')
+  async pagination(@Body() body: PaginationDto<LocationFilter>) {
+    return await this.service.pagination(body);
   }
 }
