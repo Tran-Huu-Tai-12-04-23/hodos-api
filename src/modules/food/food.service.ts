@@ -67,4 +67,14 @@ export class FoodService {
 
     return lstLocation;
   }
+
+  async findAndCountTop(top?: 10) {
+    const [result, total] = await this.foodRepo.findAndCount({
+      order: {
+        name: 'ASC',
+      },
+      take: top,
+    });
+    return [result, total];
+  }
 }

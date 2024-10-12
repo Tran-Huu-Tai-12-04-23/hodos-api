@@ -67,4 +67,14 @@ export class LocationService {
 
     return lstLocation;
   }
+
+  async findAndCountTop(top?: 10) {
+    const [result, total] = await this.locationRepo.findAndCount({
+      order: {
+        name: 'ASC',
+      },
+      take: top,
+    });
+    return [result, total];
+  }
 }
