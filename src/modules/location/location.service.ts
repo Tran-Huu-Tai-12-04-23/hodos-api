@@ -35,6 +35,7 @@ export class LocationService {
       locationEntity.lstImgs = location.lstImgs.join(',');
       locationEntity.label = location.label;
       locationEntity.address = location.address;
+      locationEntity.coordinates = location.coordinates.join(',');
       await this.repo.save(locationEntity);
     }
     return {

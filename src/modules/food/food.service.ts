@@ -33,9 +33,10 @@ export class FoodService {
       foodEntity.description = food.description;
       foodEntity.lstImgs = food.lstImgs.join(',');
       foodEntity.rangePrice = food.rangePrice.join(',');
+      foodEntity.coordinates = food.coordinates.join(',');
       foodEntity.label = food.label;
       foodEntity.address = food.address;
-      await this.repo.save(foodEntity);
+      await this.repo.insert(foodEntity);
     }
     return {
       message: 'Init food success',
