@@ -47,6 +47,7 @@ export class CommonService {
   }
 
   async uploadImage(file: Express.Multer.File): Promise<string | null> {
+    console.log('Received file:', file);
     return new Promise((resolve, reject) => {
       if (!file) {
         throw new BadRequestException('No file uploaded.');
