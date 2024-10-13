@@ -12,8 +12,7 @@ import { AllExceptionsFilter } from './exception/all-exception.filter';
 const corsOptions: CorsOptions = {
   origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders:
-    'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Accept-Versioning, Origin, Access-Control-Request-Headers, Access-Control-Request-Method',
+  allowedHeaders: '*',
   exposedHeaders: 'Authorization, Content-Type',
   maxAge: 1728000,
 };
