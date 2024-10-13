@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
+import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
 import { LocationService } from './location.service';
 
@@ -40,5 +41,23 @@ export class LocationController {
   @Post('pagination')
   async pagination(@Body() body: PaginationDto<LocationFilter>) {
     return await this.service.pagination(body);
+  }
+
+  @ApiOperation({
+    summary: 'Location create',
+  })
+  @ApiResponse({ status: 201 })
+  @Post('create')
+  async create(@Body() body: LocationCreateDTO) {
+    return await this.service.create(body);
+  }
+
+  @ApiOperation({
+    summary: 'Location multi create',
+  })
+  @ApiResponse({ status: 201 })
+  @Post('multi-create')
+  async multiCreate(@Body() body: LocationCreateMultiDTO) {
+    return await this.service.multiCreate(body);
   }
 }

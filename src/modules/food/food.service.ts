@@ -7,13 +7,14 @@ import { FoodEntity } from 'src/entities/food.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { FoodRepository } from 'src/repositories/food.repository';
 import { In, Like } from 'typeorm';
+import { FoodCreateDTO, FoodCreateMultiDTO } from './dto/create.dto';
 import { FoodFilter } from './dto/food.pagination.dto';
 
 @Injectable()
 export class FoodService {
   constructor(
     public readonly configService: ConfigService,
-    private readonly repro: FoodRepository,
+    private readonly repo: FoodRepository,
   ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
   MODEL_API_LINK = this.configService.get<string>('MODEL_API_LINK') || '';
@@ -21,7 +22,7 @@ export class FoodService {
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   async initFood() {
-    const isCheckExist = await this.repro.find();
+    const isCheckExist = await this.repo.find();
 
     if (isCheckExist.length > 0) {
       return {};
@@ -34,7 +35,7 @@ export class FoodService {
       foodEntity.rangePrice = food.rangePrice.join(',');
       foodEntity.label = food.label;
       foodEntity.address = food.address;
-      await this.repro.save(foodEntity);
+      await this.repo.save(foodEntity);
     }
     return {
       message: 'Init food success',
@@ -42,7 +43,7 @@ export class FoodService {
   }
 
   async find(data: { where: any; skip: number; take: number }) {
-    const [result, total] = await this.repro.findAndCount({
+    const [result, total] = await this.repo.findAndCount({
       where: data.where,
       skip: data.skip,
       take: data.take,
@@ -61,7 +62,7 @@ export class FoodService {
       },
     );
 
-    const lstLocation = await this.repro.find({
+    const lstLocation = await this.repo.find({
       where: {
         label: In(result?.result || []),
       },
@@ -71,7 +72,7 @@ export class FoodService {
   }
 
   async findAndCountTop(top?: number) {
-    const [result, total] = await this.repro.findAndCount({
+    const [result, total] = await this.repo.findAndCount({
       order: {
         name: 'ASC',
       },
@@ -101,7 +102,7 @@ export class FoodService {
       });
     }
 
-    const [result, total]: any = await this.repro.findAndCount({
+    const [result, total]: any = await this.repo.findAndCount({
       where: where,
       order: body.order,
       skip: body.skip,
@@ -112,5 +113,40 @@ export class FoodService {
         food.lstImgs.split(',')?.length > 0 ? food.lstImgs.split(',')[0] : '';
     }
     return [result, total];
+  }
+
+  async create(data: FoodCreateDTO) {
+    const foodEntity = new FoodEntity();
+    foodEntity.name = data.name;
+    foodEntity.description = data.description;
+    foodEntity.lstImgs = data.lstImgs.join(',');
+    foodEntity.rangePrice = data.rangePrice.join(',');
+    foodEntity.label = data.label;
+    foodEntity.address = data.address;
+    await this.repo.insert(foodEntity);
+    return foodEntity;
+  }
+
+  async multiCreate(data: FoodCreateMultiDTO) {
+    return this.repo.manager.transaction(async (transactionalEntityManager) => {
+      const repo =
+        transactionalEntityManager.getCustomRepository(FoodRepository);
+      const foodEntities = data.foods.map((food) => {
+        const foodEntity = new FoodEntity();
+        foodEntity.name = food.name;
+        foodEntity.description = food.description;
+        foodEntity.lstImgs = food.lstImgs.join(',');
+        foodEntity.rangePrice = food.rangePrice.join(',');
+        foodEntity.label = food.label;
+        foodEntity.address = food.address;
+        return foodEntity;
+      });
+
+      await repo.insert(foodEntities);
+
+      return {
+        message: 'Create success',
+      };
+    });
   }
 }

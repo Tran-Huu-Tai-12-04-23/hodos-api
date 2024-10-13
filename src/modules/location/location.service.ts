@@ -8,6 +8,7 @@ import { LocationEntity } from 'src/entities/location.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In, Like } from 'typeorm';
+import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
 
 @Injectable()
@@ -112,5 +113,41 @@ export class LocationService {
         food.lstImgs.split(',')?.length > 0 ? food.lstImgs.split(',')[0] : '';
     }
     return [result, total];
+  }
+
+  async create(data: LocationCreateDTO) {
+    const locationEntity = new LocationEntity();
+    locationEntity.name = data.name;
+    locationEntity.description = data.description;
+    locationEntity.lstImgs = data.lstImgs.join(',');
+    locationEntity.label = data.label;
+    locationEntity.address = data.address;
+    await this.repo.insert(locationEntity);
+    return {
+      message: 'Create location success',
+    };
+  }
+
+  async multiCreate(data: LocationCreateMultiDTO) {
+    return await this.repo.manager.transaction(
+      async (transactionalEntityManager) => {
+        const repo = transactionalEntityManager.getRepository(LocationEntity);
+        const locationEntities = data.locations.map((location) => {
+          const locationEntity = new LocationEntity();
+          locationEntity.name = location.name;
+          locationEntity.description = location.description;
+          locationEntity.lstImgs = location.lstImgs.join(',');
+          locationEntity.label = location.label;
+          locationEntity.address = location.address;
+          return locationEntity;
+        });
+
+        await repo.insert(locationEntities);
+
+        return {
+          message: 'Create success',
+        };
+      },
+    );
   }
 }
