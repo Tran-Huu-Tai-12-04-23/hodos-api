@@ -74,6 +74,9 @@ export class LocationService {
 
   async findAndCountTop(top?: number) {
     const [result, total] = await this.repo.findAndCount({
+      where: {
+        isDeleted: false,
+      },
       order: {
         name: 'ASC',
       },
