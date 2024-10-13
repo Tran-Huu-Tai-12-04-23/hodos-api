@@ -13,8 +13,9 @@ const corsOptions: CorsOptions = {
   origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders:
-    'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Accept-Versioning, Origin, Access-Control-Request-Headers, Access-Control-Request-Method',
-  exposedHeaders: 'Authorization, Content-Type',
+    'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Accept-Versioning, Origin, Access-Control-Request-Origin, Access-Control-Request-Headers, Access-Control-Request-Method',
+  exposedHeaders:
+    'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Accept-Versioning, Origin, Access-Control-Request-Origin, Access-Control-Request-Headers, Access-Control-Request-Method',
   maxAge: 1728000,
 };
 async function bootstrap() {
