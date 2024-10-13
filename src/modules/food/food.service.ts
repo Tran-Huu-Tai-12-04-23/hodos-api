@@ -140,6 +140,7 @@ export class FoodService {
     foodEntity.rangePrice = data.rangePrice.join(',');
     foodEntity.label = data.label;
     foodEntity.address = data.address;
+    foodEntity.coordinates = data.coordinates.join(',');
     await this.repo.insert(foodEntity);
     return foodEntity;
   }
@@ -169,6 +170,7 @@ export class FoodService {
         foodEntity.rangePrice = food.rangePrice.join(',');
         foodEntity.label = food.label;
         foodEntity.address = food.address;
+        foodEntity.coordinates = food.coordinates.join(',');
         foodEntities.push(foodEntity);
       }
 

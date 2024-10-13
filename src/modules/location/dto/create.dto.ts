@@ -16,6 +16,9 @@ export class LocationCreateDTO {
   @IsNotEmpty()
   @IsArray()
   lstImgs: string[];
+  @IsNotEmpty()
+  @IsArray()
+  coordinates: string[];
 }
 
 export class LocationCreateMultiDTO {

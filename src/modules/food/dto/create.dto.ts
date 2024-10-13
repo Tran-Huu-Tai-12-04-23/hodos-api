@@ -19,6 +19,9 @@ export class FoodCreateDTO {
   @IsNotEmpty()
   @IsArray()
   lstImgs: string[];
+  @IsNotEmpty()
+  @IsArray()
+  coordinates: string[];
 }
 
 export class FoodCreateMultiDTO {

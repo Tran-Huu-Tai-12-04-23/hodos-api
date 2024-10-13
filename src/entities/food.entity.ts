@@ -23,4 +23,7 @@ export class FoodEntity extends BaseEntityCustom {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'text', nullable: false })
+  coordinates: string; // lat,lng
 }

@@ -139,6 +139,7 @@ export class LocationService {
     locationEntity.lstImgs = data.lstImgs.join(',');
     locationEntity.label = data.label;
     locationEntity.address = data.address;
+    locationEntity.coordinates = data.coordinates.join(',');
     await this.repo.insert(locationEntity);
     return {
       message: 'Create location success',
@@ -170,6 +171,7 @@ export class LocationService {
           locationEntity.lstImgs = location.lstImgs.join(',');
           locationEntity.label = location.label;
           locationEntity.address = location.address;
+          locationEntity.coordinates = location.coordinates.join(',');
           locationEntities.push(locationEntity);
         }
         await repo.insert(locationEntities);

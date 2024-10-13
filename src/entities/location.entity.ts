@@ -20,4 +20,7 @@ export class LocationEntity extends BaseEntityCustom {
 
   @Column({ type: 'text', nullable: false })
   lstImgs: string;
+
+  @Column({ type: 'text', nullable: false })
+  coordinates: string; // lat,lng
 }
