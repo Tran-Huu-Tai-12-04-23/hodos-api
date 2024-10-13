@@ -104,7 +104,9 @@ export class FoodService {
 
     const [result, total]: any = await this.repo.findAndCount({
       where: where,
-      order: body.order,
+      order: {
+        createdAt: 'DESC',
+      },
       skip: body.skip,
       take: body.take,
     });
@@ -116,6 +118,21 @@ export class FoodService {
   }
 
   async create(data: FoodCreateDTO) {
+    const isCheckExist = await this.repo.findOne({
+      where: [
+        {
+          name: data.name,
+        },
+        {
+          label: data.label,
+        },
+      ],
+    });
+    if (isCheckExist) {
+      return {
+        message: 'Location already exist',
+      };
+    }
     const foodEntity = new FoodEntity();
     foodEntity.name = data.name;
     foodEntity.description = data.description;
@@ -129,9 +146,22 @@ export class FoodService {
 
   async multiCreate(data: FoodCreateMultiDTO) {
     return this.repo.manager.transaction(async (transactionalEntityManager) => {
-      const repo =
-        transactionalEntityManager.getCustomRepository(FoodRepository);
-      const foodEntities = data.foods.map((food) => {
+      const repo = transactionalEntityManager.getRepository(FoodEntity);
+      const foodEntities: FoodEntity[] = [];
+      for (const food of data.foods) {
+        const isCheckExist = await repo.findOne({
+          where: [
+            {
+              name: food.name,
+            },
+            {
+              label: food.label,
+            },
+          ],
+        });
+        if (isCheckExist) {
+          continue;
+        }
         const foodEntity = new FoodEntity();
         foodEntity.name = food.name;
         foodEntity.description = food.description;
@@ -139,8 +169,8 @@ export class FoodService {
         foodEntity.rangePrice = food.rangePrice.join(',');
         foodEntity.label = food.label;
         foodEntity.address = food.address;
-        return foodEntity;
-      });
+        foodEntities.push(foodEntity);
+      }
 
       await repo.insert(foodEntities);
 

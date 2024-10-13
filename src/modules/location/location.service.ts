@@ -104,7 +104,9 @@ export class LocationService {
 
     const [result, total]: any = await this.repo.findAndCount({
       where: where,
-      order: body.order,
+      order: {
+        createdAt: 'DESC',
+      },
       skip: body.skip,
       take: body.take,
     });
@@ -116,6 +118,21 @@ export class LocationService {
   }
 
   async create(data: LocationCreateDTO) {
+    const isCheckExist = await this.repo.findOne({
+      where: [
+        {
+          name: data.name,
+        },
+        {
+          label: data.label,
+        },
+      ],
+    });
+    if (isCheckExist) {
+      return {
+        message: 'Location already exist',
+      };
+    }
     const locationEntity = new LocationEntity();
     locationEntity.name = data.name;
     locationEntity.description = data.description;
@@ -132,18 +149,30 @@ export class LocationService {
     return await this.repo.manager.transaction(
       async (transactionalEntityManager) => {
         const repo = transactionalEntityManager.getRepository(LocationEntity);
-        const locationEntities = data.locations.map((location) => {
+        const locationEntities: LocationEntity[] = [];
+        for (const location of data.locations) {
+          const isCheckExist = await repo.findOne({
+            where: [
+              {
+                name: location.name,
+              },
+              {
+                label: location.label,
+              },
+            ],
+          });
+          if (isCheckExist) {
+            continue;
+          }
           const locationEntity = new LocationEntity();
           locationEntity.name = location.name;
           locationEntity.description = location.description;
           locationEntity.lstImgs = location.lstImgs.join(',');
           locationEntity.label = location.label;
           locationEntity.address = location.address;
-          return locationEntity;
-        });
-
+          locationEntities.push(locationEntity);
+        }
         await repo.insert(locationEntities);
-
         return {
           message: 'Create success',
         };
