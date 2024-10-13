@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
@@ -59,5 +59,11 @@ export class LocationController {
   @Post('multi-create')
   async multiCreate(@Body() body: LocationCreateMultiDTO) {
     return await this.service.multiCreate(body);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Delete('soft/:id')
+  async removeSoft(@Param('id') id: string) {
+    return await this.service.removeSoft(id);
   }
 }

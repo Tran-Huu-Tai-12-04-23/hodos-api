@@ -182,4 +182,16 @@ export class LocationService {
       },
     );
   }
+
+  async removeSoft(id: string) {
+    await this.repo.update(id, { isDeleted: true });
+  }
+
+  async restore(id: string) {
+    await this.repo.update(id, { isDeleted: false });
+  }
+
+  async forceRemove(id: string) {
+    await this.repo.delete(id);
+  }
 }
