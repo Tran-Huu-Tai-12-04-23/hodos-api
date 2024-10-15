@@ -187,7 +187,7 @@ export class LocationService {
   }
 
   async removeSoft(id: string) {
-    await this.repo.update(id, { isDeleted: true });
+    await this.repo.delete(id);
     return {
       message: 'Remove success',
     };
