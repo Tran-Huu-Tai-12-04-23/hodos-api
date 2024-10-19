@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { BlogModule } from './modules/blog/blog.module';
 import { CommonModule } from './modules/common/common.module';
 import { FoodModule } from './modules/food/food.module';
 import { GeminiAIModule } from './modules/geminiAI/geminiAI.module';
@@ -16,6 +17,7 @@ import { LocationModule } from './modules/location/location.module';
     LocationModule,
     GeminiAIModule,
     CommonModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],
