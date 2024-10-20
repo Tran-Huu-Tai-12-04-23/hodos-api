@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { BlogService } from './blog.service';
@@ -26,7 +26,11 @@ export class BlogController {
   async pagination(@Body() body: PaginationDto<any>) {
     return await this.service.pagination(body);
   }
-
+  @ApiResponse({ status: 201 })
+  @Get(':id')
+  async detail(@Param('id') id: string) {
+    return await this.service.detail(id);
+  }
   @ApiResponse({ status: 201 })
   @Delete('force/:id')
   async forceDelete(@Param('id') id: string) {

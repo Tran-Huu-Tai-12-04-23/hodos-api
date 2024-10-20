@@ -11,7 +11,9 @@ export class BlogService {
     public readonly configService: ConfigService,
     private readonly repo: BlogRepository,
   ) {}
-
+  async detail(id: string) {
+    return await this.repo.findOneBy({ id });
+  }
   async create(body: BlogCreateDTO) {
     const blog = new BlogEntity();
     blog.title = body.title;
