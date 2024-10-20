@@ -5,6 +5,8 @@ import { BaseEntityCustom } from './base.entity';
 export class BlogEntity extends BaseEntityCustom {
   @Column({ type: 'varchar', length: 255, nullable: false })
   title: string;
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  thumbnail: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   tag: string;

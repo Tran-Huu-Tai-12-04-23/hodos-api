@@ -10,4 +10,7 @@ export class BlogCreateDTO {
   @IsString()
   @IsNotEmpty()
   content: string;
+  @IsString()
+  @IsNotEmpty()
+  thumbnail: string;
 }

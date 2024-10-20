@@ -17,6 +17,7 @@ export class BlogService {
     blog.title = body.title;
     blog.tag = body.tag;
     blog.content = body.content;
+    blog.thumbnail = body.thumbnail;
     await this.repo.insert(blog);
     return 'Create successfully!';
   }
