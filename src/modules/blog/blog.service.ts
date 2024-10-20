@@ -24,17 +24,15 @@ export class BlogService {
   async pagination(body: PaginationDto<any>) {
     const whereCon: any = {};
     const whereCon2: any = {};
-    if (body.where.title) {
-      whereCon.title = body.where.title;
-      whereCon2.content = body.where.title;
-    }
-    if (body.where.tag) {
-      whereCon.tag = body.where.tag;
-      whereCon2.tag = body.where.tag;
+    if (body.where.searchKey) {
+      whereCon.title = body.where.searchKey;
+      whereCon2.content = body.where.searchKey;
+      whereCon.tag = body.where.searchKey;
+      whereCon2.tag = body.where.searchKey;
     }
 
-    whereCon.isDelete = false;
-    whereCon2.isDelete = false;
+    whereCon.isDeleted = false;
+    whereCon2.isDeleted = false;
 
     const [result, total] = await this.repo.findAndCount({
       where: [whereCon, whereCon2],
