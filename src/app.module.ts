@@ -8,6 +8,8 @@ import { CommonModule } from './modules/common/common.module';
 import { FoodModule } from './modules/food/food.module';
 import { GeminiAIModule } from './modules/geminiAI/geminiAI.module';
 import { LocationModule } from './modules/location/location.module';
+import { MobileModule } from './modules/mobile/mobile.module';
+import { TravelBlogModule } from './modules/travel-blog/travelblog.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { LocationModule } from './modules/location/location.module';
     GeminiAIModule,
     CommonModule,
     BlogModule,
+    TravelBlogModule,
+    MobileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

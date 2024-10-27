@@ -3,12 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 
-// enum enumDataTypeOfSchedule {
-//   'HISTORY' = 'HISTORY',
-//   'NATURAL' = 'NATURAL',
-//   'CULTURE' = 'CULTURE',
-//   'FOOD' = 'FOOD',
-// }
 @Injectable()
 export class GeminiAIService {
   constructor(public readonly configService: ConfigService) {}
