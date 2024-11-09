@@ -13,11 +13,17 @@ export class TravelBlogService {
   async pagination(
     data: PaginationDto<any>,
   ): Promise<[TravelBlogEntity[], number]> {
-    return this.repo.findAndCount({
+    const res: any = this.repo.findAndCount({
       where: {},
       take: data.take,
       skip: data.skip,
     });
+
+    for (const item of res[0]) {
+      item.imgs = item.imgs.split(',');
+    }
+
+    return res;
   }
 
   async findOne(id: string): Promise<TravelBlogEntity | null> {
