@@ -13,7 +13,7 @@ export class TravelBlogService {
   async pagination(
     data: PaginationDto<any>,
   ): Promise<[TravelBlogEntity[], number]> {
-    const res: any = this.repo.findAndCount({
+    const res: any = await this.repo.findAndCount({
       where: {},
       take: data.take,
       skip: data.skip,

@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { locations } from 'src/constants/data';
@@ -205,5 +205,19 @@ export class LocationService {
     return {
       message: 'Remove success',
     };
+  }
+
+  async detail(id: string) {
+    const location: any = await this.repo.findOne({
+      where: {
+        id,
+        isDeleted: false,
+      },
+    });
+    if (!location) {
+      throw new NotFoundException('Location not found');
+    }
+    location.imgs = location.lstImgs.split(',');
+    return location;
   }
 }

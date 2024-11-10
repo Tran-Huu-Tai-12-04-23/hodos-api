@@ -36,7 +36,11 @@ export class LocationController {
   async predict(@Body() data: { imgUrl: string }) {
     return await this.service.predict(data);
   }
-
+  @ApiResponse({ status: 201 })
+  @Get('/:id')
+  async detail(@Param('id') id: string) {
+    return await this.service.detail(id);
+  }
   @ApiResponse({ status: 201 })
   @Post('pagination')
   async pagination(@Body() body: PaginationDto<LocationFilter>) {
