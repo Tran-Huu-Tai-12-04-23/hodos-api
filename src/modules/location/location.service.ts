@@ -114,9 +114,11 @@ export class LocationService {
       skip: body.skip,
       take: body.take,
     });
-    for (const food of result) {
-      food.img =
-        food.lstImgs.split(',')?.length > 0 ? food.lstImgs.split(',')[0] : '';
+    for (const location of result) {
+      location.img =
+        location.lstImgs.split(',')?.length > 0
+          ? location.lstImgs.split(',')[0]
+          : '';
     }
     return [result, total];
   }
