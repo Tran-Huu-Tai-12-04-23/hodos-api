@@ -20,7 +20,10 @@ export class AuthService {
 
   async signIn(signInDto: SignInDTO) {
     const user: any = await this.repo.findOne({
-      where: { username: signInDto.username },
+      where: [
+        { username: signInDto.username, isDeleted: false },
+        { email: signInDto.username, isDeleted: false },
+      ],
       relations: {
         userDetail: true,
       },
@@ -72,6 +75,7 @@ export class AuthService {
     const newUser = new UserEntity();
     newUser.username = signUpDTO.username;
     newUser.password = signUpDTO.password;
+    newUser.email = signUpDTO.email;
     newUser.avatar =
       'https://cdn3d.iconscout.com/3d/premium/thumb/man-avatar-6299539-5187871.png?f=webp';
     newUser.isActive = true;

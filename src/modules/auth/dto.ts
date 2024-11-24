@@ -13,7 +13,7 @@ export class FilterLstUserToInviteTeamDTO {
   name: string;
 }
 export class SignInDTO {
-  @ApiProperty({ description: 'Username' })
+  @ApiProperty({ description: 'Username or email' })
   @IsNotEmpty()
   @IsString()
   username: string;
@@ -28,6 +28,12 @@ export class SignUpDTO {
   @IsNotEmpty()
   @IsString()
   username: string;
+
+  @ApiProperty({ description: 'Email' })
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
   @ApiProperty({ description: 'Password' })
   @IsNotEmpty()
   @IsString()

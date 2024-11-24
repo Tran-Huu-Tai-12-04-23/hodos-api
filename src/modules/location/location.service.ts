@@ -217,7 +217,7 @@ export class LocationService {
     if (!location) {
       throw new NotFoundException('Location not found');
     }
-    location.imgs = location.lstImgs.split(',');
+    location.lstImgs = location.lstImgs.split(',');
     return location;
   }
 }

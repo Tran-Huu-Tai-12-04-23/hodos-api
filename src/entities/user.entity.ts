@@ -16,6 +16,9 @@ export class UserEntity extends BaseEntityCustom {
   username: string;
 
   @Column({ length: 500 })
+  email: string;
+
+  @Column({ length: 500 })
   password: string;
 
   @Column()
