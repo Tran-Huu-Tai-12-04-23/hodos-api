@@ -56,7 +56,7 @@ export class LocationService {
   }
 
   async predict(data: { imgUrl: string }) {
-    const res = await callApiHelper.callAPI(
+    const res = await callApiHelper.post(
       this.MODEL_API_LINK + '/classifyLocation',
       {
         image_url: data.imgUrl,

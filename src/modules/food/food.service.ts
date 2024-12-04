@@ -56,7 +56,7 @@ export class FoodService {
   }
 
   async predict(data: { imgUrl: string }) {
-    const result = await callApiHelper.callAPI(
+    const result = await callApiHelper.post(
       this.MODEL_API_LINK + '/classifyFood',
       {
         image_url: data.imgUrl,

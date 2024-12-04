@@ -4,7 +4,7 @@ import { lastValueFrom } from 'rxjs';
 class CallApiHelper {
   constructor(private httpService: HttpService) {}
 
-  public async callAPI(url: string, data: any) {
+  public async post(url: string, data: any) {
     try {
       const request = this.httpService.post(url, data);
       const response = await lastValueFrom(request);
@@ -15,7 +15,7 @@ class CallApiHelper {
     }
   }
 
-  public async getDataFromAPI(url: string) {
+  public async get(url: string) {
     try {
       const request = this.httpService.get(url);
       const response = await lastValueFrom(request);
