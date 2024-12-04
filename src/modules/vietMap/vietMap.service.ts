@@ -16,8 +16,22 @@ export class VietMapService {
         `?apiKey=${this.VIETMAP_API_KEY}&points_encoded=false&point=${body?.origin.lat},${body?.origin.lng}&point=${body?.destination.lat},${body?.destination.lng}`;
       const res = await callApiHelper.get(url);
       if (res) {
+        const lstPath = [];
+        for (const path of res?.paths) {
+          const points = path.points?.coordinates;
+          const lstPoint = points.map((point: number[]) => {
+            return {
+              latitude: point[0],
+              longitude: point[1],
+            };
+          });
+          lstPath.push({
+            ...path.points,
+            coordinates: lstPoint,
+          });
+        }
         return {
-          data: res?.paths,
+          data: lstPath,
         };
       }
       return {
