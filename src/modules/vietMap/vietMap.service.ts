@@ -21,8 +21,8 @@ export class VietMapService {
           const points = path.points?.coordinates;
           const lstPoint = points.map((point: number[]) => {
             return {
-              latitude: point[0],
-              longitude: point[1],
+              latitude: point[1],
+              longitude: point[0],
             };
           });
           lstPath.push({
