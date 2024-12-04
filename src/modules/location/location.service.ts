@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { locations } from 'src/constants/data';
+import { dataINIT } from 'src/data';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationEntity } from 'src/entities/location.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
@@ -221,5 +222,29 @@ export class LocationService {
     }
     location.lstImgs = location.lstImgs.split(',');
     return location;
+  }
+
+  async initData() {
+    const lstData = dataINIT;
+    for (const data of lstData) {
+      console.log(data);
+      const location = new LocationEntity();
+      location.name = data.name;
+      location.description = data.description;
+      location.lstImgs = data.img;
+      location.label = '';
+      location.address = data.address;
+      location.coordinates = data.cor;
+      location.type = data.type;
+      if (data?.name) {
+        await this.repo.insert(location);
+      } else {
+        console.log(data?.name + ' not found' + data?.description);
+      }
+    }
+
+    return {
+      message: 'Init data success',
+    };
   }
 }

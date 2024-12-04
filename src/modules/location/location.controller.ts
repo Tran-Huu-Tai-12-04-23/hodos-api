@@ -20,6 +20,15 @@ export class LocationController {
   }
 
   @ApiOperation({
+    summary: 'INIT_DATA',
+  })
+  @ApiResponse({ status: 201 })
+  @Post('init-data')
+  async initData() {
+    return await this.service.initData();
+  }
+
+  @ApiOperation({
     summary: 'Lst location',
   })
   @ApiResponse({ status: 201 })
