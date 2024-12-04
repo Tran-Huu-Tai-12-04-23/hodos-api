@@ -13,7 +13,7 @@ export class VietMapService {
     try {
       const url =
         VIETMAP_ROUTE.FIND_ROUTE +
-        `?apiKey=${this.VIETMAP_API_KEY}&points_encoded=false&point=${body?.origin.lat},${body?.origin.lng}&point=${body?.destination.lat},${body?.destination.lng}`;
+        `?apiKey=${this.VIETMAP_API_KEY}&optimize=true&points_encoded=false&point=${body?.origin.lat},${body?.origin.lng}&point=${body?.destination.lat},${body?.destination.lng}`;
       const res = await callApiHelper.get(url);
       if (res) {
         const lstPath = [];
