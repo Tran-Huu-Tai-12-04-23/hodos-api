@@ -20,11 +20,20 @@ export class LocationController {
   }
 
   @ApiOperation({
+    summary: 'Init location',
+  })
+  @ApiResponse({ status: 201 })
+  @Get('top-10')
+  async top10() {
+    return await this.service.top10();
+  }
+
+  @ApiOperation({
     summary: 'Lst location',
   })
   @ApiResponse({ status: 201 })
-  @Post('')
-  async lstHomeData(@Body() data: { where: any; skip: number; take: number }) {
+  @Post('find')
+  async find(@Body() data: { query: string }) {
     return await this.service.find(data);
   }
 
