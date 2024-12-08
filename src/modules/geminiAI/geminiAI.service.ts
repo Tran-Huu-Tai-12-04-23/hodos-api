@@ -164,7 +164,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
   }
 
   async getImagesForPlace(place: string) {
-    const data = await callApiHelper.getDataFromAPI(
+    const data = await callApiHelper.get(
       'https://serpapi.com/search.json?engine=google_images&q=' +
         place +
         '&api_key=3e5985fc2cb6cffcc8324b6ed49db0e9dab516a9f136cb4f8f515e6b7f57d754',

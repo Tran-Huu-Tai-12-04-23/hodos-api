@@ -20,12 +20,18 @@ export class LocationController {
   }
 
   @ApiOperation({
+
     summary: 'Init location',
   })
   @ApiResponse({ status: 201 })
   @Get('top-10')
   async top10() {
     return await this.service.top10();
+  })
+  @ApiResponse({ status: 201 })
+  @Post('init-data')
+  async initData() {
+    return await this.service.initData();
   }
 
   @ApiOperation({
