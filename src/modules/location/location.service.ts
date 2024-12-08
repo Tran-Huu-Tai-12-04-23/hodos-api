@@ -231,7 +231,6 @@ export class LocationService {
     return location;
   }
 
-
   async top10() {
     const [result]: any = await this.findAndCountTop(10);
     for (const location of result) {
