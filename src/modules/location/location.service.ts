@@ -44,16 +44,23 @@ export class LocationService {
     };
   }
 
-  async find(data: { where: any; skip: number; take: number }) {
-    const [result, total] = await this.repo.findAndCount({
-      where: data.where,
-      skip: data.skip,
-      take: data.take,
+  async find(data: { query: string }) {
+    const whereClause = data.query
+      ? { name: Like(`%${data.query}%`), isDeleted: false }
+      : { isDeleted: false };
+
+    const result: any = await this.repo.find({
+      where: whereClause,
+      skip: 0,
+      take: 10,
     });
-    return {
-      result,
-      total,
-    };
+
+    for (const location of result) {
+      const images = location.lstImgs.split(',');
+      location.img = images.length > 0 ? images[0] : '';
+    }
+
+    return result;
   }
 
   async predict(data: { imgUrl: string }) {
@@ -224,6 +231,18 @@ export class LocationService {
     return location;
   }
 
+
+  async top10() {
+    const [result]: any = await this.findAndCountTop(10);
+    for (const location of result) {
+      location.img =
+        location.lstImgs.split(',')?.length > 0
+          ? location.lstImgs.split(',')[0]
+          : '';
+      location.lstImgs = location.lstImgs.split(',');
+    }
+    return result;
+  }
   async initData() {
     const lstData = dataINIT;
     for (const data of lstData) {

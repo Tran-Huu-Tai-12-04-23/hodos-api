@@ -20,7 +20,13 @@ export class LocationController {
   }
 
   @ApiOperation({
-    summary: 'INIT_DATA',
+
+    summary: 'Init location',
+  })
+  @ApiResponse({ status: 201 })
+  @Get('top-10')
+  async top10() {
+    return await this.service.top10();
   })
   @ApiResponse({ status: 201 })
   @Post('init-data')
@@ -32,8 +38,8 @@ export class LocationController {
     summary: 'Lst location',
   })
   @ApiResponse({ status: 201 })
-  @Post('')
-  async lstHomeData(@Body() data: { where: any; skip: number; take: number }) {
+  @Post('find')
+  async find(@Body() data: { query: string }) {
     return await this.service.find(data);
   }
 
