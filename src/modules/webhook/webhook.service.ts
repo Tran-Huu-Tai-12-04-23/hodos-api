@@ -26,11 +26,11 @@ export class WebhookService {
     }
     let event = '';
     // Check if the webhook event is one of the events we're interested in
-    const allowedEvents = ['deployment_status']; //, 'pull_request', 'push'] //,'workflow_run', 'workflow_job']
-    if (!allowedEvents.includes(headers['x-github-event'] as string)) {
-      // console.log(`Unsupported event type: ${headers['x-github-event']}`)
-      return { success: false };
-    }
+    // const allowedEvents = ['deployment_status']; //, 'pull_request', 'push'] //,'workflow_run', 'workflow_job']
+    // if (!allowedEvents.includes(headers['x-github-event'] as string)) {
+    //   // console.log(`Unsupported event type: ${headers['x-github-event']}`)
+    //   return { success: false };
+    // }
     event = headers['x-github-event'] as string;
     //#region xử lý data
     try {
