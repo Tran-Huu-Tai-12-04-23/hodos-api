@@ -25,14 +25,15 @@ export class CommonService {
   constructor(private readonly locationService: LocationService) {}
 
   async dashBoardData() {
-    const [top10Location] = await Promise.all([
-      this.locationService.findAndCountTop(9),
+    const [top10Location, top10Food] = await Promise.all([
+      this.locationService.findAndCountTop(9, 'LOCATION'),
+      this.locationService.findAndCountTop(9, 'FOOD'),
     ]);
 
     return {
       foodData: {
-        lst: [],
-        total: 0,
+        lst: top10Food[0],
+        total: top10Food[1],
       },
       locationData: {
         lst: top10Location[0],

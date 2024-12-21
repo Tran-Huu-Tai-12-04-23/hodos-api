@@ -80,9 +80,10 @@ export class LocationService {
     return lstLocation;
   }
 
-  async findAndCountTop(top?: number) {
+  async findAndCountTop(top?: number, type?: string) {
     const [result, total] = await this.repo.findAndCount({
       where: {
+        type: type,
         isDeleted: false,
       },
       order: {
@@ -95,23 +96,32 @@ export class LocationService {
 
   async pagination(body: PaginationDto<LocationFilter>) {
     const where: any = [];
+    const commonWhere: any = {
+      isDeleted: false,
+    };
+
+    if (body.where?.type) {
+      commonWhere.type = body.where.type;
+    }
     if (body.where?.name) {
       where.push({
+        ...commonWhere,
         name: Like(`%${body.where.name}%`),
-        isDeleted: false,
       });
       where.push({
+        ...commonWhere,
         label: Like(`%${body.where.name}%`),
-        isDeleted: false,
       });
       where.push({
+        ...commonWhere,
         description: Like(`%${body.where.name}%`),
-        isDeleted: false,
       });
       where.push({
+        ...commonWhere,
         address: Like(`%${body.where.name}%`),
-        isDeleted: false,
       });
+    } else {
+      where.push(commonWhere);
     }
 
     const [result, total]: any = await this.repo.findAndCount({
@@ -232,7 +242,7 @@ export class LocationService {
   }
 
   async top10() {
-    const [result]: any = await this.findAndCountTop(10);
+    const [result]: any = await this.findAndCountTop(10, 'LOCATION');
     for (const location of result) {
       location.img =
         location.lstImgs.split(',')?.length > 0

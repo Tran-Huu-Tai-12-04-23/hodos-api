@@ -4,4 +4,8 @@ export class LocationFilter {
   @IsString()
   @IsOptional()
   name: string;
+
+  @IsString()
+  @IsOptional()
+  type: 'FOOD' | 'LOCATION';
 }
