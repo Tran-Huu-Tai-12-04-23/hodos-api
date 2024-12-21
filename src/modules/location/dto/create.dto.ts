@@ -13,12 +13,18 @@ export class LocationCreateDTO {
   @IsString()
   @IsOptional()
   description: string;
+  @IsString()
+  @IsOptional()
+  type: string;
   @IsNotEmpty()
   @IsArray()
   lstImgs: string[];
   @IsNotEmpty()
-  @IsArray()
-  coordinates: string[];
+  @IsString()
+  longitude: string;
+  @IsNotEmpty()
+  @IsString()
+  latitude: string;
 }
 
 export class LocationCreateMultiDTO {

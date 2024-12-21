@@ -77,7 +77,7 @@ export class LocationService {
       },
     });
 
-    return lstLocation;
+    return { locations: lstLocation, ...res };
   }
 
   async findAndCountTop(top?: number, type?: string) {
@@ -163,7 +163,7 @@ export class LocationService {
     locationEntity.lstImgs = data.lstImgs.join(',');
     locationEntity.label = data.label;
     locationEntity.address = data.address;
-    locationEntity.coordinates = data.coordinates.join(',');
+    locationEntity.coordinates = data.longitude + ',' + data.latitude;
     await this.repo.insert(locationEntity);
     return {
       message: 'Create location success',
@@ -192,10 +192,16 @@ export class LocationService {
           const locationEntity = new LocationEntity();
           locationEntity.name = location.name;
           locationEntity.description = location.description;
-          locationEntity.lstImgs = location.lstImgs.join(',');
+          console.log(typeof location.lstImgs);
+          locationEntity.lstImgs =
+            typeof location.lstImgs == 'string'
+              ? location.lstImgs
+              : location.lstImgs.join(',');
           locationEntity.label = location.label;
           locationEntity.address = location.address;
-          locationEntity.coordinates = location.coordinates.join(',');
+          locationEntity.type = location.type || 'LOCATION';
+          locationEntity.coordinates =
+            location.longitude + ',' + location.latitude;
           locationEntities.push(locationEntity);
         }
         await repo.insert(locationEntities);
