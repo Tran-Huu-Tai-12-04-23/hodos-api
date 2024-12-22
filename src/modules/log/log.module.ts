@@ -2,9 +2,8 @@ import { Module } from '@nestjs/common';
 import { BuildLogRepository } from 'src/repositories/build-log.repository';
 import { ErrorLogRepository } from 'src/repositories/error-log.repository';
 import { TypeOrmExModule } from 'src/typeorm';
-import { ErrorLogService } from './error-log.service';
-import { WebhookController } from './webhook.controller';
-import { WebhookService } from './webhook.service';
+import { LogController } from './log.controller';
+import { LogService } from './log.service';
 
 @Module({
   imports: [
@@ -13,8 +12,8 @@ import { WebhookService } from './webhook.service';
       ErrorLogRepository,
     ]),
   ],
-  providers: [WebhookService, ErrorLogService],
-  controllers: [WebhookController],
-  exports: [WebhookService, ErrorLogService],
+  providers: [LogService],
+  controllers: [LogController],
+  exports: [LogService],
 })
-export class WebhookModule {}
+export class LogModule {}

@@ -5,61 +5,70 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ErrorLogService } from 'src/modules/webhook/error-log.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  // constructor(private readonly configService: ConfigService) {}
-  catch(exception: any, host: ArgumentsHost) {
-    console.log(exception?.stack);
-
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly errorLogService: ErrorLogService,
+  ) {}
+  async catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
-    const messssss = [];
+    const messages = [];
     const detailMessages = exception?.response?.message || [];
     for (const text of detailMessages) {
       const arrText = text.split('.');
       if (arrText.length == 3 && arrText[0] == 'items') {
-        messssss.push(`Dòng ${+arrText[1] + 3} - ${arrText[2]}`);
-      } else messssss.push(text);
+        messages.push(`Dòng ${+arrText[1] + 3} - ${arrText[2]}`);
+      } else messages.push(text);
     }
-
+    const status = exception.getStatus();
+    const name =
+      exception instanceof HttpException
+        ? exception.name
+        : 'INTERNAL_SERVER_ERROR';
     //#region log lỗi
+    const jsonRequest = {
+      body: request.body,
+      header: request.headers,
+      ip: request.ip,
+      user: request.user,
+    };
+    try {
+      const obj = {
+        project: this.configService.get<string>('PROJECT') || 'CHUA CONFIG ENV',
+        source: this.configService.get<string>('SOURCE') || 'CHUA CONFIG ENV',
+        environments:
+          this.configService.get<string>('ENVIRONMENT') || 'LOCALHOST',
+        error: exception,
+        request: JSON.stringify(jsonRequest),
+        message: messages?.join('<br>+ ') || '',
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        name: name,
+      };
+      const url = this.configService.get<string>('LOG_URL');
 
-    // const jsonRequest = {
-    //   body: request.body,
-    //   header: request.headers,
-    //   ip: request.ip,
-    //   user: request.user,
-    // }
-    // try {
-    //   const obj = {
-    //     project: this.configService.get<string>('PROJECT') || 'NTSS_SC',
-    //     source: this.configService.get<string>('SOURCE') || 'NTSS_SC_API',
-    //     environments: this.configService.get<string>('ENVIRONMENT') || 'LOCALHOST',
-    //     error: exception,
-    //     request: jsonRequest,
-    //     message: messssss,
-    //     statusCode: status,
-    //     timestamp: new Date().toISOString(),
-    //     path: request.url,
-    //     name: name,
-    //   }
-    //   const url = this.configService.get<string>('LOG_URL') || `https://ape-bot-api.apetechs.co/bug_log/create_data`
-    //   try {
-    //     callApiHelper.callAPI(url, obj)
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // } catch (error) {
-    //   // console.log(error)
-    // }
+      if (url) {
+      } else {
+        try {
+          await this.errorLogService.handleBugLog(obj as any);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
     //#endregion
 
     if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-
       let message: any = exception.message;
       const name = exception.name;
 
@@ -80,7 +89,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         name == 'BadRequestException' &&
         message == 'Bad Request Exception'
       ) {
-        const detailMessage = messssss.join('<br>+ ') || '';
+        const detailMessage = messages.join('<br>+ ') || '';
         message = `Dữ liệu không hợp lệ, chi tiết:<br>+ ${detailMessage}`;
       }
 

@@ -11,6 +11,8 @@ import { LocationRepository } from 'src/repositories/location.repository';
 import { In, Like } from 'typeorm';
 import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
+import { PredictDTO } from './dto/predict.dto';
+import { UpdateLocationDTO } from './dto/update.dto';
 
 @Injectable()
 export class LocationService {
@@ -63,7 +65,7 @@ export class LocationService {
     return result;
   }
 
-  async predict(data: { imgUrl: string }) {
+  async predict(data: PredictDTO) {
     const res = await callApiHelper.post(
       this.MODEL_API_LINK + '/classifyLocation',
       {
@@ -279,6 +281,27 @@ export class LocationService {
 
     return {
       message: 'Init data success',
+    };
+  }
+
+  async update(data: UpdateLocationDTO) {
+    const location = await this.repo.findOne({
+      where: {
+        id: data.id,
+      },
+    });
+    if (!location) {
+      throw new NotFoundException('Location not found');
+    }
+    location.name = data.name;
+    location.description = data.description;
+    location.lstImgs = data.lstImgs.join(',');
+    location.label = data.label;
+    location.address = data.address;
+    location.coordinates = data.longitude + ',' + data.latitude;
+    await this.repo.save(location);
+    return {
+      message: 'Update location success',
     };
   }
 }

@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
-import { BugLogRepository } from 'src/repositories/bug-log.repository';
+import { BuildLogEntity } from 'src/entities/build-log.entity';
 import { BuildLogRepository } from 'src/repositories/build-log.repository';
 @Injectable()
 export class WebhookService {
   secret: string;
   constructor(
     public readonly configService: ConfigService,
-    private readonly bugLogRepo: BugLogRepository,
     private readonly buildLogRepo: BuildLogRepository,
   ) {
     this.secret =
@@ -25,19 +24,13 @@ export class WebhookService {
       return { success: false };
     }
     let event = '';
-    // Check if the webhook event is one of the events we're interested in
-    // const allowedEvents = ['deployment_status']; //, 'pull_request', 'push'] //,'workflow_run', 'workflow_job']
-    // if (!allowedEvents.includes(headers['x-github-event'] as string)) {
-    //   // console.log(`Unsupported event type: ${headers['x-github-event']}`)
-    //   return { success: false };
-    // }
     event = headers['x-github-event'] as string;
     //#region xử lý data
     try {
       switch (event) {
-        case 'deployment_status':
+        case 'workflow_run':
           {
-            const deployStatus = payload.deployment_status.state;
+            const deployStatus = payload.workflow_run.status;
             const creator = payload.sender.login;
             // const description = payload.deployment_status.description;
             const wfdisplay_title = payload.workflow_run.display_title;
@@ -53,12 +46,11 @@ Commit: ${wfdisplay_title}`;
             message = `${message}
 ${stringStatus}`;
 
-            const buildLog = this.buildLogRepo.create({
-              title: stringStatus,
-              message,
-              githubBuildLink: payload.deployment_status.target_url,
-            });
-            await this.buildLogRepo.save(buildLog);
+            const buildLog = new BuildLogEntity();
+            buildLog.title = stringStatus;
+            buildLog.message = message;
+            buildLog.githubBuildLink = payload.workflow_run.html_url;
+            await this.buildLogRepo.insert(buildLog);
           }
           break;
         default:

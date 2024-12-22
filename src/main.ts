@@ -7,10 +7,12 @@ import { json, urlencoded } from 'express';
 import * as http from 'http';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './exception/all-exception.filter';
+import { ErrorLogService } from './modules/webhook/error-log.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const errorLogService = app.get(ErrorLogService);
   const port = configService.get<string>('PORT');
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
@@ -19,7 +21,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // handle global exception
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(configService, errorLogService));
 
   const config = new DocumentBuilder()
     .setTitle('Life manager documents')

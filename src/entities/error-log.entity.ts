@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
-@Entity('bug_logs')
-export class BugLogEntity extends BaseEntityCustom {
+@Entity('errorLogs')
+export class ErrorLogEntity extends BaseEntityCustom {
   @Column({
     type: 'varchar',
     length: 250,
@@ -73,5 +73,5 @@ export class BugLogEntity extends BaseEntityCustom {
     nullable: false,
     default: false,
   })
-  isResovled: boolean;
+  isFixed: boolean;
 }

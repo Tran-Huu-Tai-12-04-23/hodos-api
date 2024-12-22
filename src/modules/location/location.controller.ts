@@ -1,8 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
+import { PredictDTO } from './dto/predict.dto';
+import { UpdateLocationDTO } from './dto/update.dto';
 import { LocationService } from './location.service';
 
 @ApiTags('Location API')
@@ -47,7 +57,7 @@ export class LocationController {
   })
   @ApiResponse({ status: 201 })
   @Post('predict')
-  async predict(@Body() data: { imgUrl: string }) {
+  async predict(@Body() data: PredictDTO) {
     return await this.service.predict(data);
   }
   @ApiResponse({ status: 201 })
@@ -83,5 +93,11 @@ export class LocationController {
   @Delete('soft/:id')
   async removeSoft(@Param('id') id: string) {
     return await this.service.removeSoft(id);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Put('update')
+  async update(@Body() body: UpdateLocationDTO) {
+    return await this.service.update(body);
   }
 }
