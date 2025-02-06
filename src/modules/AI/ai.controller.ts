@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { callApiHelper } from 'src/helpers/callApiHelper';
+import { LocationService } from '../location/location.service';
 import { AiService } from './ai.service';
 
 @ApiTags('AI API')
@@ -17,6 +18,7 @@ export class AiController {
   constructor(
     private readonly service: AiService,
     private readonly configService: ConfigService,
+    private readonly locationService: LocationService,
   ) {}
 
   @ApiOperation({
@@ -29,7 +31,7 @@ export class AiController {
       const downloadURL = await this.service.uploadImage(file);
       const predictUrlApi = this.configService.get('MODEL_API_LINK');
 
-      const res = await Promise.all([
+      const [locationLabel, foodLabel] = await Promise.all([
         callApiHelper.post(predictUrlApi + '/classifyLocationYolo', {
           image_url: downloadURL,
         }),
@@ -38,7 +40,15 @@ export class AiController {
         }),
       ]);
 
-      return res;
+      /** lấy label từ nhận dạng */
+      const labels = [locationLabel?.result, foodLabel?.result];
+
+      /** tìm location theo label */
+      const location = await this.locationService.findByLabels(labels);
+
+      return {
+        result: location,
+      };
     } catch (error) {
       return {
         message: 'Can not predict img!',

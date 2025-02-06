@@ -304,4 +304,14 @@ export class LocationService {
       message: 'Update location success',
     };
   }
+
+  /** find one by arr label */
+  async findByLabels(labels: string[]) {
+    return this.repo.find({
+      where: {
+        label: In(labels),
+        isDeleted: false,
+      },
+    });
+  }
 }
