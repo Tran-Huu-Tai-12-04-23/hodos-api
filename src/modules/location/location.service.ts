@@ -307,11 +307,21 @@ export class LocationService {
 
   /** find one by arr label */
   async findByLabels(labels: string[]) {
-    return this.repo.find({
+    const result: any = await this.repo.find({
       where: {
         label: In(labels),
         isDeleted: false,
       },
     });
+
+    for (const location of result) {
+      location.lstImgs = location.lstImgs.split(',');
+      location.img =
+        location.lstImgs.split(',')?.length > 0
+          ? location.lstImgs.split(',')[0]
+          : '';
+    }
+
+    return result;
   }
 }
