@@ -48,6 +48,7 @@ export class AiController {
 
       return {
         result: location,
+        preImg: downloadURL,
       };
     } catch (error) {
       return {
