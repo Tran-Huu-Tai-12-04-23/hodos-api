@@ -315,11 +315,9 @@ export class LocationService {
     });
 
     for (const location of result) {
-      location.lstImgs = location.lstImgs.split(',');
-      location.img =
-        location.lstImgs.split(',')?.length > 0
-          ? location.lstImgs.split(',')[0]
-          : '';
+      const images = location.lstImgs.split(',');
+      location.lstImgs = images;
+      location.img = images.length > 0 ? images[0] : '';
     }
 
     return result;
