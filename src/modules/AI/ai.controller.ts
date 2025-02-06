@@ -45,12 +45,7 @@ export class AiController {
       /** lấy label từ nhận dạng */
       const labels = [locationLabel?.result, foodLabel?.result];
 
-      console.log(labels);
-      await this.teleService.sendMessage({
-        labels: labels,
-      });
-
-      /// labels
+      await this.teleService.sendMessage(JSON.stringify(labels));
 
       /** tìm location theo label */
       const location = await this.locationService.findByLabels(labels);
