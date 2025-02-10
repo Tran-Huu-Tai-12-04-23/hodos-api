@@ -21,6 +21,15 @@ export class LocationController {
   constructor(private readonly service: LocationService) {}
 
   @ApiOperation({
+    summary: 'Export to  json',
+  })
+  @ApiResponse({ status: 201 })
+  @Get('export-to-json')
+  async exportToJson() {
+    return await this.service.exportToJson();
+  }
+
+  @ApiOperation({
     summary: 'Init location',
   })
   @ApiResponse({ status: 201 })

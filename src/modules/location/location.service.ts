@@ -322,4 +322,21 @@ export class LocationService {
 
     return result;
   }
+
+  /** export data to json */
+  async exportToJson() {
+    const result: any = await this.repo.find({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    for (const location of result) {
+      const images = location.lstImgs.split(',');
+      location.lstImgs = images;
+      location.img = images.length > 0 ? images[0] : '';
+    }
+
+    return result;
+  }
 }
