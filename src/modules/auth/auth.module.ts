@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserRepository } from 'src/repositories/user.repository';
 import { TypeOrmExModule } from 'src/typeorm/typeorm-ex.module';
+import { EmailModule } from '../email/email.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
@@ -20,6 +21,7 @@ import { JwtStrategy } from './jwt.strategy';
       }),
     }),
     TypeOrmExModule.forCustomRepository([UserRepository]),
+    EmailModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

@@ -16,7 +16,9 @@ async function bootstrap() {
   const port = configService.get<string>('PORT');
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+  });
   // transform data to DTO
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 

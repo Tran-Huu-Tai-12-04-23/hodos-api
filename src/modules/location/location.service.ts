@@ -139,8 +139,17 @@ export class LocationService {
         location.lstImgs.split(',')?.length > 0
           ? location.lstImgs.split(',')[0]
           : '';
+
+      location.lstImgs = location.lstImgs.split(',');
     }
-    return [result, total];
+
+    return {
+      data: result,
+      total: total,
+      nextSkip: body.skip + body.take,
+      hasNext: body.skip + body.take < total,
+      take: body.take,
+    };
   }
 
   async create(data: LocationCreateDTO) {
@@ -263,7 +272,6 @@ export class LocationService {
   async initData() {
     const lstData = dataINIT;
     for (const data of lstData) {
-      console.log(data);
       const location = new LocationEntity();
       location.name = data.name;
       location.description = data.description;
@@ -327,6 +335,23 @@ export class LocationService {
   async exportToJson() {
     const result: any = await this.repo.find({
       where: {
+        isDeleted: false,
+      },
+    });
+
+    for (const location of result) {
+      const images = location.lstImgs.split(',');
+      location.lstImgs = images;
+      location.img = images.length > 0 ? images[0] : '';
+    }
+
+    return result;
+  }
+
+  async findLocationByLabel(label: string) {
+    const result: any = await this.repo.find({
+      where: {
+        label: label,
         isDeleted: false,
       },
     });

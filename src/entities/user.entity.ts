@@ -24,11 +24,23 @@ export class UserEntity extends BaseEntityCustom {
   @Column()
   avatar: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   verifyAt: Date;
+
+  @Column({
+    nullable: true,
+  })
+  verifyCode: string;
 
   @Column()
   isActive: boolean;
+
+  @Column({
+    nullable: true,
+  })
+  verifyExpiredTime: Date;
 
   @BeforeInsert()
   @BeforeUpdate()

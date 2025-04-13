@@ -46,6 +46,26 @@ export class AuthController {
   }
 
   @ApiOperation({
+    summary: 'Verify user with verification code',
+  })
+  @Post('verify')
+  async verify(
+    @Body() data: { verifyCode: string; email: string; username: string },
+  ) {
+    return await this.service.verifyUser(data);
+  }
+
+  @ApiOperation({
+    summary: 'Resend verification code to email',
+  })
+  @Post('resend-verification-code')
+  async resendVerificationCode(
+    @Body() data: { email: string; username: string },
+  ) {
+    return await this.service.resendVerificationCode(data);
+  }
+
+  @ApiOperation({
     summary: 'Refresh ac token when ac token expired',
   })
   @Post('refresh-token')

@@ -19,6 +19,14 @@ import { LocationService } from './location.service';
 @Controller('location')
 export class LocationController {
   constructor(private readonly service: LocationService) {}
+  @ApiOperation({
+    summary: 'Find by label',
+  })
+  @ApiResponse({ status: 201 })
+  @Get('find-by-label/:label')
+  async findLocationByLabel(@Param('label') label: string) {
+    return await this.service.findLocationByLabel(label);
+  }
 
   @ApiOperation({
     summary: 'Export to  json',

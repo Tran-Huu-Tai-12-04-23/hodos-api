@@ -1,6 +1,6 @@
 // src/database/dataSource.ts
-import { resolve } from 'path';
 import { config } from 'dotenv';
+import { resolve } from 'path';
 import { DataSource } from 'typeorm';
 
 config();
