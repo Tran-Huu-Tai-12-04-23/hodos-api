@@ -276,10 +276,12 @@ export class LocationService {
       location.name = data.name;
       location.description = data.description;
       location.lstImgs = data.img;
-      location.label = '';
+      location.label = data?.label || '';
       location.address = data.address;
       location.coordinates = data.cor;
       location.type = data.type;
+      location.detail = data?.detail || '';
+
       if (data?.name) {
         await this.repo.insert(location);
       } else {
@@ -349,7 +351,6 @@ export class LocationService {
   }
 
   async findLocationByLabel(label: string) {
-    console.log(label);
     const result: any = await this.repo.findOne({
       where: {
         label: label,

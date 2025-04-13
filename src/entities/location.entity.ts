@@ -26,4 +26,7 @@ export class LocationEntity extends BaseEntityCustom {
 
   @Column({ default: 'LOCATION' })
   type: string;
+
+  @Column({ type: 'longtext' })
+  detail: string;
 }
