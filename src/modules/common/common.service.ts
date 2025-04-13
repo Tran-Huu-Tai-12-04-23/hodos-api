@@ -25,12 +25,27 @@ export class CommonService {
   constructor(private readonly locationService: LocationService) {}
 
   async dashBoardData() {
-    const [top10Location, top10Food] = await Promise.all([
-      this.locationService.findAndCountTop(9, 'LOCATION'),
-      this.locationService.findAndCountTop(9, 'FOOD'),
+    const [top10Location, top10Food]: any = await Promise.all([
+      this.locationService.findAndCountTop(10, 'LOCATION'),
+      this.locationService.findAndCountTop(10, 'FOOD'),
     ]);
 
+    for (const i of top10Location[0]) {
+      i.img = i.lstImgs.split(',')[0];
+      i.lstImgs = i.lstImgs.split(',');
+    }
+    for (const i of top10Food[0]) {
+      i.img = i.lstImgs.split(',')[0];
+      i.lstImgs = i.lstImgs.split(',');
+    }
+
     return {
+      banners: [
+        'https://www.kkday.com/en/blog/wp-content/uploads/HCMC-Guide-Banner.jpg',
+        'https://i.ytimg.com/vi/ggM8CZAWnKo/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC2DcETE0pt0SBMWw64RIdqUluOPQ',
+        'https://www.thepoortraveler.net/wp-content/uploads/2018/08/Ho-Chi-Minh-City.jpg',
+        'https://img.freepik.com/premium-vector/travel-vietnam-concept_98402-1479.jpg',
+      ],
       foodData: {
         lst: top10Food[0],
         total: top10Food[1],

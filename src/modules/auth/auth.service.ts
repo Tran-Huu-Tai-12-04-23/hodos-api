@@ -38,13 +38,15 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found!');
     }
+    if (!user.isActive) {
+      throw new UnauthorizedException('User not active!');
+    }
     if (!user.verifyAt) {
       throw new UnauthorizedException('User not verified!');
     }
 
-    const isPasswordCorrect = await user.comparePassword(signInDto.password);
-
-    if (!isPasswordCorrect) {
+    const isMatch = await user.comparePassword(signInDto.password);
+    if (!isMatch) {
       throw new UnauthorizedException('Password incorrect!');
     }
 

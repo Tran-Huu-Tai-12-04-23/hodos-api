@@ -45,13 +45,15 @@ export class UserEntity extends BaseEntityCustom {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    if (this.password) {
+    if (this.password && !this.password.startsWith('$2b$')) {
       const hashedPassword = await hash(this.password, 10);
       this.password = hashedPassword;
     }
   }
 
   comparePassword(candidate: string) {
+    console.log('Candidate Password:', candidate);
+    console.log('Stored Password:', this.password);
     return compare(candidate, this.password);
   }
   @OneToOne(() => UserDetailEntity, (userDetail) => userDetail.user)
