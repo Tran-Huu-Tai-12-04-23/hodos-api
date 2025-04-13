@@ -141,6 +141,7 @@ export class LocationService {
           : '';
 
       location.lstImgs = location.lstImgs.split(',');
+      delete location.detail;
     }
 
     return {
