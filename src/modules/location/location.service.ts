@@ -255,6 +255,17 @@ export class LocationService {
       throw new NotFoundException('Location not found');
     }
     location.lstImgs = location.lstImgs.split(',');
+    location.img = location.lstImgs.length > 0 ? location.lstImgs[0] : '';
+    location.coordinates = location.coordinates;
+
+    // detail json
+    if (location.detail) {
+      try {
+        location.detail = JSON.parse(location.detail);
+      } catch (error) {
+        console.log('Error parsing JSON:', error);
+      }
+    }
     return location;
   }
 
@@ -328,6 +339,7 @@ export class LocationService {
       const images = location.lstImgs.split(',');
       location.lstImgs = images;
       location.img = images.length > 0 ? images[0] : '';
+      delete location.detail;
     }
 
     return result;
@@ -364,6 +376,7 @@ export class LocationService {
     const images = result.lstImgs.split(',');
     result.lstImgs = images || [];
     result.img = images.length > 0 ? images[0] : '';
+    delete result.detail;
 
     return result;
   }

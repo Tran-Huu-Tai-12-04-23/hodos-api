@@ -33,10 +33,12 @@ export class CommonService {
     for (const i of top10Location[0]) {
       i.img = i.lstImgs.split(',')[0];
       i.lstImgs = i.lstImgs.split(',');
+      delete i.detail;
     }
     for (const i of top10Food[0]) {
       i.img = i.lstImgs.split(',')[0];
       i.lstImgs = i.lstImgs.split(',');
+      delete i.detail;
     }
 
     return {
