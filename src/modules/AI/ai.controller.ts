@@ -10,7 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationService } from '../location/location.service';
-import { TelegramService } from '../telegram/telegramService';
+// import { TelegramService } from '../telegram/telegramService';
 import { AiService } from './ai.service';
 
 @ApiTags('AI API')
@@ -20,7 +20,6 @@ export class AiController {
     private readonly service: AiService,
     private readonly configService: ConfigService,
     private readonly locationService: LocationService,
-    private readonly teleService: TelegramService,
   ) {}
 
   @ApiOperation({
@@ -45,7 +44,7 @@ export class AiController {
       /** lấy label từ nhận dạng */
       const labels = [locationLabel?.result, foodLabel?.result];
 
-      await this.teleService.sendMessage('labels: ' + JSON.stringify(labels));
+      // await this.teleService.sendMessage('labels: ' + JSON.stringify(labels));
 
       /// labels
 

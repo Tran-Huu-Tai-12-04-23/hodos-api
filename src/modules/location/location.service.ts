@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { locations } from 'src/constants/data';
+import { enumData } from 'src/constants/enum-data';
 import { dataINIT } from 'src/data';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationEntity } from 'src/entities/location.entity';
@@ -380,5 +381,35 @@ export class LocationService {
     delete result.detail;
 
     return result;
+  }
+
+  async initGalleryForLocation() {
+    const locations = await this.repo.find({
+      where: {
+        isDeleted: false,
+        type: enumData.LOCATION_TYPE.LOCATION,
+      },
+    });
+
+    for (const location of locations) {
+      const data = await callApiHelper.get(
+        'https://serpapi.com/search.json?engine=google_images&q=' +
+          location.name +
+          '&api_key=ed5e2882f298bb4160be7210a664637137def65f95ec9d027e262e72a96497ce',
+      );
+
+      const lstImg = [];
+      for (const item of data?.images_results) {
+        lstImg.push(item?.original);
+      }
+      location.lstImgs = lstImg.join(',');
+      await this.repo.update(location.id, {
+        lstImgs: location.lstImgs,
+        detail: location?.detail || '',
+      });
+    }
+    return {
+      message: 'Init gallery success',
+    };
   }
 }

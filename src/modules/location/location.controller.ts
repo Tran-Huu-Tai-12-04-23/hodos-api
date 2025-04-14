@@ -60,6 +60,12 @@ export class LocationController {
     return await this.service.initData();
   }
 
+  @ApiResponse({ status: 201 })
+  @Post('init-gallery')
+  async initGalleryForLocation() {
+    return await this.service.initGalleryForLocation();
+  }
+
   @ApiOperation({
     summary: 'Lst location',
   })
