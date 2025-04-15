@@ -5,10 +5,38 @@ import { callApiHelper } from 'src/helpers/callApiHelper';
 
 @Injectable()
 export class GeminiAIService {
-  constructor(public readonly configService: ConfigService) {}
-  GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
-  genAI = new GoogleGenerativeAI('AIzaSyDzj2O9_Ij7f9V9F3CRG40I-Lu3lfugOe8');
-  model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  model: any;
+  private readonly openAPIKey = this.configService.get<string>('OPEN_API_KEY');
+  constructor(private readonly configService: ConfigService) {
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    if (!apiKey) {
+      throw new Error('Missing GEMINI_API_KEY in environment');
+    }
+    this.model = new GoogleGenerativeAI(apiKey).getGenerativeModel({
+      model: 'gemini-pro',
+    });
+  }
+
+  async chatWithGPT(message: string): Promise<string> {
+    try {
+      const res = await callApiHelper.post(
+        'https://api.openai.com/v1/chat/completions',
+
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: message }],
+        },
+        {
+          Authorization: `Bearer ${this.openAPIKey}`,
+          'Content-Type': 'application/json',
+        },
+      );
+      return res.data.choices[0].message.content;
+    } catch (err) {
+      console.error('GPT Error:', err.response?.data || err.message);
+      return '❌ ChatGPT bị lỗi hoặc quá tải!';
+    }
+  }
 
   async test() {
     const result = await this.model.generateContent(['Explain how AI works']);

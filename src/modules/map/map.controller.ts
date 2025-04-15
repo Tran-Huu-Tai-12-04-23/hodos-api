@@ -1,12 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FindRouteDTO } from './dto';
-import { VietMapService } from './vietMap.service';
+import { MapService } from './map.service';
 
-@ApiTags('VietMap')
-@Controller('vietmap')
-export class VietMapController {
-  constructor(private readonly service: VietMapService) {}
+@ApiTags('Map')
+@Controller('map')
+export class MapController {
+  constructor(private readonly service: MapService) {}
 
   @ApiOperation({
     summary: 'Find route',

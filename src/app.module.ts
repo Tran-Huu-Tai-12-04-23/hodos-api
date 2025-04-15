@@ -10,10 +10,10 @@ import { EmailModule } from './modules/email/email.module';
 import { GeminiAIModule } from './modules/geminiAI/geminiAI.module';
 import { LocationModule } from './modules/location/location.module';
 import { LogModule } from './modules/log/log.module';
+import { MapModule } from './modules/map/map.module';
 import { MobileModule } from './modules/mobile/mobile.module';
 import { TravelBlogModule } from './modules/travel-blog/travelblog.module';
 import { UserModule } from './modules/user/user.module';
-import { VietMapModule } from './modules/vietMap/vietMap.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 
 @Module({
@@ -26,7 +26,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     BlogModule,
     TravelBlogModule,
     MobileModule,
-    VietMapModule,
+    MapModule,
     WebhookModule,
     LogModule,
     AiModule,

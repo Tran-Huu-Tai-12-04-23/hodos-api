@@ -6,7 +6,14 @@ import { GeminiAIService } from './geminiAI.service';
 @Controller('ai')
 export class GeminiAIController {
   constructor(private readonly service: GeminiAIService) {}
-
+  @ApiOperation({
+    summary: 'CHAT OPEN AI ',
+  })
+  @Post('chat')
+  async chat(@Body('message') message: string) {
+    const response = await this.service.chatWithGPT(message);
+    return { reply: response };
+  }
   @ApiOperation({
     summary: 'Gemini AI test',
   })
