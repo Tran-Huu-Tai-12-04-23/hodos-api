@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ChatBoxDto } from './dto';
 import { GeminiAIService } from './geminiAI.service';
 
 @ApiTags('GeminiAI')
@@ -61,5 +62,23 @@ export class GeminiAIController {
     },
   ) {
     return await this.service.scheduleDetails(body);
+  }
+
+  @ApiOperation({
+    summary: 'Chat box for travel',
+  })
+  @ApiResponse({ status: 200, description: 'Chat box for travel' })
+  @Post('chat-box')
+  async chatBox(
+    @Body()
+    body: ChatBoxDto,
+  ) {
+    return await this.service.chatBot(body);
+  }
+
+  @ApiResponse({ status: 200, description: 'Chat Dash board' })
+  @Post('chat-dashboard')
+  async chatDashboard() {
+    return await this.service.chatDashboard();
   }
 }

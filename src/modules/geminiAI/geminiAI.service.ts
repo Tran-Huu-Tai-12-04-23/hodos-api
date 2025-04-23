@@ -1,13 +1,16 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { locations } from 'src/constants/data';
+import { foods } from 'src/data';
 import { callApiHelper } from 'src/helpers/callApiHelper';
+import { ChatBoxDto } from './dto';
 
 @Injectable()
 export class GeminiAIService {
   constructor(public readonly configService: ConfigService) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
-  genAI = new GoogleGenerativeAI('AIzaSyDzj2O9_Ij7f9V9F3CRG40I-Lu3lfugOe8');
+  genAI = new GoogleGenerativeAI('AIzaSyDW6oxTM6OrW3eWd7sLLmBvWa2XxJ5vVeo');
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   async test() {
@@ -177,13 +180,69 @@ Do not include any additional text or explanation, just the list. Ensure that th
     return lstImg;
   }
 
-  async chatBot(body: { place: string }) {
+  async chatDashboard() {
+    return [
+      {
+        message:
+          'Where should I go for the best local food in Ho Chi Minh City?',
+        img: 'https://ling-app.com/wp-content/uploads/2023/03/vietnamese-food-featured-image-ling-app.jpg',
+      },
+      {
+        message:
+          'What are some must-visit tourist attractions in Ho Chi Minh City?',
+        img: 'https://media.loveitopcdn.com/41316/kcfinder/upload//images/%C4%90%E1%BB%8AA%20%C4%90I%E1%BB%82M%20DU%20L%E1%BB%8ACH%20S%C3%80I%20G%C3%92N.png',
+      },
+      {
+        message: 'Can you suggest a fun place to explore at night?',
+        img: 'https://www.vietnamvisa.org.vn/wp-content/uploads/2023/11/Best-Places-for-Nightlife-in-Ho-Chi-Minh-City.jpg',
+      },
+      {
+        message:
+          'I want a relaxing spot to chill during the afternoon. Any suggestions?',
+        img: 'https://media-cdn.tripadvisor.com/media/photo-s/1c/90/b1/d5/a-chill-afternoon-at.jpg',
+      },
+    ];
+  }
+  async chatBot(body: ChatBoxDto) {
     console.log(body);
-    const instruction =
-      'You are a professional tour guide in Ho Chi Minh City, Vietnam. Please interact, chat, and answer questions in English in a friendly manner';
+    const instruction = `
+    You are an AI travel assistant for tourists visiting Ho Chi Minh City.
+    Use the location and food data provided below to answer the user's question.
+
+    Here is the list of **locations**:
+    ${JSON.stringify(locations, null, 2)}
+
+    Here is the list of **foods**:
+    ${JSON.stringify(foods, null, 2)}
+
+    The user's message is:
+    "${body.message}"
+
+    Please respond in **JSON format** with appropriate recommendations or answers.
+    Please respond using this JSON structure:
+    "type": "location" | "food" | "mixed",
+    "recommendations": [
+      {
+        "name": "...",
+        "reason": "...",
+        "images": [...],
+        "address": "..."
+      }
+    ]
+  }
+
+    `;
 
     const result = await this.model.generateContent(instruction);
-    console.log(result.response.text());
-    return result;
+
+    const responseText = result.response.text().trim();
+
+    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
+
+    const parsedResult = JSON.parse(cleanedJson);
+
+    return {
+      result: parsedResult,
+    };
   }
 }
