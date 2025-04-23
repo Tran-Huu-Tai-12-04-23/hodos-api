@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
+import { PlanningLocationEntity } from './planning_location.entity';
 
 @Entity('location')
 export class LocationEntity extends BaseEntityCustom {
@@ -29,4 +30,7 @@ export class LocationEntity extends BaseEntityCustom {
 
   @Column({ type: 'longtext' })
   detail: string;
+
+  @OneToMany(() => PlanningLocationEntity, (location) => location.location)
+  planningLocations: Promise<PlanningLocationEntity[]>;
 }

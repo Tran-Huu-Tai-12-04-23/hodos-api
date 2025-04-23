@@ -8,6 +8,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
+import { PlanningEntity } from './planning.entity';
 import { TravelBlogEntity } from './travelblog.entity';
 import { UserDetailEntity } from './userDetail.entity';
 @Entity(`Users`)
@@ -61,4 +62,7 @@ export class UserEntity extends BaseEntityCustom {
 
   @OneToMany(() => TravelBlogEntity, (travelBlog) => travelBlog.user)
   travelBlog: Promise<TravelBlogEntity[]>;
+
+  @OneToMany(() => PlanningEntity, (plan) => plan.user)
+  plannings: Promise<PlanningEntity[]>;
 }
