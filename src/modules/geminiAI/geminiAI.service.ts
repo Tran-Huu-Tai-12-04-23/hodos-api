@@ -241,6 +241,12 @@ Do not include any additional text or explanation, just the list. Ensure that th
 
     const parsedResult = JSON.parse(cleanedJson);
 
-    return parsedResult;
+    return {
+      ...parsedResult,
+      message:
+        parsedResult?.recommendations?.length > 0
+          ? ''
+          : "Sorry, I don't have any recommendations for you. Please try again.",
+    };
   }
 }
