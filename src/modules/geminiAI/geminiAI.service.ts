@@ -241,8 +241,6 @@ Do not include any additional text or explanation, just the list. Ensure that th
 
     const parsedResult = JSON.parse(cleanedJson);
 
-    return {
-      result: parsedResult,
-    };
+    return parsedResult;
   }
 }
