@@ -11,6 +11,7 @@ import { GeminiAIModule } from './modules/geminiAI/geminiAI.module';
 import { LocationModule } from './modules/location/location.module';
 import { LogModule } from './modules/log/log.module';
 import { MobileModule } from './modules/mobile/mobile.module';
+import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { TravelBlogModule } from './modules/travel-blog/travelblog.module';
 import { UserModule } from './modules/user/user.module';
 import { VietMapModule } from './modules/vietMap/vietMap.module';
@@ -33,6 +34,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     // TelegramModule,
     EmailModule,
     UserModule,
+    PlanTripModule,
   ],
   controllers: [AppController],
   providers: [AppService],
