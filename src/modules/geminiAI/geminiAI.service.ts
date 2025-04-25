@@ -1,14 +1,16 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { locations } from 'src/constants/data';
-import { foods } from 'src/data';
 import { callApiHelper } from 'src/helpers/callApiHelper';
+import { LocationRepository } from 'src/repositories/location.repository';
 import { ChatBoxDto } from './dto';
 
 @Injectable()
 export class GeminiAIService {
-  constructor(public readonly configService: ConfigService) {}
+  constructor(
+    public readonly configService: ConfigService,
+    private readonly locationRepo: LocationRepository,
+  ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
   genAI = new GoogleGenerativeAI('AIzaSyDW6oxTM6OrW3eWd7sLLmBvWa2XxJ5vVeo');
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -204,7 +206,18 @@ Do not include any additional text or explanation, just the list. Ensure that th
     ];
   }
   async chatBot(body: ChatBoxDto) {
-    console.log(body);
+    const [locations, foods] = await Promise.all([
+      this.locationRepo.find({
+        where: {
+          type: 'LOCATION',
+        },
+      }),
+      this.locationRepo.find({
+        where: {
+          type: 'FOOD',
+        },
+      }),
+    ]);
     const instruction = `
     You are an AI travel assistant for tourists visiting Ho Chi Minh City.
     Use the location and food data provided below to answer the user's question.
@@ -223,6 +236,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
     "type": "location" | "food" | "mixed",
     "recommendations": [
       {
+    "id": "...",
         "name": "...",
         "reason": "...",
         "images": [...],
@@ -245,6 +259,122 @@ Do not include any additional text or explanation, just the list. Ensure that th
       ...parsedResult,
       message:
         parsedResult?.recommendations?.length > 0
+          ? ''
+          : "Sorry, I don't have any recommendations for you. Please try again.",
+    };
+  }
+
+  // suggest plan trip
+  async suggestPlanTrip(body: any) {
+    const [locations, foods] = await Promise.all([
+      this.locationRepo.find({
+        where: {
+          type: 'LOCATION',
+        },
+      }),
+      this.locationRepo.find({
+        where: {
+          type: 'FOOD',
+        },
+      }),
+    ]);
+    const instruction = `
+You are a helpful AI travel assistant that creates **daily itineraries** for tourists visiting **Ho Chi Minh City**, based on user preferences and available data.
+
+---
+
+**Your tasks:**
+
+1. Read the user preferences from their answers to a questionnaire (e.g., who is going, budget, travel dates, interests).
+2. Analyze the provided lists of **locations** and **foods**.
+3. Create a detailed **trip itinerary**, day by day, matching their preferences.
+4. Use JSON format exactly as defined below.
+
+---
+
+**Available data**:
+
+**Locations** (with attributes like type, time needed, popularity):
+\`\`\`json
+${JSON.stringify(locations, null, 2)}
+\`\`\`
+
+**Foods** (local specialties that users may enjoy on their trip):
+\`\`\`json
+${JSON.stringify(foods, null, 2)}
+\`\`\`
+
+**User's preferences** (answers to the trip planning questions):
+\`\`\`json
+${JSON.stringify(body, null, 2)}
+\`\`\`
+
+---
+
+**Expected Output (JSON)**:
+
+Return a structured JSON itinerary in this format:
+
+\`\`\`json
+{
+  "day1": [
+    {
+      "timeStart": "08:00",
+      "timeEnd": "10:00",
+      "location": {
+          "id": "...",
+          "name": "...",
+          "images": [...],
+          "address": "..."
+        },,
+      "totalTime": "2h",
+      "activities": ["Shopping local products", "Try local breakfast"],
+      "transportation": "Walk"
+    },
+    {
+      "timeStart": "10:30",
+      "timeEnd": "12:00",
+      "location": {
+        "id": "...",
+          "name": "...",
+          "images": [...],
+          "address": "..."
+        },
+      "totalTime": "1h30m",
+      "activities": ["Visit historical exhibits"],
+      "transportation": "Taxi"
+    },
+    ...
+  ],
+  "day2": [...],
+  ...
+}
+\`\`\`
+
+---
+
+**Tips for the itinerary**:
+- Use ONLY items from the provided \`locations\` and \`foods\` arrays.
+- Select **locations** and **foods** that match the user's interests (e.g., Food, Adventure, Culture, Relaxation).
+- Follow the **date range** provided (e.g., from May 1 to May 5).
+- Adjust activities to suit **group type** (e.g., family-friendly, couple, solo).
+- Match the plan to the **budget**: cheaper, moderate, luxury.
+- Include at least **3-5 activity slots per day** (morning, afternoon, evening).
+- Spread out locations logically based on distance and transportation.
+- Make sure to include meal breaks and suggest relevant foods or restaurants.
+
+Only respond with **pure JSON** that follows the structure above (no extra text or explanation).
+`;
+
+    const result = await this.model.generateContent(instruction);
+    const responseText = result.response.text().trim();
+    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
+    const parsedResult = JSON.parse(cleanedJson);
+
+    return {
+      ...parsedResult,
+      message:
+        parsedResult && Object.keys(parsedResult).length > 0
           ? ''
           : "Sorry, I don't have any recommendations for you. Please try again.",
     };
