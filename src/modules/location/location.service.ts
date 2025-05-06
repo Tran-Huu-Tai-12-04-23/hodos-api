@@ -3,7 +3,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { locations } from 'src/constants/data';
-import { enumData } from 'src/constants/enum-data';
 import { dataINIT } from 'src/data';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationEntity } from 'src/entities/location.entity';
@@ -387,7 +386,6 @@ export class LocationService {
     const locations = await this.repo.find({
       where: {
         isDeleted: false,
-        type: enumData.LOCATION_TYPE.LOCATION,
       },
     });
 
