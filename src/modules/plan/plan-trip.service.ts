@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { GeminiAIService } from '../geminiAI/geminiAI.service';
 
 @Injectable()
 export class PlanTripService {
-  constructor() {}
+  constructor(private readonly gemAiService: GeminiAIService) {}
 
   async loadQuestionToCollect() {
     return [
@@ -107,5 +108,9 @@ export class PlanTripService {
         ],
       },
     ];
+  }
+
+  async suggestTripPlan(body: any) {
+    return await this.gemAiService.suggestPlanTrip(body);
   }
 }
