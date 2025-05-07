@@ -279,91 +279,47 @@ Do not include any additional text or explanation, just the list. Ensure that th
       }),
     ]);
     const instruction = `
-You are a helpful AI travel assistant that creates **daily itineraries** for tourists visiting **Ho Chi Minh City**, based on user preferences and available data.
+You are an AI assistant creating daily itineraries in Ho Chi Minh City based on user preferences.
 
----
-
-**Your tasks:**
-
-1. Read the user preferences from their answers to a questionnaire (e.g., who is going, budget, travel dates, interests).
-2. Analyze the provided lists of **locations** and **foods**.
-3. Create a detailed **trip itinerary**, day by day, matching their preferences.
-4. Use JSON format exactly as defined below.
-
----
-
-**Available data**:
-
-**Locations** (with attributes like type, time needed, popularity):
-\`\`\`json
-${JSON.stringify(locations, null, 2)}
-\`\`\`
-
-**Foods** (local specialties that users may enjoy on their trip):
-\`\`\`json
-${JSON.stringify(foods, null, 2)}
-\`\`\`
-
-**User's preferences** (answers to the trip planning questions):
-\`\`\`json
+## User Preferences:
 ${JSON.stringify(body, null, 2)}
-\`\`\`
 
----
+## Locations:
+${JSON.stringify(locations, null, 2)}
 
-**Expected Output (JSON)**:
+## Foods:
+${JSON.stringify(foods, null, 2)}
 
-Return a structured JSON itinerary in this format:
+## Instructions:
+- Use only the above locations and foods.
+- Create a daily plan from the start to end date in user's preferences.
+- Each day should have 3–5 slots (morning, afternoon, evening).
+- Include suitable meals from "foods".
+- Respect group type and budget.
+- Format response as JSON like this:
 
-\`\`\`json
 {
   "day1": [
     {
       "timeStart": "08:00",
       "timeEnd": "10:00",
       "location": {
-          "id": "...",
-          "name": "...",
-          "images": [...],
-          "address": "..."
-        },,
-      "totalTime": "2h",
-      "activities": ["Shopping local products", "Try local breakfast"],
-      "transportation": "Walk"
-    },
-    {
-      "timeStart": "10:30",
-      "timeEnd": "12:00",
-      "location": {
         "id": "...",
-          "name": "...",
-          "images": [...],
-          "address": "..."
-        },
-      "totalTime": "1h30m",
-      "activities": ["Visit historical exhibits"],
-      "transportation": "Taxi"
+        "name": "...",
+        "images": [...],
+        "address": "..."
+      },
+      "totalTime": "2h",
+      "activities": ["..."],
+      "transportation": "..."
     },
     ...
   ],
   "day2": [...],
   ...
 }
-\`\`\`
 
----
-
-**Tips for the itinerary**:
-- Use ONLY items from the provided \`locations\` and \`foods\` arrays.
-- Select **locations** and **foods** that match the user's interests (e.g., Food, Adventure, Culture, Relaxation).
-- Follow the **date range** provided (e.g., from May 1 to May 5).
-- Adjust activities to suit **group type** (e.g., family-friendly, couple, solo).
-- Match the plan to the **budget**: cheaper, moderate, luxury.
-- Include at least **3-5 activity slots per day** (morning, afternoon, evening).
-- Spread out locations logically based on distance and transportation.
-- Make sure to include meal breaks and suggest relevant foods or restaurants.
-
-Only respond with **pure JSON** that follows the structure above (no extra text or explanation).
+Respond with pure JSON only, no extra text.
 `;
 
     const result = await this.model.generateContent(instruction);
