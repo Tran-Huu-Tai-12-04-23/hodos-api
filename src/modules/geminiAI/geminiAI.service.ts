@@ -12,7 +12,7 @@ export class GeminiAIService {
     private readonly locationRepo: LocationRepository,
   ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
-  genAI = new GoogleGenerativeAI('AIzaSyDW6oxTM6OrW3eWd7sLLmBvWa2XxJ5vVeo');
+  genAI = new GoogleGenerativeAI('AIzaSyAWSDPQrsKSaNxhjWNm2egSEtFwepzlAPU');
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   async test() {
