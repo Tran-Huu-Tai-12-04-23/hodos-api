@@ -271,10 +271,20 @@ Do not include any additional text or explanation, just the list. Ensure that th
         where: {
           type: 'LOCATION',
         },
+        select: {
+          description: true,
+          address: true,
+          id: true,
+        },
       }),
       this.locationRepo.find({
         where: {
           type: 'FOOD',
+        },
+        select: {
+          description: true,
+          address: true,
+          id: true,
         },
       }),
     ]);
@@ -301,13 +311,11 @@ ${JSON.stringify(foods, null, 2)}
 {
   "day1": [
     {
+      "date": "12/04/2003",
       "timeStart": "08:00",
       "timeEnd": "10:00",
       "location": {
         "id": "...",
-        "name": "...",
-        "images": [...],
-        "address": "..."
       },
       "totalTime": "2h",
       "activities": ["..."],
