@@ -302,8 +302,28 @@ Do not include any additional text or explanation, just the list. Ensure that th
   }
   async suggestPlanTrip(body: any) {
     const [locations, foods]: any = await Promise.all([
-      this.locationRepo.find({ where: { type: 'LOCATION' } }),
-      this.locationRepo.find({ where: { type: 'FOOD' } }),
+      this.locationRepo.find({
+        where: { type: 'LOCATION' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          address: true,
+          coordinates: true,
+          lstImgs: true,
+        },
+      }),
+      this.locationRepo.find({
+        where: { type: 'FOOD' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          address: true,
+          coordinates: true,
+          lstImgs: true,
+        },
+      }),
     ]);
 
     for (const location of locations) {
@@ -337,7 +357,6 @@ ${JSON.stringify(foods, null, 2)}
 - Include suitable meals from "foods".
 - Respect group type and budget.
 - Format response as JSON like this:
-
   {
     totalDays: number,
     typeTrip: single | couple | family | group,
@@ -361,6 +380,7 @@ ${JSON.stringify(foods, null, 2)}
   }
 Respond with pure JSON only, no extra text.
 `;
+    console.log(instruction);
 
     const result = await this.model.generateContent(instruction);
     const responseText = result.response.text().trim();
