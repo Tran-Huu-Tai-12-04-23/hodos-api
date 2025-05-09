@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { enumData } from 'src/constants/enum-data';
 import { UserEntity } from 'src/entities/user.entity';
 import { CurrentUser } from 'src/helpers/decorators';
+import { enumData } from '../../constants/enum-data';
 import { AuthService } from './auth.service';
 import { RefreshTokenDTO, SignInDTO, SignUpDTO } from './dto';
 import { JwtAuthGuard } from './jwt.auth.guard';

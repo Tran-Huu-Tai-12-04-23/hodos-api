@@ -301,7 +301,7 @@ ${JSON.stringify(
 
 ## Instructions:
 - Use only the above locations and foods.
-- Create a daily plan from the start to end date in user's preferences.
+- Create an itinerary for **each day from startDate to endDate, inclusive**.
 - Each day should have 3–5 slots (morning, afternoon, evening).
 - Include suitable meals from "foods".
 - Respect group type and budget.

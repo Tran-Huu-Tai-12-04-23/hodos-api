@@ -8,8 +8,8 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { RefreshTokenDTO, SignInDTO, SignUpDTO } from './dto';
 
 import { ConfigService } from '@nestjs/config';
-import { enumData } from 'src/constants/enum-data';
-import { UserEntity } from 'src/entities/user.entity';
+import { enumData } from '../../constants/enum-data';
+import { UserEntity } from '../../entities/user.entity';
 import { EmailService } from '../email/email.service';
 import { GetUserInfoDTO } from '../user/dto/userInfo.dto';
 

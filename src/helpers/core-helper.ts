@@ -12,6 +12,13 @@ class CoreHelper {
     const nd = new Date(utc + 3600000 * offset);
     return nd;
   }
+  toDict(arr: any[], key = 'id') {
+    const dict: { [key: string]: any } = {};
+    for (const item of arr) {
+      dict[item[key]] = item;
+    }
+    return dict;
+  }
 }
 
 export const coreHelper = new CoreHelper();
