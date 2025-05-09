@@ -207,7 +207,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
     ];
   }
   async chatBot(body: ChatBoxDto) {
-    const [locations, foods] = await Promise.all([
+    const [locations, foods]: any = await Promise.all([
       this.locationRepo.find({
         where: {
           type: 'LOCATION',
@@ -235,6 +235,19 @@ Do not include any additional text or explanation, just the list. Ensure that th
         },
       }),
     ]);
+    for (const location of locations) {
+      location.img =
+        location.lstImgs?.split(',').length > 0
+          ? location.lstImgs?.split(',')[0]
+          : '';
+      location.lstImgs = [];
+    }
+    for (const food of foods) {
+      food.img =
+        food.lstImgs?.split(',').length > 0 ? food.lstImgs?.split(',')[0] : '';
+      food.lstImgs = [];
+    }
+
     const dictLocationById = coreHelper.toDict(locations.concat(foods), 'id');
     const instruction = `
     You are an AI travel assistant for tourists visiting Ho Chi Minh City.
@@ -275,10 +288,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
         recommendation.description = location.description;
         recommendation.address = location.address;
         recommendation.coordinates = location.coordinates;
-        recommendation.img =
-          location.lstImgs?.split(',').length > 0
-            ? location.lstImgs?.split(',')[0]
-            : '';
+        recommendation.img = location.img;
       }
     }
 
@@ -291,11 +301,23 @@ Do not include any additional text or explanation, just the list. Ensure that th
     };
   }
   async suggestPlanTrip(body: any) {
-    const [locations, foods] = await Promise.all([
+    const [locations, foods]: any = await Promise.all([
       this.locationRepo.find({ where: { type: 'LOCATION' } }),
       this.locationRepo.find({ where: { type: 'FOOD' } }),
     ]);
 
+    for (const location of locations) {
+      location.img =
+        location.lstImgs?.split(',').length > 0
+          ? location.lstImgs?.split(',')[0]
+          : '';
+      location.lstImgs = [];
+    }
+    for (const food of foods) {
+      food.img =
+        food.lstImgs?.split(',').length > 0 ? food.lstImgs?.split(',')[0] : '';
+      food.lstImgs = [];
+    }
     const instruction = `
 You are an AI assistant creating daily itineraries in Ho Chi Minh City based on user preferences.
 
@@ -303,28 +325,10 @@ You are an AI assistant creating daily itineraries in Ho Chi Minh City based on 
 ${JSON.stringify(body, null, 2)}
 
 ## Locations:
-${JSON.stringify(
-  locations.map(({ id, name, description, address }) => ({
-    id,
-    name,
-    description,
-    address,
-  })),
-  null,
-  2,
-)}
+${JSON.stringify(locations, null, 2)}
 
 ## Foods:
-${JSON.stringify(
-  foods.map(({ id, name, description, address }) => ({
-    id,
-    name,
-    description,
-    address,
-  })),
-  null,
-  2,
-)}
+${JSON.stringify(foods, null, 2)}
 
 ## Instructions:
 - Use only the above locations and foods.
@@ -380,10 +384,7 @@ Respond with pure JSON only, no extra text.
             description: location.description,
             address: location.address,
             coordinates: location.coordinates,
-            img:
-              location.lstImgs?.split(',').length > 0
-                ? location.lstImgs?.split(',')[0]
-                : '',
+            img: location.img,
           };
         }
         return null;
