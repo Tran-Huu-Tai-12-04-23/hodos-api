@@ -263,31 +263,12 @@ Do not include any additional text or explanation, just the list. Ensure that th
           : "Sorry, I don't have any recommendations for you. Please try again.",
     };
   }
-
-  // suggest plan trip
   async suggestPlanTrip(body: any) {
     const [locations, foods] = await Promise.all([
-      this.locationRepo.find({
-        where: {
-          type: 'LOCATION',
-        },
-        select: {
-          description: true,
-          address: true,
-          id: true,
-        },
-      }),
-      this.locationRepo.find({
-        where: {
-          type: 'FOOD',
-        },
-        select: {
-          description: true,
-          address: true,
-          id: true,
-        },
-      }),
+      this.locationRepo.find({ where: { type: 'LOCATION' } }),
+      this.locationRepo.find({ where: { type: 'FOOD' } }),
     ]);
+
     const instruction = `
 You are an AI assistant creating daily itineraries in Ho Chi Minh City based on user preferences.
 
@@ -295,10 +276,28 @@ You are an AI assistant creating daily itineraries in Ho Chi Minh City based on 
 ${JSON.stringify(body, null, 2)}
 
 ## Locations:
-${JSON.stringify(locations, null, 2)}
+${JSON.stringify(
+  locations.map(({ id, name, description, address }) => ({
+    id,
+    name,
+    description,
+    address,
+  })),
+  null,
+  2,
+)}
 
 ## Foods:
-${JSON.stringify(foods, null, 2)}
+${JSON.stringify(
+  foods.map(({ id, name, description, address }) => ({
+    id,
+    name,
+    description,
+    address,
+  })),
+  null,
+  2,
+)}
 
 ## Instructions:
 - Use only the above locations and foods.
@@ -308,25 +307,27 @@ ${JSON.stringify(foods, null, 2)}
 - Respect group type and budget.
 - Format response as JSON like this:
 
-{
-  "day1": [
-    {
-      "date": "12/04/2003",
-      "timeStart": "08:00",
-      "timeEnd": "10:00",
-      "location": {
-        "id": "...",
-      },
-      "totalTime": "2h",
-      "activities": ["..."],
-      "transportation": "..."
-    },
-    ...
-  ],
-  "day2": [...],
-  ...
-}
-
+  {
+    totalDays: number,
+    typeTrip: single | couple | family | group,
+    startDate: "dd-mm-yyyy",
+    endDate: "dd-mm-yyyy",
+    budget: string,
+    favorites: ['Culture', 'Food', 'Nature', ...],
+    days: [
+      dayNumber: number,
+      date: "dd-mm-yyyy",
+      dayOfWeek: "Monday",
+      activities: [
+        {
+          id:string,
+          timeStart: "hh:mm",
+          timeEnd: "hh:mm",
+          totalTime: "hh:mm",
+        }
+      ]
+    ]
+  }
 Respond with pure JSON only, no extra text.
 `;
 
@@ -335,10 +336,37 @@ Respond with pure JSON only, no extra text.
     const cleanedJson = responseText.replace(/```json|```/g, '').trim();
     const parsedResult = JSON.parse(cleanedJson);
 
+    const mergedList = [...locations, ...foods];
+    const dictLocation = mergedList.reduce<Record<string, any>>((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {});
+
+    for (const day of parsedResult.days) {
+      day.activities = day.activities.map((activity: any) => {
+        const location = dictLocation[activity.id];
+        if (location) {
+          return {
+            ...activity,
+            id: location.id,
+            name: location.name,
+            description: location.description,
+            address: location.address,
+            coordinates: location.coordinates,
+            img:
+              location.lstImgs?.split(',').length > 0
+                ? location.lstImgs?.split(',')[0]
+                : '',
+          };
+        }
+        return null;
+      });
+    }
+
     return {
-      ...parsedResult,
+      result: parsedResult,
       message:
-        parsedResult && Object.keys(parsedResult).length > 0
+        parsedResult?.days.length > 0
           ? ''
           : "Sorry, I don't have any recommendations for you. Please try again.",
     };
