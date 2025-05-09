@@ -209,9 +209,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
   async chatBot(body: ChatBoxDto) {
     const [locations, foods]: any = await Promise.all([
       this.locationRepo.find({
-        where: {
-          type: 'LOCATION',
-        },
+        where: { type: 'LOCATION' },
         select: {
           id: true,
           name: true,
@@ -222,9 +220,7 @@ Do not include any additional text or explanation, just the list. Ensure that th
         },
       }),
       this.locationRepo.find({
-        where: {
-          type: 'FOOD',
-        },
+        where: { type: 'FOOD' },
         select: {
           id: true,
           name: true,
@@ -235,71 +231,83 @@ Do not include any additional text or explanation, just the list. Ensure that th
         },
       }),
     ]);
-    for (const location of locations) {
-      location.img =
-        location.lstImgs?.split(',').length > 0
-          ? location.lstImgs?.split(',')[0]
-          : '';
-      location.lstImgs = [];
-    }
-    for (const food of foods) {
-      food.img =
-        food.lstImgs?.split(',').length > 0 ? food.lstImgs?.split(',')[0] : '';
-      food.lstImgs = [];
+
+    // Format images
+    for (const item of [...locations, ...foods]) {
+      item.img = item.lstImgs?.split(',')?.[0] || '';
+      item.lstImgs = []; // Clear to avoid sending unnecessary data
     }
 
-    const dictLocationById = coreHelper.toDict(locations.concat(foods), 'id');
+    const dictLocationById = coreHelper.toDict([...locations, ...foods], 'id');
+
     const instruction = `
-    You are an AI travel assistant for tourists visiting Ho Chi Minh City.
-    Use the location and food data provided below to answer the user's question.
+You are an AI travel assistant for tourists visiting Ho Chi Minh City.
+Use the location and food data provided below to answer the user's question.
 
-    Here is the list of **locations**:
-    ${JSON.stringify(locations, null, 2)}
+Here is the list of **locations**:
+${JSON.stringify(locations, null, 2)}
 
-    Here is the list of **foods**:
-    ${JSON.stringify(foods, null, 2)}
+Here is the list of **foods**:
+${JSON.stringify(foods, null, 2)}
 
-    The user's message is:
-    "${body.message}"
+The user's message is:
+"${body.message}"
 
-    Please respond in **JSON format** with appropriate recommendations or answers.
-    Please respond using this JSON structure:
-    "type": "location" | "food" | "mixed",
-    "recommendations": [
-      {
-    "id": "...",
-      }
-    ]
-  }
-    `;
+Please respond in **JSON format** using this structure:
+{
+  "type": "location" | "food" | "mixed",
+  "recommendations": [
+    { "id": "..." }
+  ]
+}
+`;
 
     const result = await this.model.generateContent(instruction);
-
     const responseText = result.response.text().trim();
-
     const cleanedJson = responseText.replace(/```json|```/g, '').trim();
 
-    const parsedResult = JSON.parse(cleanedJson);
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(cleanedJson);
+    } catch (err) {
+      return {
+        type: 'unknown',
+        recommendations: [],
+        message: 'Invalid response format. Please try again.',
+      };
+    }
 
-    for (const recommendation of parsedResult?.recommendations) {
+    const processedIds = new Set();
+    const finalRecommendations = [];
+
+    for (const recommendation of parsedResult?.recommendations || []) {
+      if (processedIds.has(recommendation.id)) continue;
+
       const location = dictLocationById[recommendation.id];
       if (location) {
-        recommendation.name = location.name;
-        recommendation.description = location.description;
-        recommendation.address = location.address;
-        recommendation.coordinates = location.coordinates;
-        recommendation.img = location.img;
+        finalRecommendations.push({
+          id: location.id,
+          name: location.name,
+          description: location.description,
+          address: location.address,
+          coordinates: location.coordinates,
+          img: location.img,
+        });
+
+        processedIds.add(recommendation.id);
       }
     }
 
     return {
       ...parsedResult,
+      recommendations: finalRecommendations,
       message:
-        parsedResult?.recommendations?.length > 0
+        finalRecommendations.length > 0
           ? ''
           : "Sorry, I don't have any recommendations for you. Please try again.",
     };
   }
+
   async suggestPlanTrip(body: any) {
     const [locations, foods]: any = await Promise.all([
       this.locationRepo.find({
