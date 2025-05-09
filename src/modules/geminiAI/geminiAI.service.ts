@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { coreHelper } from 'src/helpers';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { ChatBoxDto } from './dto';
@@ -12,7 +13,7 @@ export class GeminiAIService {
     private readonly locationRepo: LocationRepository,
   ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
-  genAI = new GoogleGenerativeAI('AIzaSyAWSDPQrsKSaNxhjWNm2egSEtFwepzlAPU');
+  genAI = new GoogleGenerativeAI(this.GEMINI_API_KEY);
   model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   async test() {
@@ -211,13 +212,30 @@ Do not include any additional text or explanation, just the list. Ensure that th
         where: {
           type: 'LOCATION',
         },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          address: true,
+          coordinates: true,
+          lstImgs: true,
+        },
       }),
       this.locationRepo.find({
         where: {
           type: 'FOOD',
         },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          address: true,
+          coordinates: true,
+          lstImgs: true,
+        },
       }),
     ]);
+    const dictLocationById = coreHelper.toDict(locations.concat(foods), 'id');
     const instruction = `
     You are an AI travel assistant for tourists visiting Ho Chi Minh City.
     Use the location and food data provided below to answer the user's question.
@@ -237,14 +255,9 @@ Do not include any additional text or explanation, just the list. Ensure that th
     "recommendations": [
       {
     "id": "...",
-        "name": "...",
-        "reason": "...",
-        "images": [...],
-        "address": "..."
       }
     ]
   }
-
     `;
 
     const result = await this.model.generateContent(instruction);
@@ -254,6 +267,20 @@ Do not include any additional text or explanation, just the list. Ensure that th
     const cleanedJson = responseText.replace(/```json|```/g, '').trim();
 
     const parsedResult = JSON.parse(cleanedJson);
+
+    for (const recommendation of parsedResult?.recommendations) {
+      const location = dictLocationById[recommendation.id];
+      if (location) {
+        recommendation.name = location.name;
+        recommendation.description = location.description;
+        recommendation.address = location.address;
+        recommendation.coordinates = location.coordinates;
+        recommendation.img =
+          location.lstImgs?.split(',').length > 0
+            ? location.lstImgs?.split(',')[0]
+            : '';
+      }
+    }
 
     return {
       ...parsedResult,
