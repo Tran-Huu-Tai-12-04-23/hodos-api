@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination.dto';
 import { CurrentUser } from 'src/helpers/decorators';
 import { UserDataDTO } from '../auth/dto';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
@@ -8,7 +9,6 @@ import { PlanTripService } from './plan-trip.service';
 
 @ApiTags('Plan trips API')
 @Controller('plan-trip')
-@UseGuards(JwtAuthGuard)
 export class PlanTripController {
   constructor(private readonly service: PlanTripService) {}
 
@@ -24,6 +24,7 @@ export class PlanTripController {
     return await this.service.suggestTripPlan(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 201 })
   @Post('save-trip')
   async saveTrip(
@@ -31,5 +32,27 @@ export class PlanTripController {
     @CurrentUser() user: UserDataDTO,
   ) {
     return await this.service.saveTrip(body, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 201 })
+  @Post('pagination-trip-user')
+  async paginationUserTrip(
+    @Body() body: PaginationDto<any>,
+    @CurrentUser() user: UserDataDTO,
+  ) {
+    return await this.service.paginationUserTrip(user, body);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Get(':id')
+  async detail(@Param('id') id: string) {
+    return await this.service.detail(id);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Post('merge-existing-trip')
+  async mergeExistTrip() {
+    return await this.service.mergeThumbnailExistTrip();
   }
 }

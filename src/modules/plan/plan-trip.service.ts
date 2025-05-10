@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { enumData } from 'src/constants/enum-data';
+import { PaginationDto } from 'src/dto/pagination.dto';
 import { TripActivityEntity } from 'src/entities/trip-activity.entity';
 import { TripDayEntity } from 'src/entities/trip-day.entity';
 import { TripEntity } from 'src/entities/trip.entity';
@@ -9,6 +10,7 @@ import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { UserDataDTO } from '../auth/dto';
+import { FirebaseUploadService } from '../common/firebase-upload.service';
 import { GeminiAIService } from '../geminiAI/geminiAI.service';
 import { CreateTripDTO } from './dto';
 
@@ -18,6 +20,7 @@ export class PlanTripService {
     private readonly gemAiService: GeminiAIService,
     private readonly locationRepo: LocationRepository,
     private readonly repo: TripRepository,
+    private readonly firebaseService: FirebaseUploadService,
   ) {}
 
   async loadQuestionToCollect() {
@@ -159,6 +162,24 @@ export class PlanTripService {
   async suggestTripPlan(body: any) {
     return await this.gemAiService.suggestPlanTrip(body);
   }
+  private async getRandomFourImg(data: CreateTripDTO) {
+    const lstActivity = data.days.flatMap((day) =>
+      day.activities.map((activity) => activity.img),
+    );
+
+    // get 4 random images from lstActivity
+    const randomImages = [];
+    const uniqueImages = new Set<string>();
+    while (randomImages.length < 4 && uniqueImages.size < lstActivity.length) {
+      const randomIndex = Math.floor(Math.random() * lstActivity.length);
+      const randomImage = lstActivity[randomIndex];
+      if (!uniqueImages.has(randomImage)) {
+        uniqueImages.add(randomImage);
+        randomImages.push(randomImage);
+      }
+    }
+    return randomImages;
+  }
 
   /// save trip
   async saveTrip(body: CreateTripDTO, user: UserDataDTO) {
@@ -179,8 +200,18 @@ export class PlanTripService {
       const tripDayRepo = trans.getRepository(TripDayEntity);
       const tripActivityRepo = trans.getRepository(TripActivityEntity);
 
+      const randomImages = await this.getRandomFourImg(body);
+      const imgMerged = await this.firebaseService.mergeAndUploadImages(
+        randomImages,
+        `${Date.now()}-${uuidv4()}.png`,
+        'trip',
+      );
+      if (!imgMerged) {
+        throw new Error('Error when upload image');
+      }
       const trip: Partial<TripEntity> = {
         id: uuidv4(),
+        thumbnail: imgMerged,
         type: enumData.TRIP_TYPE.USER.code,
         typeTrip: body.typeTrip,
         totalDays: body.totalDays,
@@ -236,5 +267,160 @@ export class PlanTripService {
         isSave: true,
       };
     });
+  }
+
+  async paginationUserTrip(user: UserDataDTO, body: PaginationDto<any>) {
+    const where = {
+      isDeleted: false,
+      createdBy: user.id,
+      type: enumData.TRIP_TYPE.USER.code,
+    };
+    const [result, total]: any = await this.repo.findAndCount({
+      where: where,
+      order: {
+        startDate: 'ASC',
+        createdAt: 'DESC',
+      },
+      skip: body.skip,
+      take: body.take,
+    });
+
+    for (const item of result) {
+      item.favorites = item.favorites.split(',');
+    }
+
+    return {
+      data: result,
+      total: total,
+      nextSkip: body.skip + body.take,
+      hasNext: body.skip + body.take < total,
+      take: body.take,
+    };
+  }
+
+  // detail trip
+  async detail(id: string) {
+    const trip: any = await this.repo.findOne({
+      where: {
+        id,
+        isDeleted: false,
+      },
+      relations: {
+        days: {
+          activities: true,
+        },
+      },
+    });
+
+    if (!trip) {
+      throw new Error('Trip not found');
+    }
+
+    // Parse favorites nếu có
+    trip.favorites = trip.favorites ? trip.favorites.split(',') : [];
+
+    // Lấy toàn bộ locationIds duy nhất
+    const locationIds = Array.from(
+      new Set(
+        trip.__days__.flatMap((day: any) =>
+          day.__activities__.map((act: any) => act.locationId),
+        ),
+      ),
+    );
+
+    const locations = await this.locationRepo.find({
+      where: {
+        id: In(locationIds),
+        isDeleted: false,
+      },
+    });
+
+    const locationMap = new Map(locations.map((loc) => [loc.id, loc]));
+
+    // Chuẩn hóa lại `days` và `activities`
+    const days = trip.__days__.map((day: any) => {
+      const activities = day.__activities__.map((activity: any) => {
+        const location = locationMap.get(activity.locationId);
+        if (!location) {
+          throw new Error(`Location not found for activity ${activity.id}`);
+        }
+
+        return {
+          ...activity,
+          location,
+          img: location.lstImgs ? location.lstImgs.split(',')[0] : '',
+          name: location.name,
+          address: location.address,
+          description: location.description,
+          type: location.type,
+        };
+      });
+
+      delete day.__activities__;
+
+      return {
+        ...day,
+        activities,
+      };
+    });
+    delete trip.__days__;
+
+    const result = {
+      ...trip,
+      days: days,
+    };
+    return result;
+  }
+
+  async mergeThumbnailExistTrip() {
+    const lstTripExist: any = await this.repo.find({
+      where: {
+        isDeleted: false,
+      },
+      relations: {
+        days: {
+          activities: true,
+        },
+      },
+    });
+    for (const trip of lstTripExist) {
+      const lstAcId: any = [];
+      for (const day of trip.__days__) {
+        for (const activity of day.__activities__) {
+          lstAcId.push(activity.locationId);
+        }
+      }
+      const locations = await this.locationRepo.find({
+        where: {
+          id: In(lstAcId),
+          isDeleted: false,
+        },
+      });
+      const imgs = locations
+        .map((location) => location.lstImgs?.split(',')[0])
+        .filter((img) => img); // Filter out undefined or null images
+
+      const uniqueImgs = Array.from(new Set(imgs)); // Ensure unique images
+      const randomImgs = [];
+      while (randomImgs.length < 4 && uniqueImgs.length > 0) {
+        const randomIndex = Math.floor(Math.random() * uniqueImgs.length);
+        randomImgs.push(uniqueImgs.splice(randomIndex, 1)[0]);
+      }
+
+      const mergedImg = await this.firebaseService.mergeAndUploadImages(
+        randomImgs,
+        `merged-${Date.now()}-${uuidv4()}.png`,
+        'trip',
+      );
+
+      if (!mergedImg) {
+        throw new Error('Error when upload image');
+      }
+      await this.repo.update(trip.id, {
+        thumbnail: mergedImg,
+        updatedAt: new Date(),
+        updatedBy: trip.createdBy,
+      });
+    }
   }
 }

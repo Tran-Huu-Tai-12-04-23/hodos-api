@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AiModule } from './modules/AI/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { CommonModule } from './modules/common/common.module';
@@ -30,7 +29,6 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     VietMapModule,
     WebhookModule,
     LogModule,
-    AiModule,
     // TelegramModule,
     EmailModule,
     UserModule,

@@ -388,7 +388,6 @@ ${JSON.stringify(foods, null, 2)}
   }
 Respond with pure JSON only, no extra text.
 `;
-    console.log(instruction);
 
     const result = await this.model.generateContent(instruction);
     const responseText = result.response.text().trim();

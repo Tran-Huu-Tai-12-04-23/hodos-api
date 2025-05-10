@@ -3,11 +3,12 @@ import { TypeOrmExModule } from 'src/typeorm';
 import { LocationModule } from '../location/location.module';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
+import { FirebaseUploadService } from './firebase-upload.service';
 
 @Module({
   imports: [TypeOrmExModule.forCustomRepository([]), LocationModule],
-  providers: [CommonService],
+  providers: [CommonService, FirebaseUploadService],
   controllers: [CommonController],
-  exports: [CommonService],
+  exports: [CommonService, FirebaseUploadService],
 })
 export class CommonModule {}

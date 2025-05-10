@@ -20,9 +20,6 @@ export class TripDayEntity extends BaseEntityCustom {
   @JoinColumn({ name: 'tripId', referencedColumnName: 'id' })
   trip: Promise<TripEntity>;
 
-  @OneToMany(() => TripActivityEntity, (activity) => activity.tripDays, {
-    cascade: true,
-    eager: true,
-  })
+  @OneToMany(() => TripActivityEntity, (activity) => activity.tripDays)
   activities: Promise<TripActivityEntity[]>;
 }

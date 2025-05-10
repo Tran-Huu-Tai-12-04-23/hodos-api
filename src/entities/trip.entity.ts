@@ -14,6 +14,9 @@ export class TripEntity extends BaseEntityCustom {
   })
   type: string;
 
+  @Column('text')
+  thumbnail: string;
+
   @Column({ type: 'int' })
   totalDays: number;
 
@@ -35,14 +38,9 @@ export class TripEntity extends BaseEntityCustom {
   @Column()
   totalSave: number;
 
-  @OneToMany(() => TripDayEntity, (day) => day.trip, {
-    cascade: true,
-    eager: true,
-  })
+  @OneToMany(() => TripDayEntity, (day) => day.trip)
   days: Promise<TripDayEntity[]>;
 
-  @OneToMany(() => TripUserEntity, (tripUser) => tripUser.trip, {
-    cascade: true,
-  })
+  @OneToMany(() => TripUserEntity, (tripUser) => tripUser.trip)
   tripUsers: Promise<TripUserEntity[]>;
 }

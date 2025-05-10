@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
+import { LocationEntity } from './location.entity';
 import { TripDayEntity } from './trip-day.entity';
 
 @Entity('trip_activity')
@@ -15,8 +16,11 @@ export class TripActivityEntity extends BaseEntityCustom {
     description: 'Primary key ID',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 36, nullable: false })
   locationId: string;
+  @ManyToOne(() => LocationEntity, (p) => p.id)
+  @JoinColumn({ name: 'locationId', referencedColumnName: 'id' })
+  location: Promise<LocationEntity>;
 
   @Column({ type: 'varchar', length: 36, nullable: false })
   tripDayId: string;
