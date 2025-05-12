@@ -55,4 +55,10 @@ export class PlanTripController {
   async mergeExistTrip() {
     return await this.service.mergeThumbnailExistTrip();
   }
+
+  @ApiResponse({ status: 201 })
+  @Post('trip-direction')
+  async tripDirection(@Body() body: CreateTripDTO) {
+    return await this.service.tripDirectionAndSave(body);
+  }
 }

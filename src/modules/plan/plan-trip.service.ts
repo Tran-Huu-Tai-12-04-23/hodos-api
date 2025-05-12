@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { enumData } from 'src/constants/enum-data';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { TripActivityEntity } from 'src/entities/trip-activity.entity';
 import { TripDayEntity } from 'src/entities/trip-day.entity';
 import { TripEntity } from 'src/entities/trip.entity';
 import { coreHelper } from 'src/helpers';
+import { callApiHelper } from 'src/helpers/callApiHelper';
 import { TripRepository } from 'src/repositories';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
@@ -21,7 +23,10 @@ export class PlanTripService {
     private readonly locationRepo: LocationRepository,
     private readonly repo: TripRepository,
     private readonly firebaseService: FirebaseUploadService,
+    public readonly configService: ConfigService,
   ) {}
+  GOONG_API = this.configService.get<string>('GOONG_API') || '';
+  GOONG_API_KEY = this.configService.get<string>('GOONG_API_KEY') || '';
 
   async loadQuestionToCollect() {
     return [
@@ -422,5 +427,137 @@ export class PlanTripService {
         updatedBy: trip.createdBy,
       });
     }
+  }
+
+  async getTripFromCreateDto(body: CreateTripDTO) {
+    const locationOfActivityIds = body.days.flatMap((day) =>
+      day.activities.map((activity) => activity.id),
+    );
+    const locations = await this.locationRepo.find({
+      where: {
+        id: In(locationOfActivityIds),
+        isDeleted: false,
+      },
+    });
+
+    const dictLocationById = coreHelper.toDict(locations, 'id');
+
+    return this.repo.manager.transaction(async () => {
+      const trip: any = {
+        id: uuidv4(),
+        type: enumData.TRIP_TYPE.USER.code,
+        typeTrip: body.typeTrip,
+        totalDays: body.totalDays,
+        startDate: body.startDate,
+        endDate: body.endDate,
+        budget: body.budget,
+        favorites: body.favorites.join(','),
+        totalSave: 1,
+      };
+
+      const days: any[] = [];
+
+      for (const day of body.days) {
+        const tripDay: any = {
+          id: uuidv4(),
+          dayNumber: day.dayNumber,
+          date: day.date,
+          dayOfWeek: day.dayOfWeek,
+          tripId: trip.id,
+          createdAt: new Date(),
+        };
+
+        const activities: any[] = [];
+        for (const activity of day.activities) {
+          const location = dictLocationById[activity.id];
+          if (!location) {
+            throw new Error(`Location with ID ${activity.id} not found`);
+          }
+          const tripActivity: any = {
+            id: uuidv4(),
+            tripDayId: tripDay.id,
+            locationId: location.id,
+            timeStart: activity.timeStart,
+            timeEnd: activity.timeEnd,
+            ...location,
+          };
+          activities.push(tripActivity);
+        }
+        tripDay.activities = activities;
+        days.push(tripDay);
+      }
+      trip.days = days;
+      return trip;
+    });
+  }
+  async getTripFromGoong(trip: any) {
+    const apiKey = this.GOONG_API_KEY;
+    const baseUrl = this.GOONG_API;
+
+    if (!apiKey || !baseUrl) {
+      throw new Error('API key or base URL is not defined');
+    }
+
+    let originAc: any | null = null;
+    let descAc: any | null = null;
+    if (trip && trip.days && trip.days.length > 0) {
+      const firstDay = trip.days[0];
+      if (firstDay && firstDay.activities && firstDay.activities.length > 0) {
+        originAc = firstDay.activities[0];
+      }
+      if (firstDay && firstDay.activities && firstDay.activities.length > 0) {
+        descAc = firstDay.activities[firstDay.activities.length - 1];
+      }
+    }
+
+    if (!originAc) {
+      throw new Error('No origin activity found in the trip');
+    }
+
+    if (!descAc) {
+      throw new Error('No destination activity found in the trip');
+    }
+
+    const origin = originAc.coordinates;
+    const destination = descAc.coordinates;
+
+    const waypoints = trip?.days?.flatMap((day: any) =>
+      day.activities
+        .filter(
+          (activity: any) =>
+            activity.id !== originAc.id && activity.id !== descAc.id,
+        )
+        .map((activity: any) => activity.coordinates),
+    );
+
+    // const waypoints = [
+    //   '21.03303694945164,105.79131815992706',
+    //   '21.017654632470325,105.80350611785252',
+    //   '21.00755912449365,105.81105921853873',
+    //   '20.99834437409386,105.79148982130629',
+    //   '21.00507520431542,105.78814242441126',
+    //   '21.0191769116844,105.78822825510088',
+    //   '21.026948305457093,105.79466555682208',
+    //   '21.012767209964053,105.80256198026676',
+    //   '21.020619056604428,105.78925822337628',
+    //   '21.01028337649572,105.7894298847555',
+    // ];
+
+    const queryParams = new URLSearchParams({
+      origin,
+      destination,
+      waypoints: waypoints.join(';'),
+      api_key: apiKey,
+    });
+
+    const url = `${baseUrl}?${queryParams.toString()}`;
+    return await callApiHelper.get(url);
+  }
+  // get trip direction and save
+  async tripDirectionAndSave(body: CreateTripDTO) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const trip: TripEntity = await this.getTripFromCreateDto(body);
+    const tripDirection = await this.getTripFromGoong(trip);
+    return tripDirection;
   }
 }

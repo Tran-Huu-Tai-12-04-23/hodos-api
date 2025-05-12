@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hodos-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hodos-api
+  template:
+    metadata:
+      labels:
+        app: hodos-api
+    spec:
+      containers:
+        - name: hodos-api
+          image: 470410970706.dkr.ecr.ap-southeast-1.amazonaws.com/hodos-api:latest
+          ports:
+            - containerPort: 3306
