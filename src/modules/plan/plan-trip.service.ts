@@ -4,10 +4,11 @@ import { enumData } from 'src/constants/enum-data';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { TripActivityEntity } from 'src/entities/trip-activity.entity';
 import { TripDayEntity } from 'src/entities/trip-day.entity';
+import { TripDirectionEntity } from 'src/entities/trip-direction.entity';
 import { TripEntity } from 'src/entities/trip.entity';
 import { coreHelper } from 'src/helpers';
 import { callApiHelper } from 'src/helpers/callApiHelper';
-import { TripRepository } from 'src/repositories';
+import { TripDirectionRepository, TripRepository } from 'src/repositories';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +25,7 @@ export class PlanTripService {
     private readonly repo: TripRepository,
     private readonly firebaseService: FirebaseUploadService,
     public readonly configService: ConfigService,
+    public readonly tripDirectionRepo: TripDirectionRepository,
   ) {}
   GOONG_API = this.configService.get<string>('GOONG_API') || '';
   GOONG_API_KEY = this.configService.get<string>('GOONG_API_KEY') || '';
@@ -204,6 +206,7 @@ export class PlanTripService {
       const repo = trans.getRepository(TripEntity);
       const tripDayRepo = trans.getRepository(TripDayEntity);
       const tripActivityRepo = trans.getRepository(TripActivityEntity);
+      const tripDirectionRepo = trans.getRepository(TripDirectionEntity);
 
       const randomImages = await this.getRandomFourImg(body);
       const imgMerged = await this.firebaseService.mergeAndUploadImages(
@@ -267,6 +270,24 @@ export class PlanTripService {
         await tripActivityRepo.insert(activities);
       }
 
+      /// save trip direction
+      const tripData = await this.tripDirectionAndSave(body);
+      const tripDirection: Partial<TripDirectionEntity> = {
+        id: uuidv4(),
+        tripId: tripEntity.id,
+        geometry: tripData.geometry,
+        distance: tripData.distance,
+        duration: tripData.duration,
+        createdAt: new Date(),
+        createdBy: user.id,
+      };
+      const tripDirectionEntity = tripDirectionRepo.create(tripDirection);
+      await tripDirectionRepo.insert(tripDirectionEntity);
+      await repo.update(tripEntity.id, {
+        tripDirectionId: tripDirectionEntity.id,
+        updatedAt: new Date(),
+        updatedBy: user.id,
+      });
       return {
         message: 'Save trip successfully!',
         isSave: true,
@@ -357,7 +378,11 @@ export class PlanTripService {
           name: location.name,
           address: location.address,
           description: location.description,
+          coordinates: location.coordinates,
           type: location.type,
+          dayName: day.dayOfWeek,
+          date: day.date,
+          id: location.id,
         };
       });
 
@@ -370,9 +395,19 @@ export class PlanTripService {
     });
     delete trip.__days__;
 
+    const tripDirection = await this.tripDirectionRepo.findOne({
+      where: {
+        tripId: trip.id,
+        isDeleted: false,
+      },
+    });
+    if (!tripDirection) {
+      throw new Error('Trip direction not found');
+    }
     const result = {
       ...trip,
       days: days,
+      tripDirection,
     };
     return result;
   }
@@ -558,6 +593,13 @@ export class PlanTripService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const trip: TripEntity = await this.getTripFromCreateDto(body);
     const tripDirection = await this.getTripFromGoong(trip);
-    return tripDirection;
+    if (!tripDirection) {
+      throw new Error('No trip direction found');
+    }
+    let result: any = null;
+    if (tripDirection && tripDirection?.trips?.length > 0) {
+      result = tripDirection.trips[0];
+    }
+    return result;
   }
 }

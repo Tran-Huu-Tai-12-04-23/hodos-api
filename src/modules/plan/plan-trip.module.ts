@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TripRepository } from 'src/repositories';
+import { TripDirectionRepository, TripRepository } from 'src/repositories';
 import { BlogRepository } from 'src/repositories/blog.repository';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { TypeOrmExModule } from 'src/typeorm';
@@ -14,6 +14,7 @@ import { PlanTripService } from './plan-trip.service';
       BlogRepository,
       LocationRepository,
       TripRepository,
+      TripDirectionRepository,
     ]),
     GeminiAIModule,
     CommonModule,

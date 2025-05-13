@@ -1,31 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as sharp from 'sharp';
 
-// ✅ Đường dẫn tới file service account
-const serviceAccountPath = path.join(
-  __dirname,
-  '../../assets/firebase/ac-s.json',
-);
-
-// ✅ Khởi tạo Firebase Admin SDK nếu chưa init
-if (!admin.apps.length) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const serviceAccount = require(serviceAccountPath);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET, // ví dụ: 'hodos-f29d9.appspot.com'
-  });
-}
-
-const bucket = admin.storage().bucket();
-
 @Injectable()
-export class FirebaseUploadService {
+export class FirebaseUploadService implements OnModuleInit {
+  private bucket: any;
+
+  async onModuleInit() {
+    if (!admin.apps.length) {
+      const serviceAccountPath = path.join(
+        __dirname,
+        '../../assets/firebase/ac-s.json',
+      );
+
+      const serviceAccountJson = JSON.parse(
+        await fs.readFile(serviceAccountPath, 'utf-8'),
+      );
+
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccountJson),
+        storageBucket:
+          process.env.FIREBASE_STORAGE_BUCKET || 'hodos-f29d9.appspot.com',
+      });
+    }
+
+    this.bucket = admin.storage().bucket();
+  }
+
   async downloadImageBuffer(url: string): Promise<Buffer> {
     const response = await axios.get(url, { responseType: 'arraybuffer' });
     return Buffer.from(response.data, 'binary');
@@ -37,7 +41,7 @@ export class FirebaseUploadService {
     folder = 'images',
   ): Promise<string> {
     const filePath = `${folder}/${Date.now()}-${filename}`;
-    const file = bucket.file(filePath);
+    const file = this.bucket.file(filePath);
 
     await file.save(buffer, {
       metadata: {
@@ -45,7 +49,6 @@ export class FirebaseUploadService {
       },
     });
 
-    // ✅ Tạo URL truy cập công khai có thời hạn (signed URL)
     const [url] = await file.getSignedUrl({
       action: 'read',
       expires: '03-01-2030',
