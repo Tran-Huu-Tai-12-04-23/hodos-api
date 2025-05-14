@@ -412,6 +412,8 @@ Respond with pure JSON only, no extra text.
             address: location.address,
             coordinates: location.coordinates,
             img: location.img,
+            dayName: day.dayOfWeek,
+            date: day.date,
           };
         }
         return null;

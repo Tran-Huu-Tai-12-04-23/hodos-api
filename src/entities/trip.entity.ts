@@ -43,4 +43,7 @@ export class TripEntity extends BaseEntityCustom {
 
   @OneToMany(() => TripUserEntity, (tripUser) => tripUser.trip)
   tripUsers: Promise<TripUserEntity[]>;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  tripDirectionId: string;
 }

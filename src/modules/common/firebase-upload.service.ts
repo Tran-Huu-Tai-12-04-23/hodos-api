@@ -1,31 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 import * as sharp from 'sharp';
 
-// ✅ Đường dẫn tới file service account
-const serviceAccountPath = path.join(
-  __dirname,
-  '../../assets/firebase/ac-s.json',
-);
-
-// ✅ Khởi tạo Firebase Admin SDK nếu chưa init
-if (!admin.apps.length) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const serviceAccount = require(serviceAccountPath);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET, // ví dụ: 'hodos-f29d9.appspot.com'
-  });
-}
-
-const bucket = admin.storage().bucket();
-
 @Injectable()
-export class FirebaseUploadService {
+export class FirebaseUploadService implements OnModuleInit {
+  private bucket: any;
+
+  async onModuleInit() {
+    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    const serviceAccount = JSON.parse(serviceAccountString || '{}');
+
+    // Khôi phục lại newline trong private key nếu đã escape
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(
+        /\\n/g,
+        '\n',
+      );
+    }
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket:
+          process.env.FIREBASE_STORAGE_BUCKET || 'hodos-f29d9.appspot.com',
+      });
+    }
+
+    this.bucket = admin.storage().bucket();
+  }
+
   async downloadImageBuffer(url: string): Promise<Buffer> {
     const response = await axios.get(url, { responseType: 'arraybuffer' });
     return Buffer.from(response.data, 'binary');
@@ -37,7 +42,7 @@ export class FirebaseUploadService {
     folder = 'images',
   ): Promise<string> {
     const filePath = `${folder}/${Date.now()}-${filename}`;
-    const file = bucket.file(filePath);
+    const file = this.bucket.file(filePath);
 
     await file.save(buffer, {
       metadata: {
@@ -45,7 +50,6 @@ export class FirebaseUploadService {
       },
     });
 
-    // ✅ Tạo URL truy cập công khai có thời hạn (signed URL)
     const [url] = await file.getSignedUrl({
       action: 'read',
       expires: '03-01-2030',
@@ -62,7 +66,6 @@ export class FirebaseUploadService {
     if (imagePaths.length !== 4) {
       throw new Error('Phải có đúng 4 ảnh để ghép');
     }
-
     const size = 500;
     const gridSize = size * 2;
 

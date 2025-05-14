@@ -1,5 +1,6 @@
 import { TripActivityEntity } from 'src/entities/trip-activity.entity';
 import { TripDayEntity } from 'src/entities/trip-day.entity';
+import { TripDirectionEntity } from 'src/entities/trip-direction.entity';
 import { TripUserEntity } from 'src/entities/trip-user.entity';
 import { TripEntity } from 'src/entities/trip.entity';
 import { CustomRepository } from 'src/typeorm/typeorm-decorater';
@@ -16,3 +17,6 @@ export class TripActivityRepository extends Repository<TripActivityEntity> {}
 
 @CustomRepository(TripUserEntity)
 export class TripUserRepository extends Repository<TripUserEntity> {}
+
+@CustomRepository(TripDirectionEntity)
+export class TripDirectionRepository extends Repository<TripDirectionEntity> {}
