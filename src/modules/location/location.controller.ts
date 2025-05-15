@@ -71,8 +71,8 @@ export class LocationController {
   })
   @ApiResponse({ status: 201 })
   @Post('find')
-  async find(@Body() data: { query: string }) {
-    return await this.service.find(data);
+  async find() {
+    return await this.service.find();
   }
 
   @ApiOperation({

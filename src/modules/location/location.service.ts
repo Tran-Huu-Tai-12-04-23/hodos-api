@@ -46,20 +46,13 @@ export class LocationService {
     };
   }
 
-  async find(data: { query: string }) {
-    const whereClause = data.query
-      ? { name: Like(`%${data.query}%`), isDeleted: false }
-      : { isDeleted: false };
-
-    const result: any = await this.repo.find({
-      where: whereClause,
-      skip: 0,
-      take: 10,
-    });
+  async find() {
+    const result: any = await this.repo.find({});
 
     for (const location of result) {
       const images = location.lstImgs.split(',');
       location.img = images.length > 0 ? images[0] : '';
+      delete location.detail;
     }
 
     return result;
