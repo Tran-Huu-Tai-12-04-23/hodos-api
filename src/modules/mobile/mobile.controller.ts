@@ -1,8 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
-import { UserEntity } from 'src/entities/user.entity';
-import { TravelBlogCreateDTO } from './dto/travel-blog.dto';
+import { CurrentUser } from 'src/helpers/decorators';
+import { UserDataDTO } from '../auth/dto';
+import { JwtAuthGuard } from '../auth/jwt.auth.guard';
+import { PostCreateDTO } from './dto/post.dto';
 import { MobileService } from './mobile.service';
 
 @ApiTags('Mobile Controller')
@@ -10,28 +23,38 @@ import { MobileService } from './mobile.service';
 export class MobileController {
   constructor(private readonly service: MobileService) {}
 
-  //#region  travel blog
-  @Post('travel-blogs/pagination')
-  async getTravelBlogs(@Body() paginationDto: PaginationDto<any>) {
-    return this.service.travelBlogPagination(paginationDto);
+  //#region post
+  @Post('post/pagination')
+  async postPagination(@Body() paginationDto: PaginationDto<any>) {
+    return this.service.postPagination(paginationDto);
   }
 
-  @Get('travel-blogs/:id')
-  async getTravelBlogDetail(@Param('id') id: string) {
-    return this.service.travelBlogDetail(id);
+  @Get('post/:id')
+  async postDetail(@Param('id') id: string) {
+    return this.service.postDetail(id);
   }
 
-  @Post('travel-blogs/create')
-  async createTravelBlog(
-    @Body() blog: TravelBlogCreateDTO,
-    @Body('user') user: UserEntity,
+  @UseInterceptors(FilesInterceptor('imgs'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Create new travel blog post',
+    type: PostCreateDTO,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('post/create')
+  async postCreate(
+    @CurrentUser() user: UserDataDTO,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: PostCreateDTO,
   ) {
-    return this.service.travelBlogCreate(user, blog);
+    console.log('Text fields:', body);
+    console.log('Uploaded files:', files);
+    return this.service.postCreate(user, body, files);
   }
 
-  @Delete('travel-blogs/:id')
-  async removeTravelBlog(@Param('id') id: string) {
-    return this.service.travelBlogRemove(id);
+  @Delete('post/:id')
+  async postRemove(@Param('id') id: string) {
+    return this.service.postRemove(id);
   }
   //#endregion
 }

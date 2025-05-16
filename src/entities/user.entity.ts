@@ -8,7 +8,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
-import { TravelBlogEntity } from './travelblog.entity';
+import { PostEntity } from './post.entity';
 import { TripUserEntity } from './trip-user.entity';
 import { UserDetailEntity } from './userDetail.entity';
 @Entity(`Users`)
@@ -60,8 +60,8 @@ export class UserEntity extends BaseEntityCustom {
   @OneToOne(() => UserDetailEntity, (userDetail) => userDetail.user)
   userDetail: Promise<UserDetailEntity>;
 
-  @OneToMany(() => TravelBlogEntity, (travelBlog) => travelBlog.user)
-  travelBlog: Promise<TravelBlogEntity[]>;
+  @OneToMany(() => PostEntity, (post) => post.user)
+  posts: Promise<PostEntity[]>;
 
   @OneToMany(() => TripUserEntity, (tripUser) => tripUser.user)
   tripUsers: Promise<TripUserEntity[]>;
