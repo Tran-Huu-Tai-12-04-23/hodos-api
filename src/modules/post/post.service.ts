@@ -56,6 +56,10 @@ export class PostService {
         label: In(allLabels),
         isDeleted: false,
       },
+      select: {
+        id: true,
+        label: true,
+      },
     });
     const dictLocationsByLabel: any = coreHelper.toDict(
       locationsByLabels,
