@@ -39,6 +39,11 @@ export class UserEntity extends BaseEntityCustom {
   isActive: boolean;
 
   @Column({
+    default: false,
+  })
+  isUpdateDetail: boolean;
+
+  @Column({
     nullable: true,
   })
   verifyExpiredTime: Date;
