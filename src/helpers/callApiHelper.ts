@@ -15,9 +15,12 @@ class CallApiHelper {
     }
   }
 
-  public async get(url: string) {
+  public async get(
+    url: string,
+    { headers }: { headers?: Record<string, string> } = {},
+  ) {
     try {
-      const request = this.httpService.get(url);
+      const request = this.httpService.get(url, headers ? { headers } : {});
       const response = await lastValueFrom(request);
       return response.data;
     } catch (err) {
