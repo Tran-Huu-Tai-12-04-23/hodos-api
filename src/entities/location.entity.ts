@@ -1,5 +1,7 @@
-import { Column, CreateDateColumn, Entity } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
+import { LocationInteractionEntity } from './locationInteraction.entity';
+import { LocationMedia360Entity } from './locationMedia360.entity';
 
 @Entity('location')
 export class LocationEntity extends BaseEntityCustom {
@@ -27,6 +29,15 @@ export class LocationEntity extends BaseEntityCustom {
   @Column({ default: 'LOCATION' })
   type: string;
 
-  @Column({ type: 'longtext' })
+  @Column({ type: 'text' })
   detail: string;
+
+  @OneToMany(() => LocationMedia360Entity, (media) => media.location)
+  mediaItems: LocationMedia360Entity[];
+
+  @OneToMany(
+    () => LocationInteractionEntity,
+    (interaction) => interaction.location,
+  )
+  interactions: LocationInteractionEntity[];
 }

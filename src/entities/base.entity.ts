@@ -27,7 +27,6 @@ export abstract class BaseEntityCustom extends BaseEntity {
   })
   @Column({
     type: 'varchar',
-    length: 36,
     nullable: true,
   })
   createdBy: string;
@@ -49,14 +48,14 @@ export abstract class BaseEntityCustom extends BaseEntity {
     description: 'Last editor, save user.id',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
-  @Column({ type: 'varchar', length: 36, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   updatedBy: string;
 
   @ApiProperty({
     description: 'Last deleted, save user.id',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
-  @Column({ type: 'varchar', length: 36, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   deleteBy: string;
 
   @ApiProperty({ description: 'Soft delete?', example: false })

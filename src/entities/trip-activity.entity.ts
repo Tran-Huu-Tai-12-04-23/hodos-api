@@ -16,13 +16,13 @@ export class TripActivityEntity extends BaseEntityCustom {
     description: 'Primary key ID',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
-  @Column({ type: 'varchar', length: 36, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   locationId: string;
   @ManyToOne(() => LocationEntity, (p) => p.id)
   @JoinColumn({ name: 'locationId', referencedColumnName: 'id' })
   location: Promise<LocationEntity>;
 
-  @Column({ type: 'varchar', length: 36, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   tripDayId: string;
   @ManyToOne(() => TripDayEntity, (p) => p.activities)
   @JoinColumn({ name: 'tripDayId', referencedColumnName: 'id' })

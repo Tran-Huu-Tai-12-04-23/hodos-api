@@ -13,13 +13,13 @@ export class TripUserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 36, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   tripId: string;
   @ManyToOne(() => TripEntity, (p) => p.tripUsers)
   @JoinColumn({ name: 'tripId', referencedColumnName: 'id' })
   trip: Promise<TripEntity>;
 
-  @Column({ type: 'varchar', length: 36, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   userId: string;
   @ManyToOne(() => UserEntity, (p) => p.tripUsers)
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
