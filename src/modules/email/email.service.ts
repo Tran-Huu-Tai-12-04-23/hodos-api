@@ -20,27 +20,6 @@ export class EmailService {
     return 'Hello World!';
   }
 
-  public example(): void {
-    console.log('SEND EMAIL');
-    this.mailerService
-      .sendMail({
-        to: 'user@gmail.com',
-        from: 'user@outlook.com',
-        subject: 'HODOS Verification Code',
-        template: 'index',
-        context: {
-          code: 'cf1a3f828287',
-          username: 'john doe',
-        },
-      })
-      .then((success) => {
-        console.log(success);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-
   public async sendEmailVerification(
     email: string,
     verCode: string,

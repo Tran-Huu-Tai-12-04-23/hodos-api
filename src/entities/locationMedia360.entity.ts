@@ -10,19 +10,19 @@ export enum MediaType {
   THREESIXTY_VIDEO = 'threesixty_video',
 }
 
-@Entity('place_media_360')
+@Entity('location_media_360')
 export class LocationMedia360Entity extends BaseEntityCustom {
   @ApiProperty({
     description: 'ID of the location this media belongs to',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
   @Column({ type: 'uuid' })
-  placeId: string;
+  locationId: string;
 
   @ManyToOne(() => LocationEntity, (location) => location.id, {
     onDelete: 'CASCADE',
   }) // Assuming LocationEntity has a 'media' one-to-many relation
-  @JoinColumn({ name: 'placeId' })
+  @JoinColumn({ name: 'locationId' })
   location: LocationEntity;
 
   @ApiProperty({

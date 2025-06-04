@@ -16,19 +16,19 @@ export enum LocationInteractionType {
   CHECK_IN = 'check_in',
 }
 
-@Entity('place_interactions')
+@Entity('location_interactions')
 export class LocationInteractionEntity extends BaseEntityCustom {
   @ApiProperty({
     description: 'ID of the location interacted with',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
   @Column({ type: 'uuid' })
-  placeId: string;
+  locationId: string;
 
   @ManyToOne(() => LocationEntity, (location) => location.id, {
     onDelete: 'CASCADE',
   }) // Assuming LocationEntity has an 'interactions' one-to-many relation
-  @JoinColumn({ name: 'placeId' })
+  @JoinColumn({ name: 'locationId' })
   location: LocationEntity;
 
   @ApiProperty({

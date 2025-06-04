@@ -49,12 +49,13 @@ export class ScheduledNotificationEntity extends BaseEntityCustom {
   @ApiProperty({
     description: 'Type of the notification',
     enum: NotificationType,
-    example: NotificationType.REMINDER,
+    enumName: 'notification_type',
   })
   @Column({
     type: 'enum',
     enum: NotificationType,
     nullable: false,
+    enumName: 'notification_type',
   })
   notificationType: NotificationType;
 
@@ -62,14 +63,14 @@ export class ScheduledNotificationEntity extends BaseEntityCustom {
     description: 'Channel(s) to send the notification through',
     enum: NotificationChannel,
     isArray: true,
-    example: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
+    enumName: 'notification_channel',
   })
   @Column({
     type: 'enum',
     enum: NotificationChannel,
-    array: true, // Use array type if supported by your DB (e.g., PostgreSQL)
-    // For other DBs, this might be a comma-separated string or a join table
+    array: true,
     nullable: false,
+    enumName: 'notification_channel',
   })
   channels: NotificationChannel[];
 

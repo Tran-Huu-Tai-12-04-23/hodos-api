@@ -9,10 +9,8 @@ export enum NotificationType {
   REMINDER = 'reminder',
   ALERT = 'alert',
   RECOMMENDATION = 'recommendation',
-  SOCIAL = 'social', // e.g., new follower, like on post
   TRIP_UPDATE = 'trip_update',
-  NEW_CONTENT = 'new_content', // e.g., new blog post, new location added
-  PROMOTION = 'promotion',
+  NEW_CONTENT = 'new_content',
 }
 
 export enum NotificationChannel {
@@ -83,12 +81,13 @@ export class NotificationEntity extends BaseEntityCustom {
   @ApiProperty({
     description: 'Type of the notification',
     enum: NotificationType,
-    example: NotificationType.TRIP_UPDATE,
+    enumName: 'notification_type',
   })
   @Column({
     type: 'enum',
     enum: NotificationType,
     nullable: false,
+    enumName: 'notification_type',
   })
   type: NotificationType;
 
