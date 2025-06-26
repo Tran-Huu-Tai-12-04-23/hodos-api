@@ -33,6 +33,11 @@ export class UserEntity extends BaseEntityCustom {
   @Column({
     nullable: true,
   })
+  isAdmin: string;
+
+  @Column({
+    nullable: true,
+  })
   verifyCode: string;
 
   @Column()
