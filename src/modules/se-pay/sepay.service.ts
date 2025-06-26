@@ -1,21 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  TransactionEntity,
+  TransactionStatus,
+  TransactionType,
+  UserEntity,
+} from 'src/entities';
 import { callApiHelper } from 'src/helpers/callApiHelper';
+import { PricingPlanRepository, TransactionRepository } from 'src/repositories';
 import {
   BodyResponseTransactions,
   GenQrDto,
+  NotifyUserBodyDto,
   SePayTransaction,
   Transaction,
 } from './dto';
+import { CreateUserSubscriptionTransactionDto } from './dto/createUserSubsriptionTransaction.dto';
 
 @Injectable()
 export class SepayService {
-  constructor(public readonly configService: ConfigService) {}
+  constructor(
+    public readonly configService: ConfigService,
+    private readonly transactionRepo: TransactionRepository,
+    private readonly pricingPlanRepo: PricingPlanRepository,
+  ) {}
 
   private readonly bankName = this.configService.get<string>('BANK_NAME');
   private readonly bankAccount = this.configService.get<string>('BANK_ACCOUNT');
   private readonly sepayApiKey =
-    this.configService.get<string>('SEPAY_API_KEY') || ''; // eslint-disable-line @typescript-eslint/naming-convention
+    this.configService.get<string>('SEPAY_API_KEY') || '';
   async createQRCode(data: GenQrDto): Promise<{ qrCode: string }> {
     const { amount, content } = data;
     const qrCode = `https://qr.sepay.vn/img?acc=${this.bankAccount}&bank=${this.bankName}&amount=${amount}&des=${encodeURIComponent(content)}`;
@@ -103,31 +116,48 @@ export class SepayService {
     return amountIn > 0 || amountOut > 0;
   }
   /** web hook */
-  async handleWebhook(body: SePayTransaction): Promise<any> {
-    // This method is called when a webhook notification is received from SEPAY
-    // const {
-    //   id,
-    //   gateway,
-    //   transactionDate,
-    //   accountNumber,
-    //   code,
-    //   content,
-    //   transferType,
-    //   transferAmount,
-    //   accumulated,
-    //   subAccount,
-    //   referenceCode,
-    //   description,
-    // } = body;
-    // Here you can implement the logic to handle the webhook notification
-    /**todo add log */
+  async hooksPayment(body: SePayTransaction): Promise<any> {
+    const checkTransaction = await this.transactionRepo.findOne({
+      where: {
+        gatewayTransactionId: body.content,
+        amount: body.transferAmount,
+      },
+    });
 
-    return body;
+    if (!checkTransaction) {
+      throw new Error('Transaction not found');
+    }
+    if (checkTransaction.status === TransactionStatus.SUCCESSFUL) {
+      return { message: 'Transaction already processed' };
+    } else {
+      checkTransaction.status = TransactionStatus.SUCCESSFUL;
+      checkTransaction.processedAt = new Date();
+      checkTransaction.metadata = {
+        ...checkTransaction.metadata,
+        ...body,
+      };
+      await this.transactionRepo.save(checkTransaction);
+
+      const notifyBody: NotifyUserBodyDto = {
+        userId: checkTransaction.userId,
+        transactionId: checkTransaction.id,
+        amount: checkTransaction.amount,
+        description: checkTransaction.description,
+        message: 'Your transaction has been successfully processed.',
+        transferType: 'in',
+      };
+      await this.notifySuccessTransaction(notifyBody);
+      return {
+        message: 'Transaction updated successfully',
+      };
+    }
   }
-  async notifySuccessTransaction() {
+  async notifySuccessTransaction(body: NotifyUserBodyDto) {
+    //todo
     // This method can be implemented to notify about successful transactions
     // For example, sending an email or a message to a webhook
     // Currently, it is left empty as per the original code
+    return body;
   }
   async notifyFailedTransaction() {
     // This method can be implemented to notify about failed transactions
@@ -138,5 +168,47 @@ export class SepayService {
     // This method can be implemented to notify about pending transactions
     // For example, sending an email or a message to a webhook
     // Currently, it is left empty as per the original code
+  }
+
+  // ham tạo transaction cho giao dịch nâng cấp người dùng
+  async createUserSubscriptionTransaction(
+    user: UserEntity,
+    body: CreateUserSubscriptionTransactionDto,
+  ) {
+    const pricingPlan = await this.pricingPlanRepo.findOne({
+      where: { id: body.pricingPlanId },
+    });
+    if (!pricingPlan) {
+      throw new Error('Pricing plan not found');
+    }
+    // tạo. code cho transaction bao gồm type = SUBSCRIPTION_PAYMENT + 5 number randoms
+    const transactionCode = `SUBSCRIPTION_PAYMENT_${Math.floor(
+      Math.random() * 100000,
+    )}`;
+    const transaction = new TransactionEntity();
+    transaction.userId = user.id;
+    transaction.relatedEntityId = pricingPlan.id;
+    transaction.relatedEntityType = 'PricingPlanEntity';
+    transaction.amount = pricingPlan.price;
+    transaction.description = `Upgrade to ${pricingPlan.name} plan`;
+    transaction.status = TransactionStatus.PENDING;
+    transaction.currency = pricingPlan.currency;
+    transaction.paymentGateway = 'SEPAY';
+    transaction.type = TransactionType.SUBSCRIPTION_PAYMENT;
+    transaction.description = `Upgrade to ${pricingPlan.name} plan`;
+    transaction.gatewayTransactionId = transactionCode;
+    transaction.metadata = await this.createQRCode({
+      amount: pricingPlan.price,
+      content: transactionCode,
+    });
+    transaction.createdByName = user.username;
+    transaction.createdBy = user.id;
+
+    await this.transactionRepo.insert(transaction);
+
+    return {
+      message: 'Create transaction successfully',
+      metaData: transaction.metadata,
+    };
   }
 }

@@ -12,6 +12,7 @@ import { LogModule } from './modules/log/log.module';
 import { MobileModule } from './modules/mobile/mobile.module';
 import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { PostModule } from './modules/post/post.module';
+import { PricingPlanModule } from './modules/pricing-plan/pricing-plan.module';
 import { SepayModule } from './modules/se-pay/sepay.module';
 import { UserModule } from './modules/user/user.module';
 import { VietMapModule } from './modules/vietMap/vietMap.module';
@@ -35,6 +36,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     UserModule,
     PlanTripModule,
     SepayModule,
+    PricingPlanModule,
   ],
   controllers: [AppController],
   providers: [AppService],

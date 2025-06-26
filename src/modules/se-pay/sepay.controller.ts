@@ -46,8 +46,8 @@ export class SepayController {
     description: 'Handles incoming webhook notifications from SEPAY.',
   })
   @ApiResponse({ status: 200 })
-  @Post('webhook')
-  async handleWebhook(@Body() body: SePayTransaction) {
-    return await this.service.handleWebhook(body);
+  @Post('hooks/sepay-payment')
+  async hooksPayment(@Body() body: SePayTransaction) {
+    return await this.service.hooksPayment(body);
   }
 }

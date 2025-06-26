@@ -6,12 +6,12 @@ import { UserEntity } from './user.entity';
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
-  CANCELLED = 'cancelled', // User initiated cancellation, might still be active until period end
-  EXPIRED = 'expired', // Period ended, not renewed
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
   PENDING_PAYMENT = 'pending_payment',
   TRIALING = 'trialing',
-  PAST_DUE = 'past_due', // Payment failed
-  INCOMPLETE = 'incomplete', // Initial setup not finished
+  PAST_DUE = 'past_due',
+  INCOMPLETE = 'incomplete',
 }
 
 @Entity('user_subscriptions')
@@ -110,10 +110,6 @@ export class UserSubscriptionEntity extends BaseEntityCustom {
   })
   @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
   gatewaySubscriptionId?: string;
-
-  // Optional: If you want to link transactions directly to a subscription
-  // @OneToMany(() => TransactionEntity, transaction => transaction.userSubscription)
-  // transactions: TransactionEntity[];
 
   @ApiProperty({
     description: 'Reason for cancellation, if applicable',

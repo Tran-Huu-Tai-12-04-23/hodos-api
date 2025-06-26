@@ -92,6 +92,7 @@ export class TransactionEntity extends BaseEntityCustom {
   @Column({ type: 'varchar', length: 50, nullable: true })
   paymentGateway?: string;
 
+  /** để kiểm tra giao dịch thành công hay chưa , mục này đc gắn vào nội dung */
   @ApiProperty({
     description: 'Transaction ID from the payment gateway (if applicable)',
     example: 'pi_xxxxxxxxxxxxxx',
@@ -117,11 +118,6 @@ export class TransactionEntity extends BaseEntityCustom {
   })
   @Column({ type: 'varchar', length: 100, nullable: true })
   relatedEntityType?: string;
-
-  // Example: If directly linking to a UserSubscription
-  // @ManyToOne(() => UserSubscriptionEntity, sub => sub.transactions, { nullable: true, onDelete: 'SET NULL' })
-  // @JoinColumn({ name: 'relatedEntityId' }) // Ensure this matches relatedEntityId if used for specific FK
-  // userSubscription?: UserSubscriptionEntity;
 
   @ApiProperty({
     description:

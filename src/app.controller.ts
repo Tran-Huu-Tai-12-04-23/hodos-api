@@ -1,11 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
+import { PricingPlanService } from './modules/pricing-plan/pricing-plan.service';
 
 @ApiTags('')
 @Controller()
 export class AppController {
-  constructor(private readonly service: AppService) {}
+  constructor(
+    private readonly service: AppService,
+    private readonly pricingPlanService: PricingPlanService,
+  ) {}
 
   @ApiOperation({ summary: 'Kiểm tra tình trạng server' })
   @ApiResponse({ status: 200, description: 'Trả về tình trạng server' })
@@ -25,5 +29,11 @@ export class AppController {
   @Get('timeout')
   async checkTimeOut() {
     return await this.service.delay(10 * 60 * 1000);
+  }
+
+  @ApiOperation({ summary: 'Init data of app' })
+  @Get('initData')
+  async intiData() {
+    return await this.pricingPlanService.initData();
   }
 }
