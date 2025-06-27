@@ -138,6 +138,10 @@ export class SepayService {
       };
       await this.transactionRepo.save(checkTransaction);
 
+      // create user subscription
+      if (checkTransaction.type === TransactionType.SUBSCRIPTION_PAYMENT) {
+      }
+
       const notifyBody: NotifyUserBodyDto = {
         userId: checkTransaction.userId,
         transactionId: checkTransaction.id,

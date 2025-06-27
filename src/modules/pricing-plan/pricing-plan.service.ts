@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BillingCycle } from 'src/entities';
+import { BillingCycle, PricingPlanEntity } from 'src/entities';
 import { UserEntity } from 'src/entities/user.entity';
 import { PricingPlanRepository } from 'src/repositories';
 import { SepayService } from '../se-pay/sepay.service';
@@ -17,6 +17,23 @@ export class PricingPlanService {
     return await this.sepayService.createUserSubscriptionTransaction(user, {
       pricingPlanId: pricingPlanId,
     });
+  }
+
+  async getAllPlans(): Promise<PricingPlanEntity[]> {
+    return await this.repo.find({
+      where: { isActive: true },
+      order: { displayOrder: 'ASC' },
+    });
+  }
+
+  async getPlanById(id: string): Promise<PricingPlanEntity> {
+    const plan = await this.repo.findOne({
+      where: { id, isActive: true },
+    });
+    if (!plan) {
+      throw new Error(`Pricing plan with ID ${id} not found or inactive.`);
+    }
+    return plan;
   }
 
   async initData(): Promise<{

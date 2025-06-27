@@ -8,9 +8,11 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { RefreshTokenDTO, SignInDTO, SignUpDTO } from './dto';
 
 import { ConfigService } from '@nestjs/config';
+import { SubscriptionStatus } from 'src/entities';
 import { enumData } from '../../constants/enum-data';
 import { UserEntity } from '../../entities/user.entity';
 import { EmailService } from '../email/email.service';
+import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 import { GetUserInfoDTO } from '../user/dto/userInfo.dto';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private readonly configService: ConfigService,
+    private readonly userSubscriptionService: UserSubscriptionsService,
   ) {}
 
   JWT_SECRET = this.configService.get<string>('JWT_SECRET');
@@ -62,6 +65,8 @@ export class AuthService {
       expiresIn: '7d',
     });
 
+    const userSubInfo = await this.getUserSubscriptionInfo(user.id);
+
     const userDetail = user.__userDetail__;
     delete user.__userDetail__;
     delete user.password;
@@ -70,7 +75,11 @@ export class AuthService {
       accessToken,
       refreshToken,
       enumData,
-      user: { ...user, userDetail },
+      user: {
+        ...user,
+        userDetail,
+        ...(userSubInfo || {}),
+      },
     };
   }
 
@@ -171,12 +180,15 @@ export class AuthService {
     const { id } = this.jwtService.verify(data.refreshToken, {
       secret: this.JWT_SECRET,
     });
-    const user: any = await this.repo.findOne({
-      where: { id },
-      relations: {
-        userDetail: true,
-      },
-    });
+    const [user, userSubInfo]: any = await Promise.all([
+      this.repo.findOne({
+        where: { id },
+        relations: {
+          userDetail: true,
+        },
+      }),
+      this.getUserSubscriptionInfo(id),
+    ]);
     if (!user) throw new UnauthorizedException('User not found!');
 
     const payload = {
@@ -203,14 +215,21 @@ export class AuthService {
       accessToken,
       refreshToken,
       enumData,
-      user: { ...user, userDetail },
+      user: { ...user, userDetail, ...(userSubInfo || {}) },
     };
   }
 
   async getUserById(id: string) {
-    const user = await this.repo.findOneBy({ id });
+    const [user, userSubInfo] = await Promise.all([
+      this.repo.findOneBy({ id }),
+      this.getUserSubscriptionInfo(id),
+    ]);
+
     if (!user) throw new NotFoundException('User not found!');
-    return user;
+    return {
+      ...user,
+      ...userSubInfo,
+    };
   }
 
   async getTokenFromAccessOrRefreshToken(data: GetUserInfoDTO) {
@@ -218,5 +237,20 @@ export class AuthService {
       refreshToken: data.refreshToken,
     };
     return await this.refreshToken(res);
+  }
+
+  /** get info subscriptions  */
+  async getUserSubscriptionInfo(userId: string) {
+    const [userSubscription, isHasPremium] = await Promise.all([
+      this.userSubscriptionService.getCurrentUserSubscription(userId),
+      this.userSubscriptionService.hasPremiumAccess(userId),
+    ]);
+    return {
+      isPremium: isHasPremium,
+      isAutoRenew: userSubscription?.autoRenew ?? false,
+      subscriptionStatus:
+        userSubscription?.status ?? SubscriptionStatus.EXPIRED,
+      subscriptionEndDate: userSubscription?.nextPaymentDate,
+    };
   }
 }

@@ -117,4 +117,10 @@ export class UserSubscriptionEntity extends BaseEntityCustom {
   })
   @Column({ type: 'text', nullable: true })
   cancellationReason?: string;
+
+  @Column({ type: 'boolean', default: false })
+  isTrial: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  trialEndsAt?: Date;
 }
