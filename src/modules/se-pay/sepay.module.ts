@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import {
-  PricingPlanRepository,
   TransactionRepository,
   UserSubscriptionRepository,
 } from 'src/repositories';
+import {
+  PricingPlanRepository,
+  ReceivingBankRepository,
+} from 'src/repositories/master-data.repository';
 import { TypeOrmExModule } from 'src/typeorm';
 import { SepayController } from './sepay.controller';
 import { SepayService } from './sepay.service';
@@ -14,6 +17,7 @@ import { SepayService } from './sepay.service';
       TransactionRepository,
       PricingPlanRepository,
       UserSubscriptionRepository,
+      ReceivingBankRepository,
     ]),
   ],
   providers: [SepayService],

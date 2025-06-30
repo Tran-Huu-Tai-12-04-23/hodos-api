@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
-import { PricingPlanEntity } from './pricing-plans.entity';
+import { PricingPlanEntity } from './master-data';
 import { UserEntity } from './user.entity';
 
 export enum SubscriptionStatus {

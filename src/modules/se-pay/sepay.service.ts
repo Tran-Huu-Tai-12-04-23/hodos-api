@@ -7,7 +7,12 @@ import {
   UserEntity,
 } from 'src/entities';
 import { callApiHelper } from 'src/helpers/callApiHelper';
-import { PricingPlanRepository, TransactionRepository } from 'src/repositories';
+import { TransactionRepository } from 'src/repositories';
+import {
+  PricingPlanRepository,
+  ReceivingBankRepository,
+} from 'src/repositories/master-data.repository';
+import { v4 as uuidv4 } from 'uuid';
 import {
   BodyResponseTransactions,
   GenQrDto,
@@ -16,22 +21,28 @@ import {
   Transaction,
 } from './dto';
 import { CreateUserSubscriptionTransactionDto } from './dto/createUserSubsriptionTransaction.dto';
-
 @Injectable()
 export class SepayService {
   constructor(
     public readonly configService: ConfigService,
     private readonly transactionRepo: TransactionRepository,
     private readonly pricingPlanRepo: PricingPlanRepository,
+    private readonly receivingBankRepo: ReceivingBankRepository,
   ) {}
 
-  private readonly bankName = this.configService.get<string>('BANK_NAME');
-  private readonly bankAccount = this.configService.get<string>('BANK_ACCOUNT');
   private readonly sepayApiKey =
     this.configService.get<string>('SEPAY_API_KEY') || '';
   async createQRCode(data: GenQrDto): Promise<{ qrCode: string }> {
+    const receivingBank = await this.receivingBankRepo.findOne({
+      where: { isActive: true },
+    });
+    if (!receivingBank) {
+      throw new Error(
+        'No active receiving bank found. Please contact support Admin [123123123]',
+      );
+    }
     const { amount, content } = data;
-    const qrCode = `https://qr.sepay.vn/img?acc=${this.bankAccount}&bank=${this.bankName}&amount=${amount}&des=${encodeURIComponent(content)}`;
+    const qrCode = `https://qr.sepay.vn/img?acc=${receivingBank.accountNumber}&bank=${receivingBank.bankCode}&amount=${amount}&des=${encodeURIComponent(content)}`;
     return { qrCode };
   }
 
@@ -179,6 +190,27 @@ export class SepayService {
     user: UserEntity,
     body: CreateUserSubscriptionTransactionDto,
   ) {
+    // kiểm tra xem đã có pricing plan nào với id này chưa
+    const transactionExist = await this.transactionRepo.findOne({
+      where: {
+        userId: user.id,
+        relatedEntityId: body.pricingPlanId,
+        relatedEntityType: 'PricingPlanEntity',
+        type: TransactionType.SUBSCRIPTION_PAYMENT,
+      },
+    });
+    if (transactionExist) {
+      if (transactionExist.status === TransactionStatus.SUCCESSFUL) {
+        throw new Error(
+          'You have already successfully upgraded to this pricing plan.',
+        );
+      }
+      return {
+        message: 'Transaction already exists',
+        metaData: transactionExist,
+      };
+    }
+
     const pricingPlan = await this.pricingPlanRepo.findOne({
       where: { id: body.pricingPlanId },
     });
@@ -186,10 +218,11 @@ export class SepayService {
       throw new Error('Pricing plan not found');
     }
     // tạo. code cho transaction bao gồm type = SUBSCRIPTION_PAYMENT + 5 number randoms
-    const transactionCode = `SUBSCRIPTION_PAYMENT_${Math.floor(
+    const transactionCode = `SUBSCRIPTIONPAYMENT${Math.floor(
       Math.random() * 100000,
     )}`;
     const transaction = new TransactionEntity();
+    transaction.id = uuidv4();
     transaction.userId = user.id;
     transaction.relatedEntityId = pricingPlan.id;
     transaction.relatedEntityType = 'PricingPlanEntity';
@@ -201,10 +234,13 @@ export class SepayService {
     transaction.type = TransactionType.SUBSCRIPTION_PAYMENT;
     transaction.description = `Upgrade to ${pricingPlan.name} plan`;
     transaction.gatewayTransactionId = transactionCode;
-    transaction.metadata = await this.createQRCode({
-      amount: pricingPlan.price,
-      content: transactionCode,
-    });
+    transaction.metadata = {
+      ...(await this.createQRCode({
+        amount: pricingPlan.price,
+        content: transactionCode,
+      })),
+      pricingPlan: pricingPlan,
+    };
     transaction.createdByName = user.username;
     transaction.createdBy = user.id;
 
@@ -212,7 +248,7 @@ export class SepayService {
 
     return {
       message: 'Create transaction successfully',
-      metaData: transaction.metadata,
+      metaData: transaction,
     };
   }
 }

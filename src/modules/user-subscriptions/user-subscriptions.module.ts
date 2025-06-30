@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import {
-  PricingPlanRepository,
+  TransactionRepository,
   UserSubscriptionRepository,
 } from 'src/repositories';
+import {
+  PricingPlanRepository,
+  ReceivingBankRepository,
+} from 'src/repositories/master-data.repository';
 import { TypeOrmExModule } from 'src/typeorm';
+import { SepayModule } from '../se-pay/sepay.module';
 import { UserSubscriptionsController } from './user-subscriptions.controller';
 import { UserSubscriptionsService } from './user-subscriptions.service';
 
@@ -12,7 +17,10 @@ import { UserSubscriptionsService } from './user-subscriptions.service';
     TypeOrmExModule.forCustomRepository([
       UserSubscriptionRepository,
       PricingPlanRepository,
+      ReceivingBankRepository,
+      TransactionRepository,
     ]),
+    SepayModule,
   ],
   providers: [UserSubscriptionsService],
   controllers: [UserSubscriptionsController],

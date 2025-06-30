@@ -1,14 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
-import { PricingPlanService } from './modules/pricing-plan/pricing-plan.service';
+import { MasterDataService } from './modules/master-data/master-data.service';
 
 @ApiTags('')
 @Controller()
 export class AppController {
   constructor(
     private readonly service: AppService,
-    private readonly pricingPlanService: PricingPlanService,
+    private readonly masterDatService: MasterDataService,
   ) {}
 
   @ApiOperation({ summary: 'Kiểm tra tình trạng server' })
@@ -34,6 +34,6 @@ export class AppController {
   @ApiOperation({ summary: 'Init data of app' })
   @Get('initData')
   async intiData() {
-    return await this.pricingPlanService.initData();
+    return await this.masterDatService.initData();
   }
 }

@@ -245,12 +245,20 @@ export class AuthService {
       this.userSubscriptionService.getCurrentUserSubscription(userId),
       this.userSubscriptionService.hasPremiumAccess(userId),
     ]);
-    return {
+
+    const res = {
       isPremium: isHasPremium,
       isAutoRenew: userSubscription?.autoRenew ?? false,
       subscriptionStatus:
         userSubscription?.status ?? SubscriptionStatus.EXPIRED,
       subscriptionEndDate: userSubscription?.nextPaymentDate,
     };
+    if (!isHasPremium) {
+      const pricingPlanSuggest =
+        await this.userSubscriptionService.getSuggestPricingPlanForUser();
+
+      return { ...res, pricingPlanSuggest };
+    }
+    return res;
   }
 }

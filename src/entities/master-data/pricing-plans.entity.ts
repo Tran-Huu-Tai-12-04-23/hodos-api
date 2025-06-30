@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany } from 'typeorm';
-import { BaseEntityCustom } from './base.entity';
-import { UserSubscriptionEntity } from './user-subscription.entity';
+import { BaseEntityCustom } from '../base.entity';
+import { UserSubscriptionEntity } from '../user-subscription.entity';
 
 export enum BillingCycle {
   MONTHLY = 'monthly',
@@ -11,7 +11,7 @@ export enum BillingCycle {
   CUSTOM = 'custom', // For plans with non-standard billing
 }
 
-@Entity('pricing_plans')
+@Entity('master_data_pricing_plans')
 export class PricingPlanEntity extends BaseEntityCustom {
   @ApiProperty({
     description: 'Name of the pricing plan',

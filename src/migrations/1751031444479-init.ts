@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Init1750931163420 implements MigrationInterface {
-  name = 'Init1750931163420';
+export class Init1751031444479 implements MigrationInterface {
+  name = 'Init1751031444479';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -41,25 +41,37 @@ export class Init1750931163420 implements MigrationInterface {
       `CREATE TABLE "user_details" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "fullName" character varying NOT NULL, "address" character varying, "phoneNumber" character varying, "email" character varying, "githubLink" character varying, "telegramLink" character varying, "facebookLink" character varying, "bio" text, "profilePictureUrl" character varying, "birthDate" date, "gender" character varying, "nationality" character varying, "travelInterests" text, "travelHistory" text, "languages" character varying, "reputationScore" double precision NOT NULL DEFAULT '0', "userId" uuid NOT NULL, CONSTRAINT "REL_5261d2468b1288b347d58e8b54" UNIQUE ("userId"), CONSTRAINT "PK_fb08394d3f499b9e441cab9ca51" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."notification_type" AS ENUM('info', 'reminder', 'alert', 'recommendation', 'trip_update', 'new_content')`,
+      `CREATE TYPE "public"."master_data_plan_questions_type_enum" AS ENUM('SINGLE_CHOICE', 'MULTI_CHOICE', 'DATE_RANGE')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid NOT NULL, "scheduledNotificationId" uuid NOT NULL, "title" character varying(255) NOT NULL, "message" text NOT NULL, "isRead" boolean NOT NULL DEFAULT false, "readAt" TIMESTAMP WITH TIME ZONE, "type" "public"."notification_type" NOT NULL, "sentAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "linkTo" character varying(512), "metadata" jsonb, CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "master_data_plan_questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "question" text NOT NULL, "type" "public"."master_data_plan_questions_type_enum" NOT NULL, "order" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_2ecba2d606710787c07cc7bbca5" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."notification_type" AS ENUM('info', 'reminder', 'alert', 'recommendation', 'trip_update', 'new_content')`,
+      `CREATE TABLE "master_data_plan_question_options" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "label" character varying(255) NOT NULL, "desc" text, "icon" character varying(10), "value" character varying(100) NOT NULL, "questionId" uuid NOT NULL, CONSTRAINT "PK_1c7f1b8f539b6ee6f527c419445" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."notification_channel" AS ENUM('in_app', 'email', 'push')`,
+      `CREATE TYPE "public"."master_data_pricing_plans_billingcycle_enum" AS ENUM('monthly', 'yearly', 'quarterly', 'one_time', 'custom')`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."scheduled_notifications_status_enum" AS ENUM('pending', 'processing', 'sent', 'failed', 'cancelled')`,
+      `CREATE TABLE "master_data_pricing_plans" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "name" character varying(100) NOT NULL, "planCode" character varying(100) NOT NULL, "description" text, "price" numeric(10,2) NOT NULL, "currency" character varying(3) NOT NULL, "billingCycle" "public"."master_data_pricing_plans_billingcycle_enum" NOT NULL, "features" jsonb, "isActive" boolean NOT NULL DEFAULT true, "trialPeriodDays" integer NOT NULL DEFAULT '0', "displayOrder" integer, "limits" jsonb, CONSTRAINT "UQ_cece90177ae3d02b3967278674c" UNIQUE ("name"), CONSTRAINT "UQ_4f1fff6808da9068d68708c2e82" UNIQUE ("planCode"), CONSTRAINT "PK_017923e9dd115f9d8509ee39dae" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "scheduled_notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid, "title" character varying(255) NOT NULL, "message" text NOT NULL, "notificationType" "public"."notification_type" NOT NULL, "channels" "public"."notification_channel" array NOT NULL, "scheduledTime" TIMESTAMP WITH TIME ZONE NOT NULL, "status" "public"."scheduled_notifications_status_enum" NOT NULL DEFAULT 'pending', "payload" jsonb, "processedAt" TIMESTAMP WITH TIME ZONE, "errorMessage" text, "retryAttempts" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_9eb8b287229934bbd076a5d64f7" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "master_data_receiving_banks" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "bankName" character varying(255) NOT NULL, "bankCode" character varying(20), "accountNumber" character varying(100) NOT NULL, "accountHolderName" character varying(255) NOT NULL, "branchName" character varying(255), "currency" character varying(3) NOT NULL DEFAULT 'VND', "isActive" boolean NOT NULL DEFAULT true, CONSTRAINT "PK_7c6a3c41d317764454ef9ef8b0d" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_469472c3b4e11d628de99cbfca" ON "scheduled_notifications" ("scheduledTime", "status") `,
+      `CREATE TYPE "public"."user_subscriptions_status_enum" AS ENUM('active', 'cancelled', 'expired', 'pending_payment', 'trialing', 'past_due', 'incomplete')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "user_subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid NOT NULL, "pricingPlanId" uuid NOT NULL, "startDate" TIMESTAMP WITH TIME ZONE NOT NULL, "currentPeriodEndDate" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "status" "public"."user_subscriptions_status_enum" NOT NULL, "autoRenew" boolean NOT NULL DEFAULT true, "lastPaymentDate" TIMESTAMP WITH TIME ZONE, "nextPaymentDate" TIMESTAMP WITH TIME ZONE, "gatewaySubscriptionId" character varying(255), "cancellationReason" text, "isTrial" boolean NOT NULL DEFAULT false, "trialEndsAt" TIMESTAMP WITH TIME ZONE, CONSTRAINT "UQ_f591ec91237ce1a763f0cce7a5c" UNIQUE ("gatewaySubscriptionId"), CONSTRAINT "PK_9e928b0954e51705ab44988812c" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_0aa57d309073f214bb5143d4d5" ON "user_subscriptions" ("pricingPlanId", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_565dbec603dc3f8c5b60aeda96" ON "user_subscriptions" ("userId", "status") `,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "trip_direction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "tripId" character varying NOT NULL, "distance" double precision NOT NULL, "duration" double precision NOT NULL, "geometry" text NOT NULL, CONSTRAINT "PK_16833576ebe4652019e0f81fd7c" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TYPE "public"."transactions_type_enum" AS ENUM('subscription_payment')`,
@@ -77,31 +89,28 @@ export class Init1750931163420 implements MigrationInterface {
       `CREATE INDEX "IDX_57715b5b56fb059bc7f8fb3aa7" ON "transactions" ("userId", "status", "type") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "trip_direction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "tripId" character varying NOT NULL, "distance" double precision NOT NULL, "duration" double precision NOT NULL, "geometry" text NOT NULL, CONSTRAINT "PK_16833576ebe4652019e0f81fd7c" PRIMARY KEY ("id"))`,
+      `CREATE TYPE "public"."notification_type" AS ENUM('info', 'reminder', 'alert', 'recommendation', 'trip_update', 'new_content')`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."user_subscriptions_status_enum" AS ENUM('active', 'cancelled', 'expired', 'pending_payment', 'trialing', 'past_due', 'incomplete')`,
+      `CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid NOT NULL, "scheduledNotificationId" uuid NOT NULL, "title" character varying(255) NOT NULL, "message" text NOT NULL, "isRead" boolean NOT NULL DEFAULT false, "readAt" TIMESTAMP WITH TIME ZONE, "type" "public"."notification_type" NOT NULL, "sentAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "linkTo" character varying(512), "metadata" jsonb, CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "user_subscriptions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid NOT NULL, "pricingPlanId" uuid NOT NULL, "startDate" TIMESTAMP WITH TIME ZONE NOT NULL, "currentPeriodEndDate" TIMESTAMP WITH TIME ZONE, "cancelledAt" TIMESTAMP WITH TIME ZONE, "status" "public"."user_subscriptions_status_enum" NOT NULL, "autoRenew" boolean NOT NULL DEFAULT true, "lastPaymentDate" TIMESTAMP WITH TIME ZONE, "nextPaymentDate" TIMESTAMP WITH TIME ZONE, "gatewaySubscriptionId" character varying(255), "cancellationReason" text, CONSTRAINT "UQ_f591ec91237ce1a763f0cce7a5c" UNIQUE ("gatewaySubscriptionId"), CONSTRAINT "PK_9e928b0954e51705ab44988812c" PRIMARY KEY ("id"))`,
+      `CREATE TYPE "public"."notification_channel" AS ENUM('in_app', 'email', 'push')`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_0aa57d309073f214bb5143d4d5" ON "user_subscriptions" ("pricingPlanId", "status") `,
+      `CREATE TYPE "public"."scheduled_notifications_status_enum" AS ENUM('pending', 'processing', 'sent', 'failed', 'cancelled')`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_565dbec603dc3f8c5b60aeda96" ON "user_subscriptions" ("userId", "status") `,
+      `CREATE TABLE "scheduled_notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "userId" uuid, "title" character varying(255) NOT NULL, "message" text NOT NULL, "notificationType" "public"."notification_type" NOT NULL, "channels" "public"."notification_channel" array NOT NULL, "scheduledTime" TIMESTAMP WITH TIME ZONE NOT NULL, "status" "public"."scheduled_notifications_status_enum" NOT NULL DEFAULT 'pending', "payload" jsonb, "processedAt" TIMESTAMP WITH TIME ZONE, "errorMessage" text, "retryAttempts" integer NOT NULL DEFAULT '0', CONSTRAINT "PK_9eb8b287229934bbd076a5d64f7" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."pricing_plans_billingcycle_enum" AS ENUM('monthly', 'yearly', 'quarterly', 'one_time', 'custom')`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "pricing_plans" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "name" character varying(100) NOT NULL, "planCode" character varying(100) NOT NULL, "description" text, "price" numeric(10,2) NOT NULL, "currency" character varying(3) NOT NULL, "billingCycle" "public"."pricing_plans_billingcycle_enum" NOT NULL, "features" jsonb, "isActive" boolean NOT NULL DEFAULT true, "trialPeriodDays" integer NOT NULL DEFAULT '0', "displayOrder" integer, "limits" jsonb, CONSTRAINT "UQ_465d01e1e74955928c82d3173a2" UNIQUE ("name"), CONSTRAINT "UQ_8e9ef181cfacca6a24073c7cb63" UNIQUE ("planCode"), CONSTRAINT "PK_57aa9837d4777aafc70ba090fb6" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "build_log" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "title" character varying(255) NOT NULL, "message" character varying(255) NOT NULL, "githubBuildLink" character varying(255) NOT NULL, CONSTRAINT "PK_32d891e0c4ea5d304f1bff49d45" PRIMARY KEY ("id"))`,
+      `CREATE INDEX "IDX_469472c3b4e11d628de99cbfca" ON "scheduled_notifications" ("scheduledTime", "status") `,
     );
     await queryRunner.query(
       `CREATE TABLE "errorLogs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "project" character varying(250) NOT NULL, "source" character varying(250) NOT NULL, "environments" character varying(250), "statusCode" character varying(250), "timestamp" character varying(250), "path" character varying(250), "name" character varying(250), "error" text, "request" text, "message" text, "isFixed" boolean NOT NULL DEFAULT false, CONSTRAINT "PK_5a92efce438d455bc2a5699483c" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "build_log" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "title" character varying(255) NOT NULL, "message" character varying(255) NOT NULL, "githubBuildLink" character varying(255) NOT NULL, CONSTRAINT "PK_32d891e0c4ea5d304f1bff49d45" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "blog" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "createdBy" character varying, "createdByName" character varying(50), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedBy" character varying, "deleteBy" character varying, "isDeleted" boolean NOT NULL DEFAULT false, "title" character varying(255) NOT NULL, "thumbnail" character varying(255) NOT NULL, "tag" character varying(255), "content" text NOT NULL, CONSTRAINT "PK_85c6532ad065a448e9de7638571" PRIMARY KEY ("id"))`,
@@ -134,6 +143,18 @@ export class Init1750931163420 implements MigrationInterface {
       `ALTER TABLE "user_details" ADD CONSTRAINT "FK_5261d2468b1288b347d58e8b540" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "master_data_plan_question_options" ADD CONSTRAINT "FK_3f17688e8a1ded802745546504d" FOREIGN KEY ("questionId") REFERENCES "master_data_plan_questions"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_subscriptions" ADD CONSTRAINT "FK_2dfab576863bc3f84d4f6962274" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_subscriptions" ADD CONSTRAINT "FK_924e66848c3e67fac51394ab201" FOREIGN KEY ("pricingPlanId") REFERENCES "master_data_pricing_plans"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "transactions" ADD CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "notifications" ADD CONSTRAINT "FK_692a909ee0fa9383e7859f9b406" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
@@ -142,27 +163,9 @@ export class Init1750931163420 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "scheduled_notifications" ADD CONSTRAINT "FK_01d61e551f8285966b84ca09f49" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "transactions" ADD CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE SET NULL ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_subscriptions" ADD CONSTRAINT "FK_2dfab576863bc3f84d4f6962274" FOREIGN KEY ("userId") REFERENCES "Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_subscriptions" ADD CONSTRAINT "FK_924e66848c3e67fac51394ab201" FOREIGN KEY ("pricingPlanId") REFERENCES "pricing_plans"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`,
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "user_subscriptions" DROP CONSTRAINT "FK_924e66848c3e67fac51394ab201"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_subscriptions" DROP CONSTRAINT "FK_2dfab576863bc3f84d4f6962274"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "transactions" DROP CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41"`,
-    );
     await queryRunner.query(
       `ALTER TABLE "scheduled_notifications" DROP CONSTRAINT "FK_01d61e551f8285966b84ca09f49"`,
     );
@@ -171,6 +174,18 @@ export class Init1750931163420 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "notifications" DROP CONSTRAINT "FK_692a909ee0fa9383e7859f9b406"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "transactions" DROP CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_subscriptions" DROP CONSTRAINT "FK_924e66848c3e67fac51394ab201"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_subscriptions" DROP CONSTRAINT "FK_2dfab576863bc3f84d4f6962274"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "master_data_plan_question_options" DROP CONSTRAINT "FK_3f17688e8a1ded802745546504d"`,
     );
     await queryRunner.query(
       `ALTER TABLE "user_details" DROP CONSTRAINT "FK_5261d2468b1288b347d58e8b540"`,
@@ -200,32 +215,8 @@ export class Init1750931163420 implements MigrationInterface {
       `ALTER TABLE "location_interactions" DROP CONSTRAINT "FK_e9e7d46ce67b1fda2bb2349d401"`,
     );
     await queryRunner.query(`DROP TABLE "blog"`);
-    await queryRunner.query(`DROP TABLE "errorLogs"`);
     await queryRunner.query(`DROP TABLE "build_log"`);
-    await queryRunner.query(`DROP TABLE "pricing_plans"`);
-    await queryRunner.query(
-      `DROP TYPE "public"."pricing_plans_billingcycle_enum"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_565dbec603dc3f8c5b60aeda96"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_0aa57d309073f214bb5143d4d5"`,
-    );
-    await queryRunner.query(`DROP TABLE "user_subscriptions"`);
-    await queryRunner.query(
-      `DROP TYPE "public"."user_subscriptions_status_enum"`,
-    );
-    await queryRunner.query(`DROP TABLE "trip_direction"`);
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_57715b5b56fb059bc7f8fb3aa7"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "public"."IDX_7fe01fe014d3bd495c83808df0"`,
-    );
-    await queryRunner.query(`DROP TABLE "transactions"`);
-    await queryRunner.query(`DROP TYPE "public"."transactions_status_enum"`);
-    await queryRunner.query(`DROP TYPE "public"."transactions_type_enum"`);
+    await queryRunner.query(`DROP TABLE "errorLogs"`);
     await queryRunner.query(
       `DROP INDEX "public"."IDX_469472c3b4e11d628de99cbfca"`,
     );
@@ -237,6 +228,36 @@ export class Init1750931163420 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE "public"."notification_type"`);
     await queryRunner.query(`DROP TABLE "notifications"`);
     await queryRunner.query(`DROP TYPE "public"."notification_type"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_57715b5b56fb059bc7f8fb3aa7"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_7fe01fe014d3bd495c83808df0"`,
+    );
+    await queryRunner.query(`DROP TABLE "transactions"`);
+    await queryRunner.query(`DROP TYPE "public"."transactions_status_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."transactions_type_enum"`);
+    await queryRunner.query(`DROP TABLE "trip_direction"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_565dbec603dc3f8c5b60aeda96"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_0aa57d309073f214bb5143d4d5"`,
+    );
+    await queryRunner.query(`DROP TABLE "user_subscriptions"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."user_subscriptions_status_enum"`,
+    );
+    await queryRunner.query(`DROP TABLE "master_data_receiving_banks"`);
+    await queryRunner.query(`DROP TABLE "master_data_pricing_plans"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."master_data_pricing_plans_billingcycle_enum"`,
+    );
+    await queryRunner.query(`DROP TABLE "master_data_plan_question_options"`);
+    await queryRunner.query(`DROP TABLE "master_data_plan_questions"`);
+    await queryRunner.query(
+      `DROP TYPE "public"."master_data_plan_questions_type_enum"`,
+    );
     await queryRunner.query(`DROP TABLE "user_details"`);
     await queryRunner.query(`DROP TABLE "Users"`);
     await queryRunner.query(`DROP TABLE "trip_user"`);

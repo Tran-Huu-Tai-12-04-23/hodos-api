@@ -1,4 +1,4 @@
-import { Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from 'src/entities';
 import { CurrentUser } from 'src/helpers/decorators';
@@ -10,6 +10,19 @@ import { UserSubscriptionsService } from './user-subscriptions.service';
 export class UserSubscriptionsController {
   constructor(private readonly service: UserSubscriptionsService) {}
 
+  @ApiOperation({
+    summary: 'Get all active pricing plans',
+    description:
+      'Retrieve all active pricing plans available for subscription.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of active pricing plans.',
+  })
+  @Get('active-plans')
+  async getAllActivePlans() {
+    return await this.service.getAllActivePlans();
+  }
   @ApiOperation({
     summary: 'Create user subscription trial ',
     description: 'Create a new subscription trial for the user.',

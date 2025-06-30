@@ -6,7 +6,6 @@ export * from './locationInteraction.entity';
 export * from './locationMedia360.entity';
 export * from './notifications.entity';
 export * from './post.entity';
-export * from './pricing-plans.entity';
 export * from './scheduled-notification.entity';
 export * from './transactions.entity';
 export * from './trip-activity.entity';

@@ -9,10 +9,10 @@ import { EmailModule } from './modules/email/email.module';
 import { GeminiAIModule } from './modules/geminiAI/geminiAI.module';
 import { LocationModule } from './modules/location/location.module';
 import { LogModule } from './modules/log/log.module';
+import { MasterDataModule } from './modules/master-data/master-data.module';
 import { MobileModule } from './modules/mobile/mobile.module';
 import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { PostModule } from './modules/post/post.module';
-import { PricingPlanModule } from './modules/pricing-plan/pricing-plan.module';
 import { SepayModule } from './modules/se-pay/sepay.module';
 import { UserModule } from './modules/user/user.module';
 import { VietMapModule } from './modules/vietMap/vietMap.module';
@@ -31,12 +31,11 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     VietMapModule,
     WebhookModule,
     LogModule,
-    // TelegramModule,
     EmailModule,
     UserModule,
     PlanTripModule,
     SepayModule,
-    PricingPlanModule,
+    MasterDataModule,
   ],
   controllers: [AppController],
   providers: [AppService],

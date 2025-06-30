@@ -12,16 +12,21 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
+import { UserEntity } from 'src/entities';
 import { CurrentUser } from 'src/helpers/decorators';
 import { UserDataDTO } from '../auth/dto';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
+import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 import { PostCreateDTO } from './dto/post.dto';
 import { MobileService } from './mobile.service';
 
 @ApiTags('Mobile Controller')
 @Controller('mobile')
 export class MobileController {
-  constructor(private readonly service: MobileService) {}
+  constructor(
+    private readonly service: MobileService,
+    private readonly userSubscriptionService: UserSubscriptionsService,
+  ) {}
 
   //#region post
   @Post('post/pagination')
@@ -57,4 +62,44 @@ export class MobileController {
     return this.service.postRemove(id);
   }
   //#endregion
+
+  //#region user subscriptions
+  @UseGuards(JwtAuthGuard)
+  @Get('pricing-plan/active-plan')
+  async getUserSubscriptions() {
+    return this.userSubscriptionService.getAllActivePlans();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('pricing-plan/sub')
+  async subPricingPlan(@CurrentUser() user: UserEntity, @Body() body: any) {
+    if (!body?.pricingPlanId) {
+      throw new Error('Pricing plan ID is required');
+    }
+    return this.userSubscriptionService.subPricingPlan(
+      user,
+      body?.pricingPlanId,
+    );
+  }
+
+  // check transaction status
+  @UseGuards(JwtAuthGuard)
+  @Post('pricing-plan/check-transaction')
+  async userHaveCompletedPayment(
+    @CurrentUser() user: UserEntity,
+    @Body() body: { transactionId: string },
+  ): Promise<{
+    message: string;
+    isCompleted: boolean;
+  }> {
+    if (!body?.transactionId) {
+      throw new Error('Transaction ID is required');
+    }
+    return this.userSubscriptionService.userHaveCompletedPayment(
+      user.id,
+      body.transactionId,
+    );
+  }
+
+  // Get user subscriptions
 }
