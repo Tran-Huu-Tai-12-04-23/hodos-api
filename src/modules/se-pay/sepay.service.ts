@@ -128,7 +128,6 @@ export class SepayService {
   }
   /** web hook */
   async hooksPayment(body: SePayTransaction): Promise<any> {
-    console.log('hooksPayment', body);
     const checkTransaction = await this.transactionRepo.findOne({
       where: {
         gatewayTransactionId: body.content,
@@ -142,13 +141,14 @@ export class SepayService {
     if (checkTransaction.status === TransactionStatus.SUCCESSFUL) {
       return { message: 'Transaction already processed' };
     } else {
-      checkTransaction.status = TransactionStatus.SUCCESSFUL;
-      checkTransaction.processedAt = new Date();
-      checkTransaction.metadata = {
-        ...checkTransaction.metadata,
-        ...body,
+      const updateData = {
+        status: TransactionStatus.SUCCESSFUL,
+        processedAt: new Date(),
+        metadata: {
+          ...checkTransaction.metadata,
+        },
       };
-      await this.transactionRepo.save(checkTransaction);
+      await this.transactionRepo.update(checkTransaction.id, updateData);
 
       // create user subscription
       if (checkTransaction.type === TransactionType.SUBSCRIPTION_PAYMENT) {
