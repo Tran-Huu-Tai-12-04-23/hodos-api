@@ -128,6 +128,7 @@ export class SepayService {
   }
   /** web hook */
   async hooksPayment(body: SePayTransaction): Promise<any> {
+    console.log('hooksPayment', body);
     const checkTransaction = await this.transactionRepo.findOne({
       where: {
         gatewayTransactionId: body.content,
