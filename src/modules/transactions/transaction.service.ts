@@ -63,4 +63,27 @@ export class TransactionService {
       totalSuccessful: totalSuccessful,
     };
   }
+
+  async completeTransaction(id: string, repo?: TransactionRepository) {
+    const transactionRepo = repo || this.repo;
+    const checkTransaction = await transactionRepo.findOne({
+      where: {
+        id: id,
+        status: TransactionStatus.PENDING,
+      },
+    });
+    if (!checkTransaction) {
+      throw new Error('Transaction not found or already completed');
+    }
+    const updateData = {
+      status: TransactionStatus.SUCCESSFUL,
+      processedAt: new Date(),
+      isActive: true,
+      updatedAt: new Date(),
+      metadata: {
+        ...checkTransaction.metadata,
+      } as any,
+    };
+    await transactionRepo.update(checkTransaction.id, updateData);
+  }
 }

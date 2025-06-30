@@ -18,6 +18,7 @@ import {
 } from 'src/repositories/master-data.repository';
 import { In } from 'typeorm';
 import { SepayService } from '../se-pay/sepay.service';
+import { TransactionService } from '../transactions/transaction.service';
 
 @Injectable()
 export class UserSubscriptionsService {
@@ -28,6 +29,7 @@ export class UserSubscriptionsService {
     private readonly receivingBankRepo: ReceivingBankRepository,
     private readonly sePayService: SepayService,
     private readonly transactionRepo: TransactionRepository,
+    private readonly transactionService: TransactionService,
   ) {}
 
   /** get all plan active  */
@@ -232,10 +234,10 @@ export class UserSubscriptionsService {
           });
 
         if (isSuccess) {
-          await transactionRepo.update(transaction.id, {
-            status: TransactionStatus.SUCCESSFUL,
-            updatedAt: new Date(),
-          });
+          await this.transactionService.completeTransaction(
+            transaction.id,
+            transactionRepo,
+          );
           return {
             message: 'Transaction already completed',
             isCompleted: true,

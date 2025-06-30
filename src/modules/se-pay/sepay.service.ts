@@ -13,6 +13,7 @@ import {
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
 import { v4 as uuidv4 } from 'uuid';
+import { TransactionService } from '../transactions/transaction.service';
 import {
   BodyResponseTransactions,
   GenQrDto,
@@ -28,6 +29,7 @@ export class SepayService {
     private readonly transactionRepo: TransactionRepository,
     private readonly pricingPlanRepo: PricingPlanRepository,
     private readonly receivingBankRepo: ReceivingBankRepository,
+    private readonly transactionService: TransactionService,
   ) {}
 
   private readonly sepayApiKey =
@@ -141,14 +143,10 @@ export class SepayService {
     if (checkTransaction.status === TransactionStatus.SUCCESSFUL) {
       return { message: 'Transaction already processed' };
     } else {
-      const updateData = {
-        status: TransactionStatus.SUCCESSFUL,
-        processedAt: new Date(),
-        metadata: {
-          ...checkTransaction.metadata,
-        },
-      };
-      await this.transactionRepo.update(checkTransaction.id, updateData);
+      await this.transactionService.completeTransaction(
+        checkTransaction.id,
+        this.transactionRepo,
+      );
 
       // create user subscription
       if (checkTransaction.type === TransactionType.SUBSCRIPTION_PAYMENT) {

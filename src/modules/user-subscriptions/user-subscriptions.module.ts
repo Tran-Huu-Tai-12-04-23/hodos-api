@@ -9,6 +9,7 @@ import {
 } from 'src/repositories/master-data.repository';
 import { TypeOrmExModule } from 'src/typeorm';
 import { SepayModule } from '../se-pay/sepay.module';
+import { TransactionModule } from '../transactions/transaction.module';
 import { UserSubscriptionsController } from './user-subscriptions.controller';
 import { UserSubscriptionsService } from './user-subscriptions.service';
 
@@ -21,6 +22,7 @@ import { UserSubscriptionsService } from './user-subscriptions.service';
       TransactionRepository,
     ]),
     SepayModule,
+    TransactionModule,
   ],
   providers: [UserSubscriptionsService],
   controllers: [UserSubscriptionsController],
