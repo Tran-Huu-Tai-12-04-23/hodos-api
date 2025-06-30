@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PaginationDto } from 'src/dto/pagination.dto';
-import { TransactionEntity } from 'src/entities';
+import { TransactionEntity, TransactionStatus } from 'src/entities';
 import { TransactionRepository } from 'src/repositories';
 import { FindOptionsWhere } from 'typeorm';
 
@@ -13,11 +13,12 @@ export class TransactionService {
   ) {}
 
   async pagination(pagination: PaginationDto<any>): Promise<{
-    result: TransactionEntity[];
+    data: TransactionEntity[];
     total: number;
+    totalMoney: number;
+    totalSuccessful: number;
   }> {
     const { skip, take, where } = pagination;
-
     const whereCon: FindOptionsWhere<TransactionEntity> = {};
     if (where?.userId) {
       whereCon.userId = where.userId;
@@ -34,16 +35,32 @@ export class TransactionService {
     }
 
     const [data, total] = await this.repo.findAndCount({
+      where: whereCon,
       skip,
       take,
       order: {
         createdAt: 'DESC',
       },
+      relations: {
+        user: true,
+      },
+    });
+
+    const totalMoney = await this.repo.sum('amount', {
+      status: TransactionStatus.SUCCESSFUL,
+    });
+
+    const totalSuccessful = await this.repo.count({
+      where: {
+        status: TransactionStatus.SUCCESSFUL,
+      },
     });
 
     return {
-      result: data,
+      data: data,
       total: total,
+      totalMoney: totalMoney || 0,
+      totalSuccessful: totalSuccessful,
     };
   }
 }
