@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import {
+  NotificationEntity,
   NotificationType,
   SubscriptionStatus,
   TransactionEntity,
@@ -81,6 +82,7 @@ export class TransactionService {
     return this.repo.manager.transaction(async (trans) => {
       const repo = trans.getRepository(TransactionEntity);
       const userSubscriptionRepo = trans.getRepository(UserSubscriptionEntity);
+      const notificationRepo = trans.getRepository(NotificationEntity);
 
       const checkTransaction = await repo.findOne({
         where: {
@@ -133,7 +135,7 @@ export class TransactionService {
       };
       await repo.update(checkTransaction.id, updateData);
 
-      // create nottification for user
+      // create notification for user
       const notificationDto: CreateNotificationDto = {
         title: 'Transaction Successful',
         message: `Your transaction with ${checkTransaction.description} has been successfully completed.`,
@@ -150,7 +152,7 @@ export class TransactionService {
       await this.notificationService.createNotification(
         notificationDto,
         checkTransaction.userId,
-        repo,
+        notificationRepo,
       );
     });
   }

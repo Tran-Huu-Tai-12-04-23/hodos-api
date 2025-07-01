@@ -82,14 +82,16 @@ export class SepayService {
 
     const today = new Date();
     const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+    yesterday.setDate(today.getDate() - 2);
 
     const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setDate(today.getDate() + 2);
+
+    const formatDate = (date: Date) => date.toISOString().slice(0, 10);
 
     const params: Record<string, string> = {
-      transaction_date_min: `${yesterday.toISOString().split('T')[0]} 00:00:00`,
-      transaction_date_max: `${tomorrow.toISOString().split('T')[0]} 23:59:59`,
+      transaction_date_min: `${formatDate(yesterday)}`,
+      transaction_date_max: `${formatDate(tomorrow)}`,
       amount_in: amount.toString(),
     };
 
@@ -100,27 +102,32 @@ export class SepayService {
       }
     }
 
-    const url = `https://my.sepay.vn/userapi/transactions/list?${queryParams.toString()}`;
-    const transactions: BodyResponseTransactions = await callApiHelper.get(
-      url,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.sepayApiKey}`,
+    try {
+      const url = `https://my.sepay.vn/userapi/transactions/list?${queryParams.toString()}`;
+      const transactions: BodyResponseTransactions = await callApiHelper.get(
+        url,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.sepayApiKey}`,
+          },
         },
-      },
-    );
+      );
 
-    const transactionFound = transactions.transactions.find(
-      (transaction: any) => transaction.transaction_content.includes(content),
-    );
+      const transactionFound = transactions?.transactions?.find(
+        (transaction: any) => transaction.transaction_content.includes(content),
+      );
 
-    return {
-      isSuccess: transactionFound
-        ? this.isTransactionSuccess(transactionFound)
-        : false,
-      transaction: transactionFound || null,
-    };
+      return {
+        isSuccess: transactionFound
+          ? this.isTransactionSuccess(transactionFound)
+          : false,
+        transaction: transactionFound || null,
+      };
+    } catch (error) {
+      console.error('Error checking transaction success:', error);
+      throw new Error('Failed to check transaction success');
+    }
   }
   private isTransactionSuccess(tx: Transaction): boolean {
     const amountIn = parseFloat(tx.amount_in);
