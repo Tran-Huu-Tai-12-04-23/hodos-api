@@ -116,3 +116,19 @@ export class PricingPlanEntity extends BaseEntityCustom {
   )
   subscriptions: UserSubscriptionEntity[];
 }
+export const getPlanDurationDays = (plan: PricingPlanEntity): number => {
+  switch (plan.billingCycle) {
+    case BillingCycle.MONTHLY:
+      return 30;
+    case BillingCycle.QUARTERLY:
+      return 90;
+    case BillingCycle.YEARLY:
+      return 365;
+    case BillingCycle.ONE_TIME:
+      return 0;
+    case BillingCycle.CUSTOM:
+      return plan.trialPeriodDays || 0;
+    default:
+      return 0;
+  }
+};

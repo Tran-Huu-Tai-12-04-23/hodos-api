@@ -36,7 +36,7 @@ export class NotificationEntity extends BaseEntityCustom {
     description: 'ID of the user this notification is for',
     example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
   })
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   scheduledNotificationId: string;
 
   @ManyToOne(

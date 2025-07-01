@@ -15,7 +15,6 @@ export class AuthController {
     private readonly service: AuthService,
     private readonly configService: ConfigService,
   ) {}
-  private FRONT_END_LINK = this.configService.get<string>('FRONT_END_LINK');
 
   @ApiOperation({
     summary: 'Get profile of user',

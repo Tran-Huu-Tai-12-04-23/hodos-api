@@ -5,8 +5,8 @@ import { CurrentUser } from 'src/helpers/decorators';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 import { UserSubscriptionsService } from './user-subscriptions.service';
 @UseGuards(JwtAuthGuard)
-@ApiTags('User subscriptions API')
-@Controller('user-subscriptions')
+@ApiTags('Notification API')
+@Controller('notification')
 export class UserSubscriptionsController {
   constructor(private readonly service: UserSubscriptionsService) {}
 

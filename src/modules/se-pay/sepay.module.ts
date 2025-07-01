@@ -8,7 +8,7 @@ import {
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
 import { TypeOrmExModule } from 'src/typeorm';
-import { TransactionService } from '../transactions/transaction.service';
+import { TransactionModule } from '../transactions/transaction.module';
 import { SepayController } from './sepay.controller';
 import { SepayService } from './sepay.service';
 
@@ -20,8 +20,7 @@ import { SepayService } from './sepay.service';
       UserSubscriptionRepository,
       ReceivingBankRepository,
     ]),
-
-    TransactionService,
+    TransactionModule,
   ],
   providers: [SepayService],
   controllers: [SepayController],

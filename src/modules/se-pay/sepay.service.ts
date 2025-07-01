@@ -143,10 +143,7 @@ export class SepayService {
     if (checkTransaction.status === TransactionStatus.SUCCESSFUL) {
       return { message: 'Transaction already processed' };
     } else {
-      await this.transactionService.completeTransaction(
-        checkTransaction.id,
-        this.transactionRepo,
-      );
+      await this.transactionService.completeTransaction(checkTransaction.id);
 
       // create user subscription
       if (checkTransaction.type === TransactionType.SUBSCRIPTION_PAYMENT) {

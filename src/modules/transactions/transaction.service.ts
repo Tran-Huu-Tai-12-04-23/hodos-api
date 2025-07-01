@@ -1,15 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PaginationDto } from 'src/dto/pagination.dto';
-import { TransactionEntity, TransactionStatus } from 'src/entities';
+import {
+  NotificationType,
+  SubscriptionStatus,
+  TransactionEntity,
+  TransactionStatus,
+  UserSubscriptionEntity,
+} from 'src/entities';
+import {
+  getPlanDurationDays,
+  PricingPlanEntity,
+} from 'src/entities/master-data';
 import { TransactionRepository } from 'src/repositories';
 import { FindOptionsWhere } from 'typeorm';
-
+import { v4 as uuidv4 } from 'uuid';
+import { CreateNotificationDto } from '../notification/dto';
+import { NotificationService } from '../notification/notification.service';
 @Injectable()
 export class TransactionService {
   constructor(
     public readonly configService: ConfigService,
     private readonly repo: TransactionRepository,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async pagination(pagination: PaginationDto<any>): Promise<{
@@ -64,26 +77,81 @@ export class TransactionService {
     };
   }
 
-  async completeTransaction(id: string, repo?: TransactionRepository) {
-    const transactionRepo = repo || this.repo;
-    const checkTransaction = await transactionRepo.findOne({
-      where: {
-        id: id,
-        status: TransactionStatus.PENDING,
-      },
+  async completeTransaction(id: string) {
+    return this.repo.manager.transaction(async (trans) => {
+      const repo = trans.getRepository(TransactionEntity);
+      const userSubscriptionRepo = trans.getRepository(UserSubscriptionEntity);
+
+      const checkTransaction = await repo.findOne({
+        where: {
+          id: id,
+          status: TransactionStatus.PENDING,
+        },
+      });
+      if (!checkTransaction) {
+        throw new Error('Transaction not found or already completed');
+      }
+      // create user subscription if not exists
+      const newUserSubscription = new UserSubscriptionEntity();
+      newUserSubscription.id = uuidv4();
+      newUserSubscription.userId = checkTransaction.userId;
+      if (!checkTransaction.relatedEntityId) {
+        throw new Error('Related entity ID is required for subscription');
+      }
+      newUserSubscription.pricingPlanId = checkTransaction.relatedEntityId;
+      newUserSubscription.startDate = new Date();
+      newUserSubscription.autoRenew = true;
+      newUserSubscription.status = SubscriptionStatus.ACTIVE;
+      newUserSubscription.isTrial = false;
+      newUserSubscription.createdAt = new Date();
+
+      if (checkTransaction.metadata?.pricingPlan) {
+        const pricingPlan: PricingPlanEntity =
+          checkTransaction.metadata?.pricingPlan;
+        const planDurationDays = getPlanDurationDays(pricingPlan);
+        if (planDurationDays > 0) {
+          newUserSubscription.nextPaymentDate = new Date(
+            newUserSubscription.startDate.getTime() +
+              planDurationDays * 24 * 60 * 60 * 1000,
+          );
+          newUserSubscription.currentPeriodEndDate = new Date(
+            newUserSubscription.startDate.getTime() +
+              planDurationDays * 24 * 60 * 60 * 1000,
+          );
+        }
+      }
+      await userSubscriptionRepo.insert(newUserSubscription);
+
+      const updateData = {
+        status: TransactionStatus.SUCCESSFUL,
+        processedAt: new Date(),
+        updatedAt: new Date(),
+        metadata: {
+          ...checkTransaction.metadata,
+          newUserSubscription,
+        } as any,
+      };
+      await repo.update(checkTransaction.id, updateData);
+
+      // create nottification for user
+      const notificationDto: CreateNotificationDto = {
+        title: 'Transaction Successful',
+        message: `Your transaction with ${checkTransaction.description} has been successfully completed.`,
+        isRead: false,
+        type: NotificationType.ALERT,
+        metaData: {
+          transaction: checkTransaction,
+          userSubscription: newUserSubscription,
+          pricingPlan: checkTransaction.metadata?.pricingPlan,
+        },
+        userId: checkTransaction.userId,
+        scheduledNotificationId: null,
+      };
+      await this.notificationService.createNotification(
+        notificationDto,
+        checkTransaction.userId,
+        repo,
+      );
     });
-    if (!checkTransaction) {
-      throw new Error('Transaction not found or already completed');
-    }
-    const updateData = {
-      status: TransactionStatus.SUCCESSFUL,
-      processedAt: new Date(),
-      isActive: true,
-      updatedAt: new Date(),
-      metadata: {
-        ...checkTransaction.metadata,
-      } as any,
-    };
-    await transactionRepo.update(checkTransaction.id, updateData);
   }
 }

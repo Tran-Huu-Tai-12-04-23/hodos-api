@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   SubscriptionStatus,
-  TransactionEntity,
   TransactionStatus,
   UserSubscriptionEntity,
 } from 'src/entities';
@@ -220,37 +219,19 @@ export class UserSubscriptionsService {
     if (!transaction) {
       throw new Error('Transaction not found');
     }
-    return this.repo.manager.transaction(async (trans) => {
-      const transactionRepo = trans.getRepository(TransactionEntity);
-      // if webhook is not called yet, we can check the transaction status then call api sepay to get the latest status
-      if (
-        transaction.status !== TransactionStatus.SUCCESSFUL &&
-        transaction.gatewayTransactionId
-      ) {
-        const { isSuccess } =
-          await this.sePayService.checkTransactionSuccessInDay({
-            amount: transaction.amount,
-            content: transaction.gatewayTransactionId,
-          });
+    // if webhook is not called yet, we can check the transaction status then call api sepay to get the latest status
+    if (
+      transaction.status !== TransactionStatus.SUCCESSFUL &&
+      transaction.gatewayTransactionId
+    ) {
+      const { isSuccess } =
+        await this.sePayService.checkTransactionSuccessInDay({
+          amount: transaction.amount,
+          content: transaction.gatewayTransactionId,
+        });
 
-        if (isSuccess) {
-          await this.transactionService.completeTransaction(
-            transaction.id,
-            transactionRepo,
-          );
-          return {
-            message: 'Transaction already completed',
-            isCompleted: true,
-          };
-        } else {
-          return {
-            message: 'Transaction is still pending',
-            isCompleted: false,
-          };
-        }
-      }
-
-      if (transaction.status === TransactionStatus.SUCCESSFUL) {
+      if (isSuccess) {
+        await this.transactionService.completeTransaction(transaction.id);
         return {
           message: 'Transaction already completed',
           isCompleted: true,
@@ -261,6 +242,18 @@ export class UserSubscriptionsService {
           isCompleted: false,
         };
       }
-    });
+    }
+
+    if (transaction.status === TransactionStatus.SUCCESSFUL) {
+      return {
+        message: 'Transaction already completed',
+        isCompleted: true,
+      };
+    } else {
+      return {
+        message: 'Transaction is still pending',
+        isCompleted: false,
+      };
+    }
   }
 }
