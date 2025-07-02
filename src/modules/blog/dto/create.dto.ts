@@ -13,4 +13,12 @@ export class BlogCreateDTO {
   @IsString()
   @IsNotEmpty()
   thumbnail: string;
+  @IsOptional()
+  isPublish?: boolean = false;
+}
+
+export class BlogUpdateDTO extends BlogCreateDTO {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
 }

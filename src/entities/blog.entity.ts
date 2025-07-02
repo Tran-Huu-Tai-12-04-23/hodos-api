@@ -13,4 +13,6 @@ export class BlogEntity extends BaseEntityCustom {
 
   @Column({ type: 'text', nullable: false })
   content: string;
+  @Column({ nullable: false, default: false })
+  isPublish: boolean;
 }

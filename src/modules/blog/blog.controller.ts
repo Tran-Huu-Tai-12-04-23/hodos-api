@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
+import { UserEntity } from 'src/entities';
+import { CurrentUser } from 'src/helpers/decorators';
+import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 import { BlogService } from './blog.service';
-import { BlogCreateDTO } from './dto/create.dto';
+import { BlogCreateDTO, BlogUpdateDTO } from './dto/create.dto';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('Blog API')
 @Controller('blog')
 export class BlogController {
@@ -14,8 +27,17 @@ export class BlogController {
   })
   @ApiResponse({ status: 201 })
   @Post()
-  async create(@Body() body: BlogCreateDTO) {
-    return await this.service.create(body);
+  async create(@Body() body: BlogCreateDTO, @CurrentUser() user: UserEntity) {
+    return await this.service.create(user, body);
+  }
+
+  @ApiOperation({
+    summary: 'Blog update',
+  })
+  @ApiResponse({ status: 201 })
+  @Patch('')
+  async update(@CurrentUser() user: UserEntity, @Body() body: BlogUpdateDTO) {
+    return await this.service.update(user, body);
   }
 
   @ApiOperation({
