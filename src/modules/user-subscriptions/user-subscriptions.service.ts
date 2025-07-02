@@ -139,7 +139,7 @@ export class UserSubscriptionsService {
   async getCurrentUserSubscription(
     userId: string,
   ): Promise<UserSubscriptionEntity | null> {
-    return await this.repo.findOne({
+    const res: any = await this.repo.findOne({
       where: {
         userId: userId,
         status: In([SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING]),
@@ -148,6 +148,9 @@ export class UserSubscriptionsService {
         pricingPlan: true,
       },
     });
+    if (!res) return null;
+    res.pricingPlan = await res?.pricingPlan;
+    return res;
   }
 
   async hasPremiumAccess(userId: string): Promise<boolean> {

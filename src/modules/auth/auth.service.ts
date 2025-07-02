@@ -44,9 +44,6 @@ export class AuthService {
     if (!user.isActive) {
       throw new UnauthorizedException('User not active!');
     }
-    if (!user.verifyAt) {
-      throw new UnauthorizedException('User not verified!');
-    }
 
     const isMatch = await user.comparePassword(signInDto.password);
     if (!isMatch) {
@@ -78,6 +75,7 @@ export class AuthService {
       user: {
         ...user,
         userDetail,
+        isNeedVerify: !user.verifyAt,
         ...(userSubInfo || {}),
       },
     };
@@ -124,11 +122,13 @@ export class AuthService {
     const user = await this.repo.findOneBy({
       username: data.username,
       email: data.email,
-      verifyCode: data.verifyCode,
-      isDeleted: false,
     });
 
     if (!user) throw new NotFoundException('User not found!');
+
+    if (user.verifyCode !== data.verifyCode) {
+      throw new UnauthorizedException('Verification code is incorrect!');
+    }
     /// check code is expired
     const currentTime = new Date();
     const timeDifference =
@@ -177,17 +177,19 @@ export class AuthService {
     if (!this.JWT_SECRET) {
       throw new UnauthorizedException('JWT_SECRET not found!');
     }
-    const { id } = this.jwtService.verify(data.refreshToken, {
+    const dataPayload = this.jwtService.verify(data.refreshToken, {
       secret: this.JWT_SECRET,
     });
     const [user, userSubInfo]: any = await Promise.all([
       this.repo.findOne({
-        where: { id },
+        where: {
+          id: dataPayload.uid,
+        },
         relations: {
           userDetail: true,
         },
       }),
-      this.getUserSubscriptionInfo(id),
+      this.getUserSubscriptionInfo(dataPayload.uid),
     ]);
     if (!user) throw new UnauthorizedException('User not found!');
 
@@ -209,13 +211,16 @@ export class AuthService {
 
     const userDetail = user.__userDetail__;
     delete user.__userDetail__;
-
-    /// delay 3s
     return {
       accessToken,
       refreshToken,
       enumData,
-      user: { ...user, userDetail, ...(userSubInfo || {}) },
+      user: {
+        ...user,
+        isNeedVerify: !user.verifyAt,
+        userDetail,
+        ...(userSubInfo || {}),
+      },
     };
   }
 
@@ -241,6 +246,11 @@ export class AuthService {
 
   /** get info subscriptions  */
   async getUserSubscriptionInfo(userId: string) {
+    if (!userId) {
+      return {
+        isPremium: false,
+      };
+    }
     const [userSubscription, isHasPremium] = await Promise.all([
       this.userSubscriptionService.getCurrentUserSubscription(userId),
       this.userSubscriptionService.hasPremiumAccess(userId),
@@ -259,6 +269,9 @@ export class AuthService {
 
       return { ...res, pricingPlanSuggest };
     }
-    return res;
+    return {
+      ...res,
+      userSubscription,
+    };
   }
 }

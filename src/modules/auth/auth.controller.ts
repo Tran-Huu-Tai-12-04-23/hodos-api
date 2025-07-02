@@ -25,6 +25,7 @@ export class AuthController {
   async getProfile(@CurrentUser() user: UserEntity) {
     return {
       user,
+      isNeedVerify: !user.verifyAt,
       enumData: enumData,
     };
   }
