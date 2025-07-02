@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { UserDetailRepository, UserRepository } from 'src/repositories';
 import { TypeOrmExModule } from 'src/typeorm';
 import { AuthModule } from '../auth/auth.module';
+import { UserSubscriptionsModule } from '../user-subscriptions/user-subscriptions.module';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
 @Module({
   imports: [
     AuthModule,
+    UserSubscriptionsModule,
     TypeOrmExModule.forCustomRepository([UserRepository, UserDetailRepository]),
   ],
   providers: [UserService],

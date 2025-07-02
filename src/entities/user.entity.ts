@@ -32,15 +32,19 @@ export class UserEntity extends BaseEntityCustom {
 
   @Column({
     nullable: true,
+    default: false,
   })
-  isAdmin: string;
+  isAdmin: boolean;
 
   @Column({
     nullable: true,
   })
   verifyCode: string;
 
-  @Column()
+  @Column({
+    default: false,
+    nullable: true,
+  })
   isActive: boolean;
 
   @Column({
@@ -52,6 +56,12 @@ export class UserEntity extends BaseEntityCustom {
     nullable: true,
   })
   verifyExpiredTime: Date;
+
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isPremium: boolean;
 
   @BeforeInsert()
   @BeforeUpdate()

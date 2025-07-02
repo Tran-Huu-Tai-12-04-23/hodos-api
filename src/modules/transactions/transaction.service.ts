@@ -7,6 +7,7 @@ import {
   SubscriptionStatus,
   TransactionEntity,
   TransactionStatus,
+  UserEntity,
   UserSubscriptionEntity,
 } from 'src/entities';
 import {
@@ -83,6 +84,7 @@ export class TransactionService {
       const repo = trans.getRepository(TransactionEntity);
       const userSubscriptionRepo = trans.getRepository(UserSubscriptionEntity);
       const notificationRepo = trans.getRepository(NotificationEntity);
+      const userRepo = trans.getRepository(UserEntity);
 
       const checkTransaction = await repo.findOne({
         where: {
@@ -134,6 +136,9 @@ export class TransactionService {
         } as any,
       };
       await repo.update(checkTransaction.id, updateData);
+
+      // update user subscription status if exists
+      await userRepo.update(checkTransaction.userId, { isPremium: true });
 
       // create notification for user
       const notificationDto: CreateNotificationDto = {

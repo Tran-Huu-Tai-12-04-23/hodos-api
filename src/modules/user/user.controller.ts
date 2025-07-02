@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { CurrentUser } from 'src/helpers/decorators';
 import { UserUpdateDto } from './dto';
@@ -26,4 +27,14 @@ export class UserController {
   async update(@CurrentUser() user: UserEntity, @Body() data: UserUpdateDto) {
     return await this.service.update(user, data);
   }
+
+  //#region  admin manager user
+  @ApiOperation({
+    summary: 'User pagination',
+  })
+  @Post('pagination')
+  async pagination(@Body() data: PaginationDto<any>) {
+    return await this.service.pagination(data);
+  }
+  //#endregion
 }
