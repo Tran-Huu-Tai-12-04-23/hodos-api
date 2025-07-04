@@ -125,4 +125,38 @@ export class ScheduledNotificationEntity extends BaseEntityCustom {
   })
   @Column({ type: 'int', default: 0 })
   retryAttempts: number;
+
+  @ApiProperty({
+    description:
+      'History of changes or actions taken on this scheduled notification',
+    type: 'object',
+    additionalProperties: true,
+    required: false,
+  })
+  @Column({ type: 'jsonb', nullable: true })
+  history?: Record<string, any>;
+
+  @ApiProperty({
+    description: 'Target user ID for the notification',
+    isArray: true,
+  })
+  @Column({
+    type: 'uuid',
+    array: true,
+    nullable: true,
+  })
+  targetUserIds: string[];
+
+  @ApiProperty({
+    description: 'Channel(s) to send the notification through',
+    enum: NotificationChannel,
+    isArray: true,
+    enumName: 'notification_channel',
+  })
+  @Column({
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isAllUser: boolean;
 }

@@ -10,6 +10,94 @@ import {
   MaxLength,
 } from 'class-validator';
 
+import { IsArray, IsEnum } from 'class-validator';
+import {
+  NotificationChannel,
+  NotificationType,
+  ScheduledNotificationStatus,
+} from 'src/entities';
+
+export class CreateScheduledNotificationDto {
+  @ApiProperty({
+    description: 'Title of the notification',
+    example: 'Upcoming Trip Reminder',
+  })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty({
+    description: 'Main message/content of the notification',
+    example: 'Your trip "Mountain Hike" starts in 3 days!',
+  })
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @ApiProperty({
+    description: 'Type of the notification',
+    enum: NotificationType,
+    example: NotificationType.REMINDER,
+  })
+  @IsEnum(NotificationType)
+  notificationType: NotificationType;
+
+  @ApiProperty({
+    description: 'Channel(s) to send the notification through',
+    enum: NotificationChannel,
+    isArray: true,
+    example: [NotificationChannel.EMAIL, NotificationChannel.PUSH],
+  })
+  @IsArray()
+  @IsEnum(NotificationChannel, { each: true })
+  channels: NotificationChannel[];
+
+  @ApiProperty({
+    description: 'Timestamp when the notification is scheduled to be sent',
+    example: '2025-07-05T10:00:00Z',
+  })
+  @IsDateString()
+  scheduledTime: Date;
+
+  @ApiPropertyOptional({
+    description: 'Optional data to be used when generating the notification',
+    example: { tripName: 'Mountain Hike', daysLeft: 3 },
+  })
+  @IsOptional()
+  @IsObject()
+  payload?: Record<string, any>;
+
+  @ApiProperty({
+    description: 'Target user IDs for the notification',
+    isArray: true,
+  })
+  @IsArray()
+  targetUserIds: string[];
+
+  @ApiProperty({
+    description: 'Is all users to be notified?',
+    type: 'boolean',
+  })
+  @IsBoolean()
+  isAllUser: boolean;
+}
+export class UpdateScheduleNotificationDto extends CreateScheduledNotificationDto {
+  @ApiProperty({
+    description: 'ID of the scheduled notification',
+    example: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+  })
+  @IsUUID()
+  id: string;
+
+  @ApiPropertyOptional({
+    description: 'Status of the scheduled notification',
+    enum: ScheduledNotificationStatus,
+    example: ScheduledNotificationStatus.PENDING,
+  })
+  @IsOptional()
+  status?: ScheduledNotificationStatus;
+}
+
 export class CreateNotificationDto {
   @ApiProperty({})
   @IsOptional()

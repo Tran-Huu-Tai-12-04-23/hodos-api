@@ -24,7 +24,7 @@ import { EmailService } from './email.service';
       },
       template: {
         dir: join(process.cwd(), 'src/assets/template'),
-        adapter: new HandlebarsAdapter(), // or new PugAdapter()
+        adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
         },

@@ -136,4 +136,21 @@ export class UserService {
       totalPremium,
     };
   }
+
+  // userSelectBox
+  async userSelectBox() {
+    const users = await this.repo.find({
+      where: { isActive: true, isAdmin: false },
+      select: ['id', 'username', 'email'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return users.map((user) => ({
+      value: user.id,
+      label: user.username,
+      email: user.email,
+      username: user.username,
+      id: user.id,
+    }));
+  }
 }

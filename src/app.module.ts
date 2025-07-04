@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { CommonModule } from './modules/common/common.module';
@@ -11,7 +12,6 @@ import { LocationModule } from './modules/location/location.module';
 import { LogModule } from './modules/log/log.module';
 import { MasterDataModule } from './modules/master-data/master-data.module';
 import { MobileModule } from './modules/mobile/mobile.module';
-import { NotificationModule } from './modules/notification/notification.module';
 import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { PostModule } from './modules/post/post.module';
 import { SepayModule } from './modules/se-pay/sepay.module';
@@ -39,7 +39,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     SepayModule,
     MasterDataModule,
     TransactionModule,
-    NotificationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>{{notificationTitle}} - AI Planning Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    body, table, td, a {
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    table, td {
+      mso-table-rspace: 0pt;
+      mso-table-lspace: 0pt;
+    }
+
+    img {
+      -ms-interpolation-mode: bicubic;
+      height: auto;
+      line-height: 100%;
+      text-decoration: none;
+      border: 0;
+      outline: none;
+    }
+
+    body {
+      width: 100% !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    table {
+      border-collapse: collapse !important;
+    }
+
+    a {
+      color: #6366f1;
+      text-decoration: none;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .success-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .warning-gradient {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .info-gradient {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .alert-gradient {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .ai-pattern {
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    }
+
+    .cta-button {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      padding: 16px 32px;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-weight: 600;
+      font-size: 16px;
+      display: inline-block;
+    }
+
+    .magic-border {
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7) border-box;
+      border-radius: 16px;
+    }
+
+    .notification-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    /* Dynamic gradient classes based on notification type */
+    .ALERT { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .REMINDER { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .SUCCESS { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .INFO { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .UPDATE { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+    @media only screen and (max-width: 600px) {
+      .cta-button {
+        padding: 14px 28px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); margin: 0; padding: 0;">
+  
+  <!-- Preheader -->
+  <div class="preheader" style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
+    {{preheaderText}}
+  </div>
+
+  <!-- Email Container -->
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+    
+    <!-- Header with Logo -->
+    <tr>
+      <td align="center" style="padding: 30px 20px 20px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="center">
+              <a href="{{frontendUrl}}" target="_blank" style="display: inline-block;">
+                <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
+                  <img src="{{logoUrl}}" alt="AI Planning Logo" border="0" width="28" style="display: block; width: 28px; max-width: 28px; min-width: 28px; filter: brightness(0) invert(1);">
+                </div>
+              </a>
+              <p style="margin: 12px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; font-weight: 500;">
+                AI Planning Assistant
+                <span class="notification-badge">{{notificationType}}</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Main Content Card -->
+    <tr>
+      <td align="center" style="padding: 0 20px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td class="magic-border" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+              
+              <!-- Header Section with Dynamic Gradient -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td class="{{notificationType}} ai-pattern" style="padding: 32px 32px 24px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">
+                      <!-- Dynamic icon based on notification type -->
+                      {{#if notificationType}}
+                        {{#eq notificationType "ALERT"}}🚨{{/eq}}
+                        {{#eq notificationType "REMINDER"}}⏰{{/eq}}
+                        {{#eq notificationType "SUCCESS"}}🎉{{/eq}}
+                        {{#eq notificationType "INFO"}}💡{{/eq}}
+                        {{#eq notificationType "UPDATE"}}🚀{{/eq}}
+                      {{else}}
+                        🤖
+                      {{/if}}
+                    </div>
+                    <h1 style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.2;">
+                      {{notificationTitle}}
+                    </h1>
+                    <p style="margin: 8px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 500;">
+                      Your AI planning assistant has an update
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Content Section -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding: 32px;">
+                    
+                    <!-- Greeting -->
+                    <p style="margin: 0 0 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151;">
+                      Hi {{userName}},
+                    </p>
+                    
+                    <!-- Main Message -->
+                    <p style="margin: 0 0 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151;">
+                      {{mainMessage}}
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Section (only show if linkTo exists) -->
+              {{#if linkTo}}
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center" style="padding: 0 32px 32px;">
+                    <a href="{{linkTo}}" class="cta-button" target="_blank">
+                      View Details
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              {{/if}}
+
+              <!-- Footer Info -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding: 24px 32px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-top: 1px solid #e2e8f0;">
+                    <div style="text-align: center;">
+                      {{#if sentAt}}
+                      <p style="margin: 0 0 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; line-height: 1.5;">
+                        Sent on {{sentAt}}
+                      </p>
+                      {{/if}}
+                      <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #374151; font-weight: 500;">
+                        Keep planning smart! 🎯<br>
+                        <span style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">{{companyName}} AI Team</span>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td align="center" style="padding: 30px 20px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="center" style="padding: 0 24px;">
+              <p style="margin: 0 0 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; line-height: 1.5; color: #6b7280; text-align: center;">
+                You're receiving this notification because you're using {{companyName}} AI Planning Assistant.
+              </p>
+              <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; line-height: 1.4; color: #9ca3af; text-align: center;">
+                {{companyAddress}}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+  </table>
+</body>
+</html>

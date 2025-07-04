@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
-import { ScheduledNotificationEntity } from './scheduled-notification.entity';
 import { UserEntity } from './user.entity'; // Assuming you have a UserEntity
 
 export enum NotificationType {
@@ -18,6 +17,57 @@ export enum NotificationChannel {
   EMAIL = 'email',
   PUSH = 'push', // Mobile push notification
 }
+
+export const NotificationTypeData = {
+  [NotificationType.INFO]: {
+    color: '#2196F3',
+    name: 'Information',
+    description: 'General information notifications.',
+  },
+  [NotificationType.REMINDER]: {
+    color: '#FF9800',
+    name: 'Reminder',
+    description: 'Reminders for upcoming events or actions.',
+  },
+  [NotificationType.ALERT]: {
+    color: '#F44336',
+    name: 'Alert',
+    description: 'Important alerts that require immediate attention.',
+  },
+  [NotificationType.RECOMMENDATION]: {
+    color: '#4CAF50',
+    name: 'Recommendation',
+    description: 'Recommendations based on user preferences or behavior.',
+  },
+  [NotificationType.TRIP_UPDATE]: {
+    color: '#9C27B0',
+    name: 'Trip Update',
+    description: 'Updates related to trips or travel plans.',
+  },
+  [NotificationType.NEW_CONTENT]: {
+    color: '#3F51B5',
+    name: 'New Content',
+    description: 'Notifications about new content available in the app.',
+  },
+};
+
+export const NotificationChannelData = {
+  [NotificationChannel.IN_APP]: {
+    color: '#4CAF50',
+    name: 'In-App Notification',
+    description: 'Notifications that appear within the application.',
+  },
+  [NotificationChannel.EMAIL]: {
+    color: '#2196F3',
+    name: 'Email Notification',
+    description: 'Notifications sent via email.',
+  },
+  [NotificationChannel.PUSH]: {
+    color: '#FF9800',
+    name: 'Push Notification',
+    description: 'Notifications sent to mobile devices.',
+  },
+};
 
 @Entity('notifications')
 export class NotificationEntity extends BaseEntityCustom {
@@ -38,16 +88,6 @@ export class NotificationEntity extends BaseEntityCustom {
   })
   @Column({ type: 'uuid', nullable: true })
   scheduledNotificationId: string;
-
-  @ManyToOne(
-    () => ScheduledNotificationEntity,
-    (scheduleNotification) => scheduleNotification.id,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  @JoinColumn({ name: 'scheduledNotificationId' })
-  scheduleNotification: ScheduledNotificationEntity;
 
   @ApiProperty({
     description: 'Title of the notification',

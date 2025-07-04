@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NotificationEntity, UserEntity } from 'src/entities';
 
 @Injectable()
 export class EmailService {
@@ -20,6 +21,39 @@ export class EmailService {
     return 'Hello World!';
   }
 
+  public sendEmailNotification(
+    user: UserEntity,
+    notification: NotificationEntity,
+  ) {
+    const object = {
+      preheaderText: notification.title || '',
+      frontendUrl: this.frontendUrl,
+      logoUrl: this.logoUrl,
+      notificationType: notification.type || '',
+      notificationTitle: notification.title || '',
+      mainMessage: notification.message || '',
+      userName: user.username || '',
+      sentAt: notification.sentAt ? notification.sentAt.toISOString() : '',
+      linkTo: notification.linkTo || '',
+      companyName: this.companyName,
+      companyAddress: this.companyAddress,
+    };
+
+    this.mailerService
+      .sendMail({
+        to: user.email,
+        from: 'huutaidev@gmail.com',
+        subject: `[${this.companyName}] ${notification.title}`,
+        template: 'notification', // Your email template name
+        context: { ...object },
+      })
+      .then((success) => {
+        console.log(success);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
   public async sendEmailVerification(
     email: string,
     verCode: string,
@@ -32,7 +66,7 @@ export class EmailService {
       logoUrl: this.logoUrl,
       expirationTime: this.expirationTime,
     };
-    await this.mailerService
+    this.mailerService
       .sendMail({
         to: email,
         from: 'huutaidev@gmail.com',

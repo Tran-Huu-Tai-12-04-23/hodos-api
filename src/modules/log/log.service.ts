@@ -27,7 +27,7 @@ export class LogService {
         (alias) => `${alias} BETWEEN "${startOfDay}" AND "${endOfDay}"`,
       );
     }
-    return await this.buildLogRepo.findAndCount({
+    const res = await this.buildLogRepo.findAndCount({
       where,
       order: {
         createdAt: 'DESC',
@@ -35,6 +35,10 @@ export class LogService {
       skip: body?.skip,
       take: body?.take,
     });
+    return {
+      data: res[0],
+      total: res[1],
+    };
   }
 
   async errorLogPagination(body: PaginationDto<ErrorLogPaginationDTO>) {
@@ -50,7 +54,7 @@ export class LogService {
         (alias) => `DATE(${alias}) BETWEEN "${startOfDay}" AND "${endOfDay}"`,
       );
     }
-    return await this.errorLogRepo.findAndCount({
+    const res = await this.errorLogRepo.findAndCount({
       where,
       order: {
         createdAt: 'DESC',
@@ -58,5 +62,9 @@ export class LogService {
       skip: body?.skip,
       take: body?.take,
     });
+    return {
+      data: res[0],
+      total: res[1],
+    };
   }
 }
