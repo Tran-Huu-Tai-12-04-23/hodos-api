@@ -6,7 +6,7 @@
   <title>Verify Your AI Planning Account</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style type="text/css">
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     @media screen {
       @font-face {
@@ -56,7 +56,7 @@
     }
 
     a {
-      color: #6366f1;
+      color: #5A67D8; /* A slightly softer blue */
       text-decoration: none;
     }
 
@@ -68,43 +68,46 @@
       outline: none;
     }
 
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .header-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Original vibrant gradient for header */
+      background: linear-gradient(135deg, #4A5568 0%, #2D3748 100%); /* Darker, more sophisticated header background */
     }
 
     .ai-pattern {
       background-image: 
-        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.03) 0%, transparent 50%);
     }
 
     .verification-code {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); /* Vibrant gradient for code */
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4); /* Stronger shadow */
       letter-spacing: 4px;
       font-weight: 700;
-      font-size: 28px;
-      padding: 20px 40px;
+      font-size: 32px; /* Slightly larger for prominence */
+      padding: 24px 45px; /* More padding */
       color: #ffffff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.2); /* More pronounced text shadow */
+      display: inline-block; /* To allow padding to work */
     }
 
-    .magic-border {
-      border: 2px solid transparent;
+    .card-border {
+      border: 1px solid transparent;
       background: linear-gradient(white, white) padding-box,
-                  linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7) border-box;
+                  linear-gradient(135deg, #5A67D8, #805AD5, #D53F8C) border-box; /* Modern, subtle gradient border */
       border-radius: 16px;
     }
 
     .ai-icon {
-      width: 24px;
-      height: 24px;
+      width: 28px; /* Slightly larger icon */
+      height: 28px;
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      border-radius: 6px;
+      border-radius: 7px; /* Slightly larger radius */
       display: inline-block;
-      margin-right: 8px;
+      margin-right: 10px; /* More spacing */
       position: relative;
+      vertical-align: middle; /* Align with text */
     }
 
     .ai-icon::after {
@@ -113,37 +116,40 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 12px;
+      font-size: 14px; /* Slightly larger sparkle */
     }
 
     @media only screen and (max-width: 600px) {
       .verification-code {
-        font-size: 24px;
-        padding: 16px 32px;
+        font-size: 26px; /* Adjusted for smaller screens */
+        padding: 20px 35px;
         letter-spacing: 3px;
+      }
+      .header-title {
+        font-size: 28px !important;
+      }
+      .header-subtitle {
+        font-size: 16px !important;
       }
     }
   </style>
 </head>
-<body style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); margin: 0; padding: 0;">
+<body style="background: linear-gradient(135deg, #f0f4f8 0%, #e9edf2 100%); margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   
-  <!-- Preheader -->
   <div class="preheader" style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
     🚀 Your AI planning journey begins here! Verify your email to unlock intelligent planning features.
   </div>
 
-  <!-- Email Container -->
-  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #f0f4f8 0%, #e9edf2 100%);">
     
-    <!-- Header with Logo -->
     <tr>
       <td align="center" style="padding: 40px 20px 20px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
           <tr>
             <td align="center">
               <a href="{{frontendUrl}}" target="_blank" style="display: inline-block;">
-                <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
-                  <img src="{{logoUrl}}" alt="AI Planning Logo" border="0" width="32" style="display: block; width: 32px; max-width: 32px; min-width: 32px; filter: brightness(0) invert(1);">
+                <div style="background: linear-gradient(135deg, #5A67D8 0%, #805AD5 100%); width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 30px rgba(90, 103, 216, 0.4);">
+                  <img src="{{logoUrl}}" alt="AI Planning Logo" border="0" width="36" style="display: block; width: 36px; max-width: 36px; min-width: 36px; filter: brightness(0) invert(1);">
                 </div>
               </a>
             </td>
@@ -152,48 +158,44 @@
       </td>
     </tr>
 
-    <!-- Main Content Card -->
     <tr>
       <td align="center" style="padding: 0 20px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
           <tr>
-            <td class="magic-border" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+            <td class="card-border" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
               
-              <!-- Header Section -->
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td class="gradient-bg ai-pattern" style="padding: 40px 40px 30px; text-align: center;">
-                    <h1 style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 32px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.2;">
+                  <td class="header-bg ai-pattern" style="padding: 40px 40px 30px; text-align: center;">
+                    <h1 class="header-title" style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 36px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 5px rgba(0,0,0,0.2); line-height: 1.2;">
                       🧠 Activate Your AI Brain
                     </h1>
-                    <p style="margin: 12px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; color: rgba(255,255,255,0.9); font-weight: 500;">
+                    <p class="header-subtitle" style="margin: 15px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 19px; color: rgba(255,255,255,0.95); font-weight: 500;">
                       Your intelligent planning companion awaits
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Content Section -->
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td style="padding: 40px 40px 30px;">
                     <div style="text-align: center; margin-bottom: 30px;">
                       <div class="ai-icon"></div>
-                      <span style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; color: #6366f1; font-weight: 600;">AI Planning Assistant</span>
+                      <span style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; color: #5A67D8; font-weight: 600; vertical-align: middle;">AI Planning Assistant</span>
                     </div>
                     
-                    <p style="margin: 0 0 24px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151; text-align: center;">
+                    <p style="margin: 0 0 24px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; line-height: 1.6; color: #374151; text-align: center;">
                       Welcome to the future of intelligent planning! 🚀 Your AI-powered assistant is ready to help you organize, strategize, and achieve your goals with unprecedented efficiency.
                     </p>
                     
-                    <p style="margin: 0 0 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151; text-align: center;">
+                    <p style="margin: 0 0 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; line-height: 1.6; color: #374151; text-align: center;">
                       Enter this verification code to unlock your AI planning superpowers:
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Verification Code Section -->
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center" style="padding: 0 40px 40px;">
@@ -204,22 +206,21 @@
                 </tr>
               </table>
 
-              <!-- Additional Info -->
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td style="padding: 0 40px 40px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-top: 1px solid #e2e8f0;">
                     <div style="text-align: center; padding-top: 30px;">
-                      <p style="margin: 0 0 16px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; line-height: 1.5;">
+                      <p style="margin: 0 0 16px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; color: #6b7280; line-height: 1.5;">
                         ⏰ This code expires in <strong>{{expirationTime}} minutes</strong>
                       </p>
-                      <p style="margin: 0 0 24px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; line-height: 1.5;">
+                      <p style="margin: 0 0 24px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; color: #6b7280; line-height: 1.5;">
                         Didn't request this? You can safely ignore this email.
                       </p>
                       
                       <div style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
-                        <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; color: #374151; font-weight: 500;">
+                        <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; color: #374151; font-weight: 500;">
                           Ready to plan smarter? 🎯<br>
-                          <span style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">{{companyName}} AI Team</span>
+                          <span style="background: linear-gradient(135deg, #5A67D8 0%, #805AD5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">{{companyName}} AI Team</span>
                         </p>
                       </div>
                     </div>
@@ -233,7 +234,6 @@
       </td>
     </tr>
 
-    <!-- Footer -->
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">

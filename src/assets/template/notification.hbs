@@ -1,258 +1,516 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>{{notificationTitle}} - AI Planning Assistant</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style type="text/css">
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
-    body, table, td, a {
-      -ms-text-size-adjust: 100%;
-      -webkit-text-size-adjust: 100%;
-    }
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{{notificationTitle}} - AI Planning Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    table, td {
-      mso-table-rspace: 0pt;
-      mso-table-lspace: 0pt;
-    }
+        /* Base Styles */
+        body, table, td, a {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        table, td {
+            mso-table-rspace: 0pt;
+            mso-table-lspace: 0pt;
+        }
+        
+        img {
+            -ms-interpolation-mode: bicubic;
+            height: auto;
+            line-height: 100%;
+            text-decoration: none;
+            border: 0;
+            outline: none;
+        }
+        
+        body {
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+        
+        table {
+            border-collapse: collapse !important;
+        }
+        
+        a {
+            color: #6366f1;
+            text-decoration: none;
+        }
 
-    img {
-      -ms-interpolation-mode: bicubic;
-      height: auto;
-      line-height: 100%;
-      text-decoration: none;
-      border: 0;
-      outline: none;
-    }
+        /* Enhanced Background Patterns */
+        .body-pattern {
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+        }
 
-    body {
-      width: 100% !important;
-      height: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
+        .ai-pattern {
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+        }
 
-    table {
-      border-collapse: collapse !important;
-    }
+        /* Enhanced Logo Container */
+        .logo-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 8px 16px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
 
-    a {
-      color: #6366f1;
-      text-decoration: none;
-    }
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0.6;
+        }
 
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+        .logo-container img {
+            width: 36px;
+            max-width: 36px;
+            min-width: 36px;
+            filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(231deg) brightness(97%) contrast(101%);
+        }
 
-    .success-gradient {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    }
+        /* Enhanced Notification Badge */
+        .notification-badge {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+            color: #4338ca;
+            border-radius: 25px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .warning-gradient {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
+        /* Enhanced Main Card */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.12),
+                0 16px 32px rgba(0, 0, 0, 0.08),
+                0 8px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
 
-    .info-gradient {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    }
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+        }
 
-    .alert-gradient {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
+        /* Enhanced Header Section */
+        .header-section {
+            padding: 40px 32px;
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
 
-    .ai-pattern {
-      background-image: 
-        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
-    }
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
 
-    .cta-button {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-      padding: 16px 32px;
-      color: #ffffff !important;
-      text-decoration: none !important;
-      font-weight: 600;
-      font-size: 16px;
-      display: inline-block;
-    }
+        .header-section h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
 
-    .magic-border {
-      border: 2px solid transparent;
-      background: linear-gradient(white, white) padding-box,
-                  linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7) border-box;
-      border-radius: 16px;
-    }
+        .header-section p {
+            margin: 12px 0 0;
+            font-size: 18px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.2px;
+        }
 
-    .notification-badge {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-block;
-      margin-left: 8px;
-    }
+        /* Enhanced Header Icon */
+        .header-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            line-height: 1;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
 
-    /* Dynamic gradient classes based on notification type */
-    .ALERT { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-    .REMINDER { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    .SUCCESS { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .INFO { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
-    .UPDATE { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        /* Enhanced Content Section */
+        .content-section {
+            padding: 40px;
+            color: #1f2937;
+            font-size: 17px;
+            line-height: 1.7;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.8) 100%);
+        }
 
-    @media only screen and (max-width: 600px) {
-      .cta-button {
-        padding: 14px 28px;
-        font-size: 15px;
-      }
-    }
-  </style>
+        .content-section p {
+            margin: 0 0 24px;
+        }
+
+        .content-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .content-section p:first-child {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Enhanced CTA Button */
+        .cta-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            border-radius: 16px;
+            box-shadow: 
+                0 16px 32px rgba(99, 102, 241, 0.4),
+                0 8px 16px rgba(99, 102, 241, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            padding: 18px 36px;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            font-weight: 700;
+            font-size: 18px;
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        /* Enhanced Footer Info */
+        .footer-info {
+            padding: 32px 40px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        .footer-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+        }
+
+        .footer-info p {
+            margin: 0 0 12px;
+            font-size: 16px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .footer-info span {
+            background: linear-gradient(135deg, #6366f1 0%, #0863eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* Enhanced Global Footer */
+        .global-footer {
+            padding: 40px 20px 50px;
+            text-align: center;
+        }
+
+        .global-footer p {
+            margin: 0 0 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .global-footer p:last-child {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+        }
+
+        /* Enhanced Dynamic Gradient Classes */
+        .ALERT { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+        }
+        
+        .REMINDER { 
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        }
+        
+        .SUCCESS { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+        }
+        
+        .INFO { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+        }
+        
+        .UPDATE { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #5b21b6 100%);
+        }
+
+        /* Enhanced Responsive Design */
+        @media only screen and (max-width: 600px) {
+            .logo-container {
+                width: 64px;
+                height: 64px;
+                border-radius: 18px;
+            }
+            
+            .logo-container img {
+                width: 32px;
+                max-width: 32px;
+                min-width: 32px;
+            }
+            
+            .header-section {
+                padding: 32px 24px;
+            }
+            
+            .header-section h1 {
+                font-size: 28px;
+            }
+            
+            .header-section p {
+                font-size: 16px;
+            }
+            
+            .header-icon {
+                font-size: 56px;
+                width: 80px;
+                height: 80px;
+            }
+            
+            .content-section {
+                padding: 32px 24px;
+                font-size: 16px;
+            }
+            
+            .cta-button {
+                padding: 16px 28px;
+                font-size: 16px;
+            }
+            
+            .footer-info {
+                padding: 24px;
+            }
+            
+            .global-footer {
+                padding: 32px 20px 40px;
+            }
+        }
+
+        /* Animation for better visual appeal */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
 </head>
-<body style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); margin: 0; padding: 0;">
-  
-  <!-- Preheader -->
-  <div class="preheader" style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
-    {{preheaderText}}
-  </div>
+<body style="margin: 0; padding: 0;">
+    <!-- Preheader Text -->
+    <div style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #2084e8; opacity: 0;">
+        {{preheaderText}}
+    </div>
 
-  <!-- Email Container -->
-  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
-    
-    <!-- Header with Logo -->
-    <tr>
-      <td align="center" style="padding: 30px 20px 20px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-          <tr>
-            <td align="center">
-              <a href="{{frontendUrl}}" target="_blank" style="display: inline-block;">
-                <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
-                  <img src="{{logoUrl}}" alt="AI Planning Logo" border="0" width="28" style="display: block; width: 28px; max-width: 28px; min-width: 28px; filter: brightness(0) invert(1);">
-                </div>
-              </a>
-              <p style="margin: 12px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; font-weight: 500;">
-                AI Planning Assistant
-                <span class="notification-badge">{{notificationType}}</span>
-              </p>
+    <!-- Main Email Container -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="body-pattern" style="background: linear-gradient(135deg, #667eea 0%, #2084e8 100%); border-radius: 10px">
+        <!-- Logo Section -->
+        <tr>
+            <td align="center" style="padding: 40px 20px 30px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td align="center">
+                            <a href="{{frontendUrl}}" target="_blank" style="display: inline-block;">
+                                                                <img style="border-radius: 10px; padding: 10px;" src="{{logoUrl}}" alt="AI Planning Logo" border="0">
+
+                            </a>
+                            <p style="margin: 16px 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.9); font-weight: 600; letter-spacing: 0.5px;">
+                                AI Planning Assistant
+                                {{#if notificationType}}
+                                    <span class="notification-badge">{{notificationType}}</span>
+                                {{/if}}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
             </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+        </tr>
 
-    <!-- Main Content Card -->
-    <tr>
-      <td align="center" style="padding: 0 20px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-          <tr>
-            <td class="magic-border" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
-              
-              <!-- Header Section with Dynamic Gradient -->
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td class="{{notificationType}} ai-pattern" style="padding: 32px 32px 24px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 16px;">
-                      <!-- Dynamic icon based on notification type -->
-                      {{#if notificationType}}
-                        {{#eq notificationType "ALERT"}}🚨{{/eq}}
-                        {{#eq notificationType "REMINDER"}}⏰{{/eq}}
-                        {{#eq notificationType "SUCCESS"}}🎉{{/eq}}
-                        {{#eq notificationType "INFO"}}💡{{/eq}}
-                        {{#eq notificationType "UPDATE"}}🚀{{/eq}}
-                      {{else}}
-                        🤖
-                      {{/if}}
-                    </div>
-                    <h1 style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.2;">
-                      {{notificationTitle}}
-                    </h1>
-                    <p style="margin: 8px 0 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 500;">
-                      Your AI planning assistant has an update
-                    </p>
-                  </td>
-                </tr>
-              </table>
+        <!-- Main Content Card -->
+        <tr>
+            <td align="center" style="padding: 0 20px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td class="main-card">
+                            <!-- Header Section with Dynamic Background -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td class="{{notificationType}} ai-pattern header-section">
+                                        <div class="header-icon">
+                                            {{#if notificationType}}
+                                                {{#eq notificationType "ALERT"}}🚨{{/eq}}
+                                                {{#eq notificationType "REMINDER"}}⏰{{/eq}}
+                                                {{#eq notificationType "SUCCESS"}}🎉{{/eq}}
+                                                {{#eq notificationType "INFO"}}💡{{/eq}}
+                                                {{#eq notificationType "UPDATE"}}🚀{{/eq}}
+                                            {{else}}
+                                                🤖
+                                            {{/if}}
+                                        </div>
+                                        <h1 style="color: black">{{notificationTitle}}</h1>
+                                        <p style="color: black">Your AI planning assistant has an important update</p>
+                                    </td>
+                                </tr>
+                            </table>
 
-              <!-- Content Section -->
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td style="padding: 32px;">
-                    
-                    <!-- Greeting -->
-                    <p style="margin: 0 0 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151;">
-                      Hi {{userName}},
-                    </p>
-                    
-                    <!-- Main Message -->
-                    <p style="margin: 0 0 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; line-height: 1.6; color: #374151;">
-                      {{mainMessage}}
-                    </p>
+                            <!-- Content Section -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td class="content-section">
+                                        <p>Hi {{userName}},</p>
+                                        <p>{{mainMessage}}</p>
+                                    </td>
+                                </tr>
+                            </table>
 
-                  </td>
-                </tr>
-              </table>
+                            <!-- CTA Button Section -->
+                            {{#if linkTo}}
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 0 40px 40px;">
+                                        <a href="{{linkTo}}" class="cta-button" target="_blank">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            {{/if}}
 
-              <!-- CTA Section (only show if linkTo exists) -->
-              {{#if linkTo}}
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td align="center" style="padding: 0 32px 32px;">
-                    <a href="{{linkTo}}" class="cta-button" target="_blank">
-                      View Details
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              {{/if}}
-
-              <!-- Footer Info -->
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td style="padding: 24px 32px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-top: 1px solid #e2e8f0;">
-                    <div style="text-align: center;">
-                      {{#if sentAt}}
-                      <p style="margin: 0 0 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #6b7280; line-height: 1.5;">
-                        Sent on {{sentAt}}
-                      </p>
-                      {{/if}}
-                      <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #374151; font-weight: 500;">
-                        Keep planning smart! 🎯<br>
-                        <span style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">{{companyName}} AI Team</span>
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
+                            <!-- Footer Info Section -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td class="footer-info">
+                                        <p>Keep planning smart! 🎯<br>
+                                        <span>{{companyName}} AI Team</span></p>
+                                        {{#if sentAt}}
+                                            <p style="margin-top: 18px; font-size: 14px; color: #64748b; font-weight: 400;">
+                                                Sent on {{sentAt}}
+                                            </p>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+        </tr>
 
-    <!-- Footer -->
-    <tr>
-      <td align="center" style="padding: 30px 20px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-          <tr>
-            <td align="center" style="padding: 0 24px;">
-              <p style="margin: 0 0 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; line-height: 1.5; color: #6b7280; text-align: center;">
-                You're receiving this notification because you're using {{companyName}} AI Planning Assistant.
-              </p>
-              <p style="margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; line-height: 1.4; color: #9ca3af; text-align: center;">
-                {{companyAddress}}
-              </p>
+        <!-- Global Footer -->
+        <tr>
+            <td align="center" class="global-footer">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    <tr>
+                        <td align="center" style="padding: 0 24px;">
+                            <p>You're receiving this notification because you're using {{companyName}} AI Planning Assistant.</p>
+                            <p>{{companyAddress}}</p>
+                        </td>
+                    </tr>
+                </table>
             </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-
-  </table>
+        </tr>
+    </table>
 </body>
 </html>
