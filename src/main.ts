@@ -4,13 +4,16 @@ import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
+import * as hbs from 'handlebars';
 import * as http from 'http';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './exception/all-exception.filter';
 import { ErrorLogService } from './modules/webhook/error-log.service';
-
 ///http://localhost:5173
 async function bootstrap() {
+  hbs.registerHelper('eq', function (a, b, options) {
+    return a === b ? options.fn(this) : options.inverse(this);
+  });
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const errorLogService = app.get(ErrorLogService);

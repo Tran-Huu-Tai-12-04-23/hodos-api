@@ -12,7 +12,7 @@ import { EmailService } from './email.service';
     MailerModule.forRoot({
       transport: {
         host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT || '465', 10),
+        port: Number(process.env.EMAIL_PORT),
         secure: Boolean(process.env.EMAIL_SECURE),
         auth: {
           user: process.env.EMAIL_USER,

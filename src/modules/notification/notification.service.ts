@@ -40,19 +40,31 @@ export class NotificationService {
       const notificationRepo = trans.getRepository(NotificationEntity);
       const userRepo = trans.getRepository(UserEntity);
       const now = new Date();
-      const minute = now.getMinutes();
-      if (minute !== 0) {
-        return { message: 'Not the scheduled time (minute !== 0)' };
-      }
-      const startHour = moment(now)
-        .startOf('day')
-        .format('YYYY-MM-DD HH:mm:ss');
-      const endHour = moment(now).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+      // Use UTC for time zone correctness since scheduledTime is 'timestamp with time zone'
+      const startHour = moment
+        .utc(now)
+        .set({
+          minute: now.getUTCMinutes(),
+          second: 0,
+          millisecond: 0,
+        })
+        .toDate();
+      const endHour = moment
+        .utc(now)
+        .set({
+          minute: now.getUTCMinutes(),
+          second: 59,
+          millisecond: 999,
+        })
+        .toDate();
+
       const schedules = await scheduleRepo.find({
         where: {
-          status: ScheduledNotificationStatus.PROCESSING,
-          createdAt: Raw(
-            (alias) => `${alias} BETWEEN '${startHour}' AND '${endHour}'`,
+          status: ScheduledNotificationStatus.PENDING,
+          scheduledTime: Raw(
+            (alias) => `${alias} BETWEEN :startHour AND :endHour`,
+            { startHour, endHour },
           ),
         },
       });

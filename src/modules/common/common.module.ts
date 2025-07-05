@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmExModule } from 'src/typeorm';
 import { LocationModule } from '../location/location.module';
+import { NotificationModule } from '../notification/notification.module';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
 import { FirebaseUploadService } from './firebase-upload.service';
 
 @Module({
-  imports: [TypeOrmExModule.forCustomRepository([]), LocationModule],
+  imports: [
+    TypeOrmExModule.forCustomRepository([]),
+    LocationModule,
+    NotificationModule,
+  ],
   providers: [CommonService, FirebaseUploadService],
   controllers: [CommonController],
   exports: [CommonService, FirebaseUploadService],
