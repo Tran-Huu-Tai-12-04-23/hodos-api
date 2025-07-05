@@ -85,3 +85,17 @@ export class UserDetailDTO {
   facebookLink: string;
   bio: string;
 }
+
+export class LoginWithGoogleDto {
+  @ApiProperty({ description: '' })
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @ApiProperty({ description: '' })
+  @IsString()
+  fullname: string;
+  @ApiProperty({ description: '' })
+  @IsString()
+  avatar: string;
+}

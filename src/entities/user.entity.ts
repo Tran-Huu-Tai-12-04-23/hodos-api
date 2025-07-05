@@ -49,6 +49,18 @@ export class UserEntity extends BaseEntityCustom {
 
   @Column({
     default: false,
+    nullable: true,
+  })
+  isLoginWithGoogle: boolean;
+
+  @Column({
+    default: false,
+    nullable: true,
+  })
+  isLoginWithFacebook: boolean;
+
+  @Column({
+    default: false,
   })
   isUpdateDetail: boolean;
 

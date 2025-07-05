@@ -5,7 +5,12 @@ import { UserEntity } from 'src/entities/user.entity';
 import { CurrentUser } from 'src/helpers/decorators';
 import { enumData } from '../../constants/enum-data';
 import { AuthService } from './auth.service';
-import { RefreshTokenDTO, SignInDTO, SignUpDTO } from './dto';
+import {
+  LoginWithGoogleDto,
+  RefreshTokenDTO,
+  SignInDTO,
+  SignUpDTO,
+} from './dto';
 import { JwtAuthGuard } from './jwt.auth.guard';
 
 @ApiTags('Authentication')
@@ -31,12 +36,29 @@ export class AuthController {
   }
 
   @ApiOperation({
+    summary: 'Login with sign-in-with-google',
+  })
+  @Post('sign-in-with-google')
+  async loginWithGoogle(@Body() loginWithGoogleDto: LoginWithGoogleDto) {
+    return await this.service.loginWithGoogle(loginWithGoogleDto);
+  }
+
+  @ApiOperation({
+    summary: 'Login with sign-in-with-google',
+  })
+  @Post('sign-in-with-facebook')
+  async loginWithFacebook(@Body() loginWithGoogleDto: LoginWithGoogleDto) {
+    return await this.service.loginWithFacebook(loginWithGoogleDto);
+  }
+
+  @ApiOperation({
     summary: 'Login with username and password',
   })
   @Post('sign-in')
   async signIn(@Body() signInDto: SignInDTO) {
     return await this.service.signIn(signInDto);
   }
+
   @ApiOperation({
     summary: 'Register user with username and password',
   })

@@ -5,10 +5,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from 'src/repositories/user.repository';
-import { RefreshTokenDTO, SignInDTO, SignUpDTO } from './dto';
+import {
+  LoginWithGoogleDto,
+  RefreshTokenDTO,
+  SignInDTO,
+  SignUpDTO,
+} from './dto';
 
 import { ConfigService } from '@nestjs/config';
 import { SubscriptionStatus } from 'src/entities';
+import { UserDetailEntity } from 'src/entities/userDetail.entity';
+import { v4 as uuidv4 } from 'uuid';
 import { enumData } from '../../constants/enum-data';
 import { UserEntity } from '../../entities/user.entity';
 import { EmailService } from '../email/email.service';
@@ -273,5 +280,141 @@ export class AuthService {
       ...res,
       userSubscription,
     };
+  }
+
+  /** login with google  */
+  async loginWithGoogle(data: LoginWithGoogleDto) {
+    const user = await this.repo.findOne({
+      where: { email: data.email, isDeleted: false },
+      relations: {
+        userDetail: true,
+      },
+    });
+
+    if (user) {
+      const payload = {
+        uid: user.id,
+      };
+      const accessToken = this.jwtService.sign(payload);
+
+      const refreshPayload = {
+        uid: user.id,
+      };
+      const refreshToken = this.jwtService.sign(refreshPayload, {
+        expiresIn: '7d',
+      });
+
+      const userSubInfo = await this.getUserSubscriptionInfo(user.id);
+
+      return {
+        accessToken,
+        refreshToken,
+        enumData,
+        user: {
+          ...user,
+          isNeedVerify: !user.verifyAt,
+          ...(userSubInfo || {}),
+        },
+      };
+    }
+
+    await this.repo.manager.transaction(async (trans) => {
+      const repo = trans.getRepository(UserEntity);
+      const detailRepo = trans.getRepository(UserDetailEntity);
+      // If user not found, create a new one
+      const newUser = new UserEntity();
+      newUser.id = uuidv4();
+      newUser.username = data.email;
+      newUser.email = data.email;
+      newUser.avatar = data.avatar;
+      newUser.isActive = true;
+      newUser.isLoginWithGoogle = true;
+      newUser.isLoginWithFacebook = false;
+      newUser.createdAt = new Date();
+      newUser.createdBy = data.email;
+      newUser.password = process.env.JWT_SECRET || 'default_password';
+      // add user detail
+      const userDetail = new UserDetailEntity();
+      userDetail.id = uuidv4();
+      userDetail.fullName = data.fullname;
+      userDetail.email = data.email;
+      userDetail.createdAt = new Date();
+      userDetail.userId = newUser.id;
+
+      await repo.insert(newUser);
+      await detailRepo.insert(userDetail);
+    });
+
+    return this.signIn({
+      username: data.email,
+      password: process.env.JWT_SECRET || 'default_password',
+    });
+  }
+
+  /** login with facebook  */
+  async loginWithFacebook(data: LoginWithGoogleDto) {
+    const user = await this.repo.findOne({
+      where: { email: data.email, isDeleted: false },
+      relations: {
+        userDetail: true,
+      },
+    });
+
+    if (user) {
+      const payload = {
+        uid: user.id,
+      };
+      const accessToken = this.jwtService.sign(payload);
+
+      const refreshPayload = {
+        uid: user.id,
+      };
+      const refreshToken = this.jwtService.sign(refreshPayload, {
+        expiresIn: '7d',
+      });
+
+      const userSubInfo = await this.getUserSubscriptionInfo(user.id);
+
+      return {
+        accessToken,
+        refreshToken,
+        enumData,
+        user: {
+          ...user,
+          isNeedVerify: !user.verifyAt,
+          ...(userSubInfo || {}),
+        },
+      };
+    }
+
+    await this.repo.manager.transaction(async (trans) => {
+      const repo = trans.getRepository(UserEntity);
+      const detailRepo = trans.getRepository(UserDetailEntity);
+      // If user not found, create a new one
+      const newUser = new UserEntity();
+      newUser.id = uuidv4();
+      newUser.username = data.email;
+      newUser.email = data.email;
+      newUser.avatar = data.avatar;
+      newUser.isActive = true;
+      newUser.isLoginWithGoogle = false;
+      newUser.isLoginWithFacebook = true;
+      newUser.createdAt = new Date();
+      newUser.createdBy = data.email;
+      newUser.password = process.env.JWT_SECRET || 'default_password';
+      // add user detail
+      const userDetail = new UserDetailEntity();
+      userDetail.id = uuidv4();
+      userDetail.fullName = data.fullname;
+      userDetail.email = data.email;
+      userDetail.createdAt = new Date();
+      userDetail.userId = newUser.id;
+      await repo.insert(newUser);
+      await detailRepo.insert(userDetail);
+    });
+    return this.signIn({
+      username: data.email,
+      password: process.env.JWT_SECRET || 'default_password',
+    });
   }
 }
