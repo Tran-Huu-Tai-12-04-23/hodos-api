@@ -16,11 +16,9 @@ export class EmailService {
   expirationTime =
     this.configService.get<number>('VERIFICATION_CODE_EXPIRATION_MINUTES') ||
     30;
-
   getHello(): string {
     return 'Hello World!';
   }
-
   public sendEmailNotification(
     user: UserEntity,
     notification: NotificationEntity,
