@@ -25,6 +25,7 @@ jobs:
         run: |
           cat <<EOF > .env
           APP_NAME='hodos'
+
           PORT='3000'
           ENV='development'
           NODE_ENV='development'
@@ -34,16 +35,14 @@ jobs:
           DB_PASSWORD='gennydev@123'
           DB_DATABASE='Hodos-pog'
           DB_LOGGING='false'
-          JWT_SECRET='hello'
-          JWT_EXPIRY='24h'
+          
           VIETMAP_API_KEY='9cbf0bc15d3901b7e043d8f76be8d73f370a82fe629a2d46'
           GITHUB_WEBHOOKS_TOKEN='secret'
           GEMINI_API_KEY='AIzaSyCeuHX33autYGQzsnwzn_aANlLYDVcWP5Y'
           PROJECT='HODOS_ADMIN'
           SOURCE='https://github.com/Tran-Huu-Tai-12-04-23/hodos-admin'
-          TELEGRAM_BOT_TOKEN="7721080747:AAHFZYBw9nWpqvqTTYDr_0eErpAmCW66zfY"
           EMAIL_HOST='smtp.gmail.com'
-          EMAIL_PORT='465'
+          EMAIL_PORT='587'
           EMAIL_SECURE='true'
           EMAIL_USER="huutaidev@gmail.com"
           EMAIL_PASSWORD="vynpmzlehxevdqxg"
@@ -52,16 +51,28 @@ jobs:
           COMPANY_ADDRESS='Tp Hồ Chí Minh, Việt Nam'
           LOGO_URL='https://firebasestorage.googleapis.com/v0/b/manager-project-3bc13.appspot.com/o/logo.png?alt=media&token=18e63389-a67a-4d7f-bd6a-1ade688c8088'
           VERIFICATION_CODE_EXPIRATION_MINUTES='10'
-          FIREBASE_API_KEY=AIzaSyC4AF0EvsvapWk6Y09ZyC3Sm3ZsqzqpOHA
-          FIREBASE_AUTH_DOMAIN=hodos-f29d9.firebaseapp.com
-          FIREBASE_PROJECT_ID=hodos-f29d9
+          
+          # firebase 
           FIREBASE_STORAGE_BUCKET=hodos-f29d9.appspot.com
-          FIREBASE_MESSAGING_SENDER_ID=646639558632
-          FIREBASE_APP_ID=1:646639558632:web:2e89d12a833252cb4c8e5d
-          FIREBASE_MEASUREMENT_ID=G-W9YN4Y4290
-          FIREBASE_SERVICE_ACCOUNT_JSON=${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID=hodos-f29d9
+          FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDYhOteNEzIucF8\nVfae+/kJ4WnSo0s/S21VFq7gDA2xuPHGwyPzucMDToSNZS2ih/fB03YkV3u8K1tB\nGPT0OD+brpnHNuGn/omuXzdi5WngZOHfrUoJkuRTtyppm1aJoJ5Z4vXEPRTfQz5b\nSG6E9k9Y/vIfVp1dBDB7hHnaEUcYRad5wzKVn8vZFyJVrQaVFOetHkEQUVM30CCS\n9ijRXYwdkTPVgyPoPj5r1bMMDhMfDa+4c3qJhNU7vY2jKwx0BiRVkSkL87R7B4WJ\nTmSOO4jm6HoFLjzDdKS20uMNgQLLhunjh9KL5wHIaia8G33kGrc6KcsPj/S2r4/s\nH4yW8bjpAgMBAAECggEAGCx27tSeAgcjQBOE7mkpe93r57WNkCqGsWpP6fnOiZoh\nfFSLLgn+aN8aU4MJXk0Z700BsrsFuJOKo7D6oE2rZGFRD/njpdL4YjyFPYhpksEQ\nqt15F6qLzYD0vke2mLUTGOwLDnbXXrnuO1jR5gxt/XyxYahU926hTxkSVbN6IY5o\njuZxxSb90MA9RdpqvI214wZ9blrPA6Vmf5+fgsrM67PO+8YmLEXSvYHhWG+gPFE4\nECXyojote2JT+JEctao5tJ7XYsJXVZ3apnZkTNvOFEnvBy+GJfOz7mtCwl7yi//p\nEuCK0R5xBgoUX0hP9CIGnaMN7fGxZIXFaOCIiRUAkQKBgQD/Sro6ev9L0gHzz6yR\nl1FYHw6dFhS8UTMVLdala7vmqEAzbqrKc+BO2SSUQAX4QsMIths2+wyyFrxrnnoB\nGR2HOs+akAyRdYDfPYfrpbjnRmkFGbDZGPAKNZcTnEc//QLQXPZnhCO0dBiu428M\n34t4m3OxbIIgzTqN/FI9C/TxBQKBgQDZHqk4olmVIkQHTL0oBVcn0+HKpMFIROOS\nwkoNgt6jhDIDmaRBcE7+9Ks2b+luy93mQLnrl9FCZz3Sq+RBc+04EUFmH3oLRFIx\n2R8RVoF6nPa3ZBsQalJvrSus0WpKdAYJ9r/2Jorc7yrLCGgsbXyAF6xIscv4bkwK\nRqRKn4p9lQKBgCauYe0+ebQ5S8ZvbwxYSyD5A7PVhqrJ+t14po9F9aCLWb7xQ7uN\nNy17RUmZMc5d/0MwpIr+GvxY6Y+84WuNLKYyyQX4UY8wqKgqoI+Z+pxAVOVK8TrT\nxnslh5CXG0ycv3Jmw4cHxIkxFhRZrZfbvzw1AaCeelESB48/7g4F48UpAoGBALtn\nGprWjsoJjHxcgTxk96hZ2x8k++ucAm2vI2nsFq0+skinOb596MFpf8p56BuI/dv6\n7D7siGNvZ05KrbbND+kAA9nYu2e0Ldn21TkK2LFzgAQk9LNDgioAZ51AGCVxZbD9\n+QzGkb9G9EHQ3NHUIs0RIdSRGkQxN5L7DF2YvVnNAoGAO+r4H2iKqswZ/lgl2z6g\nDVDdPXKPRJTQ183+3bbMyDJsFnCfsbwCPvBgziTAoI0OeUN/8NLJK0lEK5WyFG3b\nuRkCEMZgeScqFqov66supjO+1sC3uX8jot7W1ONgt0ou4FKLE2J34JzQrt1Y975O\nF6f16T5Aifef+kbayNgjyu4=\n-----END PRIVATE KEY-----\n"
+          FIREBASE_CLIENT_EMAIL=firebase-adminsdk-76yo0@hodos-f29d9.iam.gserviceaccount.com
+          FIREBASE_CLIENT_ID=104897727190430685682
+          
+          #map key
           GOONG_API="https://rsapi.goong.io/trip"
           GOONG_API_KEY="Q8xgJs3mYDyoJSbtRkXLDhayucb8WkWsMVZWUYuW"
+          
+          #jwt key
+          JWT_SECRET="JWT_SECRET"
+          JWT_EXPIRY='24h'
+          
+          BANK_NAME='TpBank'
+          BANK_ACCOUNT="05677267222"
+          SEPAY_API_KEY='WOHMIWF9JFGVJUCRZB9EPY68BNDAY3N7CTYS7JIGKKTYMWIXEKLTNXSVSD4ZVDPU'
+          # để kiểm tra khi schedule
+          KEY_SECRET=TAI_DEP_TRAI
+
           EOF
 
       - name: Build Docker image
