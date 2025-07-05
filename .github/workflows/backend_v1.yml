@@ -49,7 +49,7 @@ jobs:
           FRONTEND_URL='http://localhost:3000'
           COMPANY_NAME='HODOS'
           COMPANY_ADDRESS='Tp Hồ Chí Minh, Việt Nam'
-          LOGO_URL='https://firebasestorage.googleapis.com/v0/b/manager-project-3bc13.appspot.com/o/logo.png?alt=media&token=18e63389-a67a-4d7f-bd6a-1ade688c8088'
+          LOGO_URL='https://firebasestorage.googleapis.com/v0/b/hodos-f29d9.appspot.com/o/trip%2F1-removebg-preview.png?alt=media&token=2499d15d-a73e-460d-9e6b-781b7ca470eb'
           VERIFICATION_CODE_EXPIRATION_MINUTES='10'
           
           # firebase 
