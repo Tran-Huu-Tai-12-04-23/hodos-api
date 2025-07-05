@@ -1,34 +1,67 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs/promises';
 import * as sharp from 'sharp';
-
 @Injectable()
 export class FirebaseUploadService implements OnModuleInit {
   private bucket: any;
+  private readonly logger = new Logger(FirebaseUploadService.name);
 
   async onModuleInit() {
-    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    const serviceAccount = JSON.parse(serviceAccountString || '{}');
+    await this.initializeFirebase();
+    this.bucket = admin.storage().bucket();
+  }
 
-    // Khôi phục lại newline trong private key nếu đã escape
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(
-        /\\n/g,
-        '\n',
+  private initializeFirebase() {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+
+    if (!projectId) {
+      this.logger.warn(
+        'FIREBASE_PROJECT_ID not found in environment variables',
       );
+      return;
     }
 
-    if (!admin.apps.length) {
+    // Check if we have service account credentials in environment variables
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+
+    if (privateKey && clientEmail) {
+      // Use service account credentials from environment variables
+      const serviceAccount = {
+        projectId,
+        privateKey: privateKey.replace(/\\n/g, '\n'),
+        clientEmail,
+      };
+
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
+        projectId,
         storageBucket:
           process.env.FIREBASE_STORAGE_BUCKET || 'hodos-f29d9.appspot.com',
       });
+      this.logger.log('Firebase initialized with service account credentials');
+    } else {
+      // Try to use application default credentials (for production/GCP)
+      try {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+          projectId,
+        });
+        this.logger.log(
+          'Firebase initialized with application default credentials',
+        );
+      } catch (error) {
+        this.logger.warn(
+          'Could not initialize Firebase with default credentials. Firebase logging will be disabled.',
+        );
+        this.logger.warn(
+          'To enable Firebase logging, please configure FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL environment variables',
+        );
+        // Don't throw error, just disable Firebase functionality
+      }
     }
-
-    this.bucket = admin.storage().bucket();
   }
 
   async downloadImageBuffer(url: string): Promise<Buffer> {
