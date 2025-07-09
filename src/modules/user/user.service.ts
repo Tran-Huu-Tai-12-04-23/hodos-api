@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { SubscriptionStatus } from 'src/entities';
 import { UserEntity } from 'src/entities/user.entity';
@@ -6,6 +7,7 @@ import { UserDetailEntity } from 'src/entities/userDetail.entity';
 import { UserDetailRepository, UserRepository } from 'src/repositories';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthService } from '../auth/auth.service';
+import { CommonService } from '../common/common.service';
 import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 import { UserUpdateDto } from './dto';
 import { GetUserInfoDTO } from './dto/userInfo.dto';
@@ -17,64 +19,81 @@ export class UserService {
     private readonly detailRepo: UserDetailRepository,
     private readonly authService: AuthService,
     private readonly userSubscriptionService: UserSubscriptionsService,
+    private readonly commonService: CommonService,
   ) {}
 
   async detail(data: GetUserInfoDTO) {
     return await this.authService.getTokenFromAccessOrRefreshToken(data);
   }
 
-  async update(user: UserEntity, data: UserUpdateDto) {
-    const userFound = await this.repo.findOne({
+  async update(
+    user: UserEntity,
+    data: UserUpdateDto,
+    avatarFile?: Express.Multer.File,
+  ) {
+    const userFound: any = await this.repo.findOne({
       where: { id: user.id },
+      relations: {
+        userDetail: true,
+      },
     });
 
     if (!userFound) {
       throw new Error('User not found');
     }
 
-    if (userFound.isUpdateDetail) {
-      await this.detailRepo.update(
-        {
-          userId: userFound.id,
-        },
-        {
-          address: data.address,
-          phoneNumber: data.phoneNumber,
-          email: data.email,
-          githubLink: data.githubLink,
-          telegramLink: data.telegramLink,
-          facebookLink: data.facebookLink,
-          bio: data.bio,
-          profilePictureUrl: data.profilePictureUrl,
-          birthDate: data.birthDate,
-          gender: data.gender,
-          nationality: data.nationality,
-          travelInterests: data.travelInterests,
-          travelHistory: data.travelHistory,
-        },
-      );
-    } else {
-      const userDetail = new UserDetailEntity();
-      userDetail.id = uuidv4();
-      userDetail.userId = userFound.id;
-      userDetail.address = data.address || '';
-      userDetail.phoneNumber = data.phoneNumber || '';
-      userDetail.email = data.email || '';
-      userDetail.githubLink = data.githubLink || '';
-      userDetail.telegramLink = data.telegramLink || '';
-      userDetail.facebookLink = data.facebookLink || '';
-      userDetail.bio = data.bio || '';
-      userDetail.profilePictureUrl = data.profilePictureUrl || '';
-      userDetail.birthDate = data.birthDate ? new Date(data.birthDate) : null;
-      userDetail.gender = data.gender || '';
-      userDetail.nationality = data.nationality || '';
-      userDetail.travelInterests = data.travelInterests || '';
+    // ✅ Cập nhật avatar nếu có file upload
+    if (avatarFile) {
+      const avatarUrl = await this.commonService.uploadImage(avatarFile);
+      userFound.avatar = avatarUrl;
+    } else if (data.avatar) {
+      userFound.avatar = data.avatar;
     }
 
-    return {
-      ...userFound,
-      ...data,
-    };
+    // ✅ Cập nhật thông tin đơn giản
+    if (data.email) {
+      userFound.email = data.email;
+    }
+    userFound.isUpdateDetail = true;
+    userFound.updatedAt = new Date();
+
+    // ✅ Cập nhật chi tiết
+    if (userFound.__userDetail__) {
+      const detail = await userFound.userDetail;
+
+      if (data.fullName) detail.fullName = data.fullName;
+      if (data.phoneNumber) detail.phoneNumber = data.phoneNumber;
+      if (
+        data.birthDate &&
+        moment(data.birthDate, 'YYYY-MM-DD', true).isValid()
+      ) {
+        detail.birthDate = new Date(data.birthDate);
+      }
+      if (data.gender) detail.gender = data.gender;
+
+      await this.detailRepo.save(detail);
+    } else {
+      const detail = new UserDetailEntity();
+      detail.id = uuidv4();
+      detail.userId = userFound.id;
+      detail.fullName = data.fullName || '';
+      detail.phoneNumber = data.phoneNumber || '';
+      detail.birthDate =
+        data.birthDate && moment(data.birthDate, 'YYYY-MM-DD', true).isValid()
+          ? new Date(data.birthDate)
+          : null;
+      detail.gender = data.gender || '';
+
+      await this.detailRepo.save(detail);
+    }
+
+    await this.repo.save(userFound);
+
+    // ✅ Return full user with detail
+    return await this.authService.signIn({
+      username: userFound.email,
+      password: userFound.password || 'default_password',
+    });
   }
 
   async pagination(data: PaginationDto<any>) {
