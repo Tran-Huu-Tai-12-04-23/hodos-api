@@ -10,6 +10,7 @@ export enum NotificationType {
   RECOMMENDATION = 'recommendation',
   TRIP_UPDATE = 'trip_update',
   NEW_CONTENT = 'new_content',
+  POST_REJECTED = 'post_rejected',
 }
 
 export enum NotificationChannel {

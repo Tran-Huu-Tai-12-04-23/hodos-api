@@ -10,6 +10,7 @@ import { TransactionModule } from '../transactions/transaction.module';
 import { UserModule } from '../user/user.module';
 import { AdminLogController } from './admin-log.controller ';
 import { AdminNotificationController } from './admin-notification.controller';
+import { AdminUserPostController } from './admin-user-post.controller';
 import { AdminUserController } from './admin-user.controller';
 import { AdminService } from './admin.service';
 
@@ -24,12 +25,14 @@ import { AdminService } from './admin.service';
     PlanTripModule,
     MasterDataModule,
     LogModule,
+    PostModule,
   ],
   providers: [AdminService],
   controllers: [
     AdminNotificationController,
     AdminUserController,
     AdminLogController,
+    AdminUserPostController,
   ],
   exports: [AdminService],
 })

@@ -339,6 +339,7 @@ export class NotificationService {
     data: CreateNotificationDto,
     userId: string,
     repo: any = this.repo,
+    createdBy: string = 'SYSTEM',
   ) {
     const notification = new NotificationEntity();
     notification.id = uuidv4();
@@ -348,13 +349,16 @@ export class NotificationService {
     notification.isRead = data.isRead || false;
     notification.type = data.type;
     notification.metadata = data.metaData || {};
-    notification.createdBy = 'SYSTEM';
+    notification.createdBy = createdBy;
     notification.createdAt = new Date();
     if (data.scheduledNotificationId) {
       notification.scheduledNotificationId = data.scheduledNotificationId;
     }
     await repo.insert(notification);
+    await this.pushNotification();
   }
+
+  async pushNotification() {}
   //#endregion
 
   //#endregion admin notification pagination

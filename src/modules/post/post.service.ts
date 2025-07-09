@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationDto } from 'src/dto/pagination.dto';
-import { PostEntity } from 'src/entities/post.entity';
+import { NotificationEntity, NotificationType, UserEntity } from 'src/entities';
+import { PostEntity, PostStatus } from 'src/entities/post.entity';
 import { coreHelper } from 'src/helpers';
 import { UserRepository } from 'src/repositories';
 import { PostRepository } from 'src/repositories/blog.repository';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
+import { CreateNotificationDto } from '../notification/dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class PostService {
@@ -13,6 +16,7 @@ export class PostService {
     private readonly repo: PostRepository,
     private readonly userRepo: UserRepository,
     private readonly locationRepo: LocationRepository,
+    private readonly notificationService: NotificationService,
   ) {}
   async create(blog: Partial<PostEntity>): Promise<PostEntity> {
     return this.repo.save(blog);
@@ -20,7 +24,9 @@ export class PostService {
 
   async pagination(data: PaginationDto<any>) {
     const res: any = await this.repo.findAndCount({
-      where: {},
+      where: {
+        status: PostStatus.PUBLISH,
+      },
       take: data.take,
       skip: data.skip,
       order: {
@@ -90,5 +96,68 @@ export class PostService {
 
   async remove(id: string): Promise<void> {
     await this.repo.delete(id);
+  }
+
+  /** admin service  */
+  adminPagination(data: PaginationDto<any>) {
+    const { skip, take, where } = data;
+    return this.repo.findAndCount({
+      where: {
+        ...where,
+      },
+      take,
+      skip,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  async rejected(id: string, user: UserEntity) {
+    const post = await this.repo.findOneBy({ id });
+    if (!post) {
+      throw new Error('Post not found');
+    }
+    post.status = PostStatus.REJECTED;
+    post.updatedBy = user.id;
+    post.updatedAt = new Date();
+
+    return this.repo.manager.transaction(async (trans) => {
+      const repo = trans.getRepository(PostEntity);
+      const notificationRepo = trans.getRepository(NotificationEntity);
+
+      await repo.save(post);
+
+      // send notification to user
+      const notificationDto: CreateNotificationDto = {
+        title: 'Bài viết của bạn đã bị từ chối',
+        message: `Bài viết "${post.title}" của bạn đã bị từ chối.`,
+        type: NotificationType.POST_REJECTED,
+        isRead: false,
+        metaData: {
+          post,
+        },
+        userId: post.userId,
+        scheduledNotificationId: null,
+      };
+
+      await this.notificationService.createNotification(
+        notificationDto,
+        post.userId,
+        notificationRepo,
+        user.username,
+      );
+
+      return {
+        message: 'Post rejected successfully',
+        post,
+        notification: {
+          title: notificationDto.title,
+          message: notificationDto.message,
+          type: notificationDto.type,
+          userId: notificationDto.userId,
+        },
+      };
+    });
   }
 }

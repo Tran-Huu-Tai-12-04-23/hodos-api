@@ -1,6 +1,11 @@
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntityCustom } from './base.entity';
 import { UserEntity } from './user.entity';
+export enum PostStatus {
+  PUBLISH = 'publish',
+  PENDING = 'pending',
+  REJECTED = 'rejected',
+}
 
 /** khi người dùng trên app tạo bài viết thì lưu ở đây */
 @Entity('post')
@@ -30,6 +35,12 @@ export class PostEntity extends BaseEntityCustom {
     type: 'int',
   })
   commentCount: number;
+  @Column({
+    type: 'enum',
+    enum: PostStatus,
+    default: PostStatus.PUBLISH,
+  })
+  status: PostStatus;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   userId: string;
