@@ -7,7 +7,7 @@ import { UserDetailEntity } from 'src/entities/userDetail.entity';
 import { UserDetailRepository, UserRepository } from 'src/repositories';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthService } from '../auth/auth.service';
-import { CommonService } from '../common/common.service';
+import { UploadService } from '../upload/upload.service';
 import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 import { UserUpdateDto } from './dto';
 import { GetUserInfoDTO } from './dto/userInfo.dto';
@@ -19,7 +19,7 @@ export class UserService {
     private readonly detailRepo: UserDetailRepository,
     private readonly authService: AuthService,
     private readonly userSubscriptionService: UserSubscriptionsService,
-    private readonly commonService: CommonService,
+    private readonly uploadService: UploadService,
   ) {}
 
   async detail(data: GetUserInfoDTO) {
@@ -44,7 +44,10 @@ export class UserService {
 
     // ✅ Cập nhật avatar nếu có file upload
     if (avatarFile) {
-      const avatarUrl = await this.commonService.uploadImage(avatarFile);
+      const avatarUrl = await this.uploadService.uploadImage(
+        avatarFile,
+        'avatars',
+      );
       userFound.avatar = avatarUrl;
     } else if (data.avatar) {
       userFound.avatar = data.avatar;

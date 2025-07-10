@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { PostEntity } from 'src/entities/post.entity';
 import { UserDataDTO } from '../auth/dto';
-import { FirebaseUploadService } from '../common/firebase-upload.service';
 import { PostService } from '../post/post.service';
+import { UploadService } from '../upload/upload.service';
 import { PostCreateDTO } from './dto/post.dto';
 
 @Injectable()
 export class MobileService {
   constructor(
     private readonly postService: PostService,
-    private readonly firebaseService: FirebaseUploadService,
+    private readonly uploadService: UploadService,
   ) {}
 
   //#region  travel blog
@@ -44,9 +44,10 @@ export class MobileService {
       // Upload each image to Firebase
       uploadedUrls = await Promise.all(
         files.map((file) =>
-          this.firebaseService.uploadBufferImage(
+          this.uploadService.uploadBufferImage(
             file.buffer,
             file.originalname,
+            'posts',
           ),
         ),
       );

@@ -5,6 +5,7 @@ import { LocationRepository } from 'src/repositories/location.repository';
 import { TypeOrmExModule } from 'src/typeorm';
 import { CommonModule } from '../common/common.module';
 import { GeminiAIModule } from '../geminiAI/geminiAI.module';
+import { UploadModule } from '../upload/upload.module';
 import { PlanTripController } from './plan-trip.controller';
 import { PlanTripService } from './plan-trip.service';
 
@@ -18,6 +19,7 @@ import { PlanTripService } from './plan-trip.service';
     ]),
     GeminiAIModule,
     CommonModule,
+    UploadModule,
   ],
   providers: [PlanTripService],
   controllers: [PlanTripController],

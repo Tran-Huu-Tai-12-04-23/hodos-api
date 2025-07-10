@@ -13,8 +13,8 @@ import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { UserDataDTO } from '../auth/dto';
-import { FirebaseUploadService } from '../common/firebase-upload.service';
 import { GeminiAIService } from '../geminiAI/geminiAI.service';
+import { UploadService } from '../upload/upload.service';
 import { CreateTripDTO } from './dto';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class PlanTripService {
     private readonly gemAiService: GeminiAIService,
     private readonly locationRepo: LocationRepository,
     private readonly repo: TripRepository,
-    private readonly firebaseService: FirebaseUploadService,
+    private readonly uploadService: UploadService,
     public readonly configService: ConfigService,
     public readonly tripDirectionRepo: TripDirectionRepository,
   ) {}
@@ -209,7 +209,7 @@ export class PlanTripService {
       const tripDirectionRepo = trans.getRepository(TripDirectionEntity);
 
       const randomImages = await this.getRandomFourImg(body);
-      const imgMerged = await this.firebaseService.mergeAndUploadImages(
+      const imgMerged = await this.uploadService.mergeAndUploadImages(
         randomImages,
         `${Date.now()}-${uuidv4()}.png`,
         'trip',
@@ -447,7 +447,7 @@ export class PlanTripService {
         randomImgs.push(uniqueImgs.splice(randomIndex, 1)[0]);
       }
 
-      const mergedImg = await this.firebaseService.mergeAndUploadImages(
+      const mergedImg = await this.uploadService.mergeAndUploadImages(
         randomImgs,
         `merged-${Date.now()}-${uuidv4()}.png`,
         'trip',
