@@ -29,7 +29,7 @@ export class MobilePostController {
     return this.service.postPagination(paginationDto);
   }
 
-  @Get('post/:id')
+  @Get(':id')
   async postDetail(@Param('id') id: string) {
     return this.service.postDetail(id);
   }
@@ -41,18 +41,16 @@ export class MobilePostController {
     type: PostCreateDTO,
   })
   @UseGuards(JwtAuthGuard)
-  @Post('post/create')
+  @Post('create')
   async postCreate(
     @CurrentUser() user: UserDataDTO,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() body: PostCreateDTO,
   ) {
-    console.log('Text fields:', body);
-    console.log('Uploaded files:', files);
     return this.service.postCreate(user, body, files);
   }
 
-  @Delete('post/:id')
+  @Delete(':id')
   async postRemove(@Param('id') id: string) {
     return this.service.postRemove(id);
   }
