@@ -12,9 +12,57 @@ export class BlogService {
     public readonly configService: ConfigService,
     private readonly repo: BlogRepository,
   ) {}
+  /** user function */
   async detail(id: string) {
     return await this.repo.findOneBy({ id });
   }
+
+  async top5() {
+    const blogs = await this.repo.find({
+      where: { isPublish: true, isDeleted: false },
+      order: { createdAt: 'DESC' },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        tag: true,
+        thumbnail: true,
+        createdAt: true,
+        updatedAt: true,
+        createdBy: true,
+        updatedBy: true,
+        isPublish: true,
+      },
+    });
+    return blogs;
+  }
+
+  async userPagination(body: PaginationDto<any>) {
+    const whereCon: any = {};
+    const whereCon2: any = {};
+    if (body.where.searchKey) {
+      whereCon.title = body.where.searchKey;
+      whereCon2.content = body.where.searchKey;
+      whereCon.tag = body.where.searchKey;
+      whereCon2.tag = body.where.searchKey;
+    }
+
+    whereCon.isPublish = true;
+    whereCon.isDeleted = false;
+    whereCon2.isPublish = true;
+    whereCon2.isDeleted = false;
+
+    const [result, total] = await this.repo.findAndCount({
+      where: [whereCon, whereCon2],
+      skip: body.skip,
+      take: body.take,
+    });
+
+    return { data: result, total };
+  }
+
+  /** admin function */
+
   async create(user: UserEntity, body: BlogCreateDTO) {
     const blog = new BlogEntity();
     blog.title = body.title;

@@ -63,11 +63,8 @@ export class UserService {
 
       if (data.fullName) detail.fullName = data.fullName;
       if (data.phoneNumber) detail.phoneNumber = data.phoneNumber;
-      if (
-        data.birthDate &&
-        moment(data.birthDate, 'YYYY-MM-DD', true).isValid()
-      ) {
-        detail.birthDate = new Date(data.birthDate);
+      if (data.birthDate) {
+        detail.birthDate = moment(data.birthDate, 'YYYY-MM-DD').toDate();
       }
       if (data.gender) detail.gender = data.gender;
 
@@ -92,7 +89,7 @@ export class UserService {
     // ✅ Return full user with detail
     return await this.authService.signIn({
       username: userFound.email,
-      password: userFound.password || 'default_password',
+      password: process.env.JWT_SECRET || '',
     });
   }
 

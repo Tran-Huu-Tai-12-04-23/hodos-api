@@ -401,7 +401,7 @@ export class AuthService {
       newUser.isLoginWithFacebook = true;
       newUser.createdAt = new Date();
       newUser.createdBy = data.email;
-      newUser.password = process.env.JWT_SECRET || 'default_password';
+      newUser.password = process.env.JWT_SECRET || '';
       // add user detail
       const userDetail = new UserDetailEntity();
       userDetail.id = uuidv4();
@@ -414,7 +414,7 @@ export class AuthService {
     });
     return this.signIn({
       username: data.email,
-      password: process.env.JWT_SECRET || 'default_password',
+      password: process.env.JWT_SECRET || '',
     });
   }
 }

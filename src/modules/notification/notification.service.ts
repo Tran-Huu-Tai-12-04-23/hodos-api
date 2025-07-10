@@ -233,7 +233,6 @@ export class NotificationService {
       data: schedule,
     };
   }
-
   async deleteScheduleNotification(id: string) {
     const schedule = await this.scheduleNotificationRepo.findOne({
       where: { id },
@@ -269,6 +268,22 @@ export class NotificationService {
     }
     return schedule;
   }
+  async read(user: UserEntity, id: string) {
+    const notification = await this.repo.findOne({
+      where: { id, userId: user.id },
+    });
+    if (!notification) {
+      throw new Error('Notification not found');
+    }
+    notification.isRead = true;
+    notification.updatedBy = user.id;
+    notification.updatedAt = new Date();
+    await this.repo.save(notification);
+    return {
+      message: 'Notification marked as read',
+      data: notification,
+    };
+  }
   //#endregion
   //#endregion notification
   async getNotificationById(id: string) {
@@ -288,6 +303,8 @@ export class NotificationService {
     if (type) {
       notification.typeData = type;
     }
+
+    await this.read(notification.user, id);
     return notification;
   }
   /** get notification by user  */
@@ -332,6 +349,8 @@ export class NotificationService {
       unreadCount,
       skip,
       take,
+      hasNext: res[0].length === take,
+      nextSkip: skip + take,
     };
   }
   /** create notification */

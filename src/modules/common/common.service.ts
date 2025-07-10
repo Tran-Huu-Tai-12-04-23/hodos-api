@@ -6,6 +6,7 @@ import {
   ref,
   uploadBytesResumable,
 } from 'firebase/storage';
+import { BlogService } from '../blog/blog.service';
 import { LocationService } from '../location/location.service';
 
 const firebaseConfig = {
@@ -22,12 +23,16 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 @Injectable()
 export class CommonService {
-  constructor(private readonly locationService: LocationService) {}
+  constructor(
+    private readonly locationService: LocationService,
+    private readonly blog: BlogService,
+  ) {}
 
   async dashBoardData() {
-    const [top10Location, top10Food]: any = await Promise.all([
+    const [top10Location, top10Food, topBlog]: any = await Promise.all([
       this.locationService.findAndCountTop(10, 'LOCATION'),
       this.locationService.findAndCountTop(10, 'FOOD'),
+      this.blog.top5(),
     ]);
 
     for (const i of top10Location[0]) {
@@ -56,6 +61,7 @@ export class CommonService {
         lst: top10Location[0],
         total: top10Location[1],
       },
+      blogs: topBlog,
     };
   }
 
