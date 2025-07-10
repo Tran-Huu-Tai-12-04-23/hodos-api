@@ -25,7 +25,7 @@ export class UploadController {
 
     return {
       message: 'Upload thành công!',
-      data: this.uploadService.getFileInfo(file),
+      url: this.uploadService.getFileInfo(file).url,
     };
   }
 
