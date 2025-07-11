@@ -34,6 +34,51 @@ export class AuthService {
 
   JWT_SECRET = this.configService.get<string>('JWT_SECRET');
 
+  async getUserInfo(userId: string) {
+    const user: any = await this.repo.findOne({
+      where: { id: userId },
+      relations: {
+        userDetail: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    if (!user.isActive) {
+      throw new UnauthorizedException('User not active!');
+    }
+
+    const payload = {
+      uid: user.id,
+    };
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshPayload = {
+      uid: user.id,
+    };
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      expiresIn: '7d',
+    });
+
+    const userSubInfo = await this.getUserSubscriptionInfo(user.id);
+
+    const userDetail = user.__userDetail__;
+    delete user.__userDetail__;
+    delete user.password;
+
+    return {
+      accessToken,
+      refreshToken,
+      enumData,
+      user: {
+        ...user,
+        userDetail,
+        isNeedVerify: !user.verifyAt,
+        ...(userSubInfo || {}),
+      },
+    };
+  }
   async signIn(signInDto: SignInDTO) {
     const user: any = await this.repo.findOne({
       where: [
@@ -292,30 +337,10 @@ export class AuthService {
     });
 
     if (user) {
-      const payload = {
-        uid: user.id,
-      };
-      const accessToken = this.jwtService.sign(payload);
-
-      const refreshPayload = {
-        uid: user.id,
-      };
-      const refreshToken = this.jwtService.sign(refreshPayload, {
-        expiresIn: '7d',
+      return await this.signIn({
+        username: data.email,
+        password: process.env.JWT_SECRET || '',
       });
-
-      const userSubInfo = await this.getUserSubscriptionInfo(user.id);
-
-      return {
-        accessToken,
-        refreshToken,
-        enumData,
-        user: {
-          ...user,
-          isNeedVerify: !user.verifyAt,
-          ...(userSubInfo || {}),
-        },
-      };
     }
 
     await this.repo.manager.transaction(async (trans) => {
@@ -345,7 +370,7 @@ export class AuthService {
       await detailRepo.insert(userDetail);
     });
 
-    return this.signIn({
+    return await this.signIn({
       username: data.email,
       password: process.env.JWT_SECRET || 'default_password',
     });
@@ -361,30 +386,10 @@ export class AuthService {
     });
 
     if (user) {
-      const payload = {
-        uid: user.id,
-      };
-      const accessToken = this.jwtService.sign(payload);
-
-      const refreshPayload = {
-        uid: user.id,
-      };
-      const refreshToken = this.jwtService.sign(refreshPayload, {
-        expiresIn: '7d',
+      return await this.signIn({
+        username: data.email,
+        password: process.env.JWT_SECRET || '',
       });
-
-      const userSubInfo = await this.getUserSubscriptionInfo(user.id);
-
-      return {
-        accessToken,
-        refreshToken,
-        enumData,
-        user: {
-          ...user,
-          isNeedVerify: !user.verifyAt,
-          ...(userSubInfo || {}),
-        },
-      };
     }
 
     await this.repo.manager.transaction(async (trans) => {
@@ -412,7 +417,7 @@ export class AuthService {
       await repo.insert(newUser);
       await detailRepo.insert(userDetail);
     });
-    return this.signIn({
+    return await this.signIn({
       username: data.email,
       password: process.env.JWT_SECRET || '',
     });

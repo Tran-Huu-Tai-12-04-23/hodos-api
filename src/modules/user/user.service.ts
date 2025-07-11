@@ -89,11 +89,7 @@ export class UserService {
 
     await this.repo.save(userFound);
 
-    // ✅ Return full user with detail
-    return await this.authService.signIn({
-      username: userFound.email,
-      password: process.env.JWT_SECRET || '',
-    });
+    return await this.authService.getUserInfo(userFound.id);
   }
 
   async pagination(data: PaginationDto<any>) {

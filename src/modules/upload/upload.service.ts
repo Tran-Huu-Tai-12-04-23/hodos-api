@@ -181,19 +181,6 @@ export class UploadService {
       throw new Error('No file provided');
     }
 
-    // Validate file type
-    const allowedImageTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-    ];
-
-    if (!allowedImageTypes.includes(file.mimetype)) {
-      throw new Error('Invalid file type. Only images are allowed.');
-    }
-
     // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB in bytes
     if (file.size > maxSize) {

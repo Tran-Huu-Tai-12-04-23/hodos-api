@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { BlogEntity } from 'src/entities/blog.entity';
 import { BlogRepository } from 'src/repositories/blog.repository';
+import { ILike } from 'typeorm';
 import { UserEntity } from './../../entities/user.entity';
 import { BlogCreateDTO, BlogUpdateDTO } from './dto/create.dto';
 
@@ -40,25 +41,33 @@ export class BlogService {
   async userPagination(body: PaginationDto<any>) {
     const whereCon: any = {};
     const whereCon2: any = {};
-    if (body.where.searchKey) {
-      whereCon.title = body.where.searchKey;
-      whereCon2.content = body.where.searchKey;
-      whereCon.tag = body.where.searchKey;
-      whereCon2.tag = body.where.searchKey;
+    const whereCon3: any = {};
+    if (body.where.name) {
+      whereCon.title = ILike(`%${body.where.name}%`);
+      whereCon2.content = ILike(`%${body.where.name}%`);
+      whereCon3.tag = ILike(`%${body.where.name}%`);
     }
 
     whereCon.isPublish = true;
     whereCon.isDeleted = false;
     whereCon2.isPublish = true;
     whereCon2.isDeleted = false;
+    whereCon3.isPublish = true;
+    whereCon3.isDeleted = false;
 
     const [result, total] = await this.repo.findAndCount({
-      where: [whereCon, whereCon2],
+      where: [whereCon, whereCon2, whereCon3],
       skip: body.skip,
       take: body.take,
     });
 
-    return { data: result, total };
+    return {
+      data: result,
+      total,
+      nextSkip: body.skip + body.take,
+      hasNext: body.skip + body.take < total,
+      take: body.take,
+    };
   }
 
   /** admin function */
