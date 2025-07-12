@@ -7,6 +7,21 @@ export enum PostStatus {
   REJECTED = 'rejected',
 }
 
+export const PostStatusData = {
+  [PostStatus.PUBLISH]: {
+    label: 'Published',
+    color: 'green',
+  },
+  [PostStatus.PENDING]: {
+    label: 'Pending',
+    color: 'yellow',
+  },
+  [PostStatus.REJECTED]: {
+    label: 'Rejected',
+    color: 'red',
+  },
+};
+
 /** khi người dùng trên app tạo bài viết thì lưu ở đây */
 @Entity('post')
 export class PostEntity extends BaseEntityCustom {

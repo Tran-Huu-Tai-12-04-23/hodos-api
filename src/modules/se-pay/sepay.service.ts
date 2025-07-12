@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  NotificationEntity,
   TransactionEntity,
   TransactionStatus,
   TransactionType,
   UserEntity,
 } from 'src/entities';
 import { callApiHelper } from 'src/helpers/callApiHelper';
-import { TransactionRepository } from 'src/repositories';
+import {
+  NotificationRepository,
+  TransactionRepository,
+} from 'src/repositories';
 import {
   PricingPlanRepository,
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
 import { v4 as uuidv4 } from 'uuid';
+import { NotificationService } from '../notification/notification.service';
 import { TransactionService } from '../transactions/transaction.service';
 import {
   BodyResponseTransactions,
@@ -30,6 +35,7 @@ export class SepayService {
     private readonly pricingPlanRepo: PricingPlanRepository,
     private readonly receivingBankRepo: ReceivingBankRepository,
     private readonly transactionService: TransactionService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   private readonly sepayApiKey =
@@ -164,17 +170,39 @@ export class SepayService {
         message: 'Your transaction has been successfully processed.',
         transferType: 'in',
       };
-      await this.notifySuccessTransaction(notifyBody);
+      await this.notifySuccessTransaction(
+        notifyBody,
+        this.transactionRepo.manager.getRepository(NotificationEntity),
+        {
+          transaction: checkTransaction,
+        },
+      );
       return {
         message: 'Transaction updated successfully',
       };
     }
   }
-  async notifySuccessTransaction(body: NotifyUserBodyDto) {
+  async notifySuccessTransaction(
+    body: NotifyUserBodyDto,
+    repo: NotificationRepository,
+    metaData?: any,
+  ) {
     //todo
     // This method can be implemented to notify about successful transactions
     // For example, sending an email or a message to a webhook
     // Currently, it is left empty as per the original code
+    await this.notificationService.createNotification(
+      {
+        metaData: metaData,
+        userId: body.userId,
+        scheduledNotificationId: null,
+        title: body.message,
+        message: body.description || '',
+        type: undefined,
+      },
+      body.userId,
+      repo,
+    );
     return body;
   }
   async notifyFailedTransaction() {
@@ -221,7 +249,8 @@ export class SepayService {
       throw new Error('Pricing plan not found');
     }
     // tạo. code cho transaction bao gồm type = SUBSCRIPTION_PAYMENT + 5 number randoms
-    const transactionCode = `SUBSCRIPTIONPAYMENT${Math.floor(
+    const timeCode = Date.now();
+    const transactionCode = `SUBSCRIPTIONPAYMENT${timeCode}${Math.floor(
       Math.random() * 100000,
     )}`;
     const transaction = new TransactionEntity();

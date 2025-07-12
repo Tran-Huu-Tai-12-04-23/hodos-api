@@ -8,6 +8,7 @@ import * as hbs from 'handlebars';
 import * as http from 'http';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './exception/all-exception.filter';
+import { AuthService } from './modules/auth/auth.service';
 import { ErrorLogService } from './modules/webhook/error-log.service';
 ///http://localhost:5173
 async function bootstrap() {
@@ -17,6 +18,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const errorLogService = app.get(ErrorLogService);
+  const authService = app.get(AuthService);
   const port = configService.get<string>('PORT');
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
@@ -28,7 +30,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // handle global exception
-  app.useGlobalFilters(new AllExceptionsFilter(configService, errorLogService));
+  app.useGlobalFilters(
+    new AllExceptionsFilter(configService, errorLogService, authService),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Life manager documents')

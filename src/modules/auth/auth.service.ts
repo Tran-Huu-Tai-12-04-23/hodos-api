@@ -14,6 +14,7 @@ import {
 
 import { ConfigService } from '@nestjs/config';
 import { SubscriptionStatus } from 'src/entities';
+import { UserDeviceEntity } from 'src/entities/user-device.entity';
 import { UserDetailEntity } from 'src/entities/userDetail.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { enumData } from '../../constants/enum-data';
@@ -328,15 +329,24 @@ export class AuthService {
   }
 
   /** login with google  */
-  async loginWithGoogle(data: LoginWithGoogleDto) {
-    const user = await this.repo.findOne({
+  async loginWithGoogle(data: LoginWithGoogleDto, deviceId: string) {
+    if (!deviceId) {
+      throw new UnauthorizedException(
+        'Device ID is required! You just can login with mobile device',
+      );
+    }
+    const user: any = await this.repo.findOne({
       where: { email: data.email, isDeleted: false },
       relations: {
         userDetail: true,
+        devices: true,
       },
     });
 
     if (user) {
+      // add fcm token if not exist
+      const devices = user?.__devices__ || [];
+      await this.checkDevices(devices, deviceId, user.id, data.fcmToken);
       return await this.signIn({
         username: data.email,
         password: process.env.JWT_SECRET || '',
@@ -368,6 +378,10 @@ export class AuthService {
 
       await repo.insert(newUser);
       await detailRepo.insert(userDetail);
+
+      // add fcm token if not exist
+      const devices: any = [];
+      await this.checkDevices(devices, deviceId, user.id, data.fcmToken);
     });
 
     return await this.signIn({
@@ -377,15 +391,24 @@ export class AuthService {
   }
 
   /** login with facebook  */
-  async loginWithFacebook(data: LoginWithGoogleDto) {
-    const user = await this.repo.findOne({
+  async loginWithFacebook(data: LoginWithGoogleDto, deviceId: string) {
+    if (!deviceId) {
+      throw new UnauthorizedException(
+        'Device ID is required! You just can login with mobile device',
+      );
+    }
+    const user: any = await this.repo.findOne({
       where: { email: data.email, isDeleted: false },
       relations: {
         userDetail: true,
+        devices: true,
       },
     });
 
     if (user) {
+      // add fcm token if not exist
+      const devices = user.__devices__ || [];
+      await this.checkDevices(devices, deviceId, user.id, data.fcmToken);
       return await this.signIn({
         username: data.email,
         password: process.env.JWT_SECRET || '',
@@ -416,10 +439,119 @@ export class AuthService {
       userDetail.userId = newUser.id;
       await repo.insert(newUser);
       await detailRepo.insert(userDetail);
+
+      // add fcm token if not exist
+      const devices: any = [];
+      await this.checkDevices(devices, deviceId, data.fcmToken, user.id);
     });
+
     return await this.signIn({
       username: data.email,
       password: process.env.JWT_SECRET || '',
+    });
+  }
+
+  /** sign in mobile  */
+  async signInMobile(signInDto: SignInDTO, deviceId: string) {
+    if (!deviceId) {
+      throw new UnauthorizedException(
+        'Device ID is required! You just can login with mobile device',
+      );
+    }
+    const user: any = await this.repo.findOne({
+      where: [
+        { username: signInDto.username, isDeleted: false },
+        { email: signInDto.username, isDeleted: false },
+      ],
+      relations: {
+        userDetail: true,
+        devices: true,
+      },
+    });
+
+    // add fcm token if not exist
+    const devices = user?.__devices__ || [];
+    await this.checkDevices(devices, deviceId, user.id, signInDto.fcmToken);
+
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    if (!user.isActive) {
+      throw new UnauthorizedException('User not active!');
+    }
+
+    const isMatch = await user.comparePassword(signInDto.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Password incorrect!');
+    }
+
+    const payload = {
+      uid: user.id,
+    };
+    const accessToken = this.jwtService.sign(payload);
+
+    const refreshPayload = {
+      uid: user.id,
+    };
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      expiresIn: '7d',
+    });
+
+    const userSubInfo = await this.getUserSubscriptionInfo(user.id);
+
+    const userDetail = user.__userDetail__;
+    delete user.__userDetail__;
+    delete user.password;
+
+    return {
+      accessToken,
+      refreshToken,
+      enumData,
+      user: {
+        ...user,
+        userDetail,
+        isNeedVerify: !user.verifyAt,
+        ...(userSubInfo || {}),
+      },
+    };
+  }
+
+  private async checkDevices(
+    devices: UserDeviceEntity[],
+    deviceId: string,
+    userId: string,
+    fcmToken?: string,
+  ) {
+    // check if device already exists
+    const existingDevice = devices.find(
+      (device) => device.deviceId === deviceId,
+    );
+    if (existingDevice && fcmToken === existingDevice.fcmToken) {
+      return;
+    } else {
+      // if device not exists, add new device
+      if (!fcmToken) {
+        throw new UnauthorizedException('FCM token is required!');
+      }
+      const newDevice = new UserDeviceEntity();
+      newDevice.id = uuidv4();
+      newDevice.deviceId = deviceId;
+      newDevice.fcmToken = fcmToken;
+      newDevice.userId = userId;
+      await this.repo.manager.getRepository(UserDeviceEntity).insert(newDevice);
+    }
+  }
+  /// remove old devices when token expired
+  removeDeviceId(userId: string, deviceId: string) {
+    return this.repo.manager.transaction(async (trans) => {
+      const userDeviceRepo = trans.getRepository(UserDeviceEntity);
+      const device = await userDeviceRepo.findOne({
+        where: { userId, deviceId },
+      });
+      if (!device) {
+        throw new NotFoundException('Device not found!');
+      }
+      await userDeviceRepo.delete(device.id);
     });
   }
 }

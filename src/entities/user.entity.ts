@@ -11,6 +11,7 @@ import { BaseEntityCustom } from './base.entity';
 import { PostEntity } from './post.entity';
 import { TripUserEntity } from './trip-user.entity';
 import { UserDetailEntity } from './userDetail.entity';
+import { UserDeviceEntity } from './user-device.entity';
 @Entity(`Users`)
 export class UserEntity extends BaseEntityCustom {
   @Column({ length: 500 })
@@ -97,4 +98,7 @@ export class UserEntity extends BaseEntityCustom {
 
   @OneToMany(() => TripUserEntity, (tripUser) => tripUser.user)
   tripUsers: Promise<TripUserEntity[]>;
+
+  @OneToMany(() => UserDeviceEntity, (device) => device.user)
+  devices: Promise<UserDeviceEntity[]>;
 }

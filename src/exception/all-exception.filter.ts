@@ -6,6 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from 'src/modules/auth/auth.service';
 import { ErrorLogService } from 'src/modules/webhook/error-log.service';
 
 @Catch()
@@ -13,6 +14,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     private readonly configService: ConfigService,
     private readonly errorLogService: ErrorLogService,
+    private readonly authService: AuthService,
   ) {}
 
   async catch(exception: any, host: ArgumentsHost) {
@@ -93,6 +95,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       response?.req?.authInfo?.name === 'TokenExpiredError'
     ) {
       message = 'Hết phiên đăng nhập, vui lòng đăng nhập lại để tiếp tục.';
+
+      // get device id and remove it from the request
+      // get device id from req from header
+      if (request.headers['x-device-id']) {
+        const deviceId = request.headers['x-device-id'];
+        await this.authService.removeDeviceId(jsonRequest.user.id, deviceId);
+      }
     }
 
     if (

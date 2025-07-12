@@ -1,7 +1,17 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
+import { UserEntity } from 'src/entities';
+import { CurrentUser } from 'src/helpers/decorators';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
+import { RejectPostDTO } from '../post/dto';
 import { PostService } from '../post/post.service';
 @UseGuards(JwtAuthGuard)
 @ApiTags('Admin User Post Controller')
@@ -14,8 +24,12 @@ export class AdminUserPostController {
     return this.service.adminPagination(body);
   }
 
-  @Put('reject/:id')
-  async rejectPost(@Body() body: any, @Param('id') id: string) {
-    return this.service.rejected(id, body);
+  @Patch('reject/:id')
+  async rejectPost(
+    @CurrentUser() user: UserEntity,
+    @Param('id') id: string,
+    @Body() data: RejectPostDTO,
+  ) {
+    return this.service.rejected(id, user, data);
   }
 }

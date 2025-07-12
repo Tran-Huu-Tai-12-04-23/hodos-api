@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from 'src/entities/user.entity';
@@ -39,18 +46,33 @@ export class AuthController {
     summary: 'Login with sign-in-with-google',
   })
   @Post('sign-in-with-google')
-  async loginWithGoogle(@Body() loginWithGoogleDto: LoginWithGoogleDto) {
-    return await this.service.loginWithGoogle(loginWithGoogleDto);
+  async loginWithGoogle(
+    @Body() loginWithGoogleDto: LoginWithGoogleDto,
+    @Headers('x-device-id') deviceId: string,
+  ) {
+    return await this.service.loginWithGoogle(loginWithGoogleDto, deviceId);
   }
 
   @ApiOperation({
     summary: 'Login with sign-in-with-google',
   })
   @Post('sign-in-with-facebook')
-  async loginWithFacebook(@Body() loginWithGoogleDto: LoginWithGoogleDto) {
-    return await this.service.loginWithFacebook(loginWithGoogleDto);
+  async loginWithFacebook(
+    @Body() loginWithGoogleDto: LoginWithGoogleDto,
+    @Headers('x-device-id') deviceId: string,
+  ) {
+    return await this.service.loginWithFacebook(loginWithGoogleDto, deviceId);
   }
-
+  @ApiOperation({
+    summary: 'Login with username and password',
+  })
+  @Post('sign-in-mobile')
+  async signInMobile(
+    @Headers('x-device-id') deviceId: string,
+    @Body() signInDto: SignInDTO,
+  ) {
+    return await this.service.signInMobile(signInDto, deviceId);
+  }
   @ApiOperation({
     summary: 'Login with username and password',
   })

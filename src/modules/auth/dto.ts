@@ -21,6 +21,10 @@ export class SignInDTO {
   @IsNotEmpty()
   @IsString()
   password: string;
+  @ApiProperty({ description: 'FCM token' })
+  @IsOptional()
+  @IsString()
+  fcmToken?: string;
 }
 
 export class SignUpDTO {
@@ -98,4 +102,8 @@ export class LoginWithGoogleDto {
   @ApiProperty({ description: '' })
   @IsString()
   avatar: string;
+  @ApiProperty({ description: 'FCM token' })
+  @IsOptional()
+  @IsString()
+  fcmToken: string;
 }

@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import {
   NotificationRepository,
   ScheduledNotificationRepository,
+  UserDeviceRepository,
 } from 'src/repositories';
 import { TypeOrmExModule } from 'src/typeorm';
 import { EmailModule } from '../email/email.module';
+import { FirebaseService } from './firebase.service';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
 
@@ -13,11 +15,12 @@ import { NotificationService } from './notification.service';
     TypeOrmExModule.forCustomRepository([
       NotificationRepository,
       ScheduledNotificationRepository,
+      UserDeviceRepository,
     ]),
     EmailModule,
   ],
-  providers: [NotificationService],
+  providers: [NotificationService, FirebaseService],
   controllers: [NotificationController],
-  exports: [NotificationService],
+  exports: [NotificationService, FirebaseService],
 })
 export class NotificationModule {}

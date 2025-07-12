@@ -4,9 +4,9 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs/promises';
 import * as sharp from 'sharp';
 @Injectable()
-export class FirebaseUploadService implements OnModuleInit {
+export class FirebaseService implements OnModuleInit {
   private bucket: any;
-  private readonly logger = new Logger(FirebaseUploadService.name);
+  private readonly logger = new Logger(FirebaseService.name);
 
   async onModuleInit() {
     await this.initializeFirebase();
@@ -136,5 +136,48 @@ export class FirebaseUploadService implements OnModuleInit {
       .toBuffer();
 
     return this.uploadBufferImage(finalImageBuffer, filename, folder);
+  }
+
+  async sendFCMNotification(token: string, title: string, body: string) {
+    try {
+      const message = {
+        notification: {
+          title,
+          body,
+        },
+        token,
+      };
+
+      const response = await admin.messaging().send(message);
+      console.log('Successfully sent message:', response);
+      return response;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  }
+  async sendFCMNotifications(tokens: string[], title: string, body: string) {
+    try {
+      const message = {
+        notification: {
+          title,
+          body,
+        },
+      };
+
+      const multicastMessage = {
+        ...message,
+        tokens,
+      };
+
+      const response = await admin
+        .messaging()
+        .sendEachForMulticast(multicastMessage);
+      console.log('Successfully sent multicast message:', response);
+      return response;
+    } catch (error) {
+      console.error('Error sending multicast message:', error);
+      throw error;
+    }
   }
 }

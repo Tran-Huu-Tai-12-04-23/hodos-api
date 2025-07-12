@@ -5,7 +5,6 @@ import { LocationModule } from '../location/location.module';
 import { NotificationModule } from '../notification/notification.module';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
-import { FirebaseUploadService } from './firebase-upload.service';
 
 @Module({
   imports: [
@@ -14,8 +13,8 @@ import { FirebaseUploadService } from './firebase-upload.service';
     NotificationModule,
     BlogModule,
   ],
-  providers: [CommonService, FirebaseUploadService],
+  providers: [CommonService],
   controllers: [CommonController],
-  exports: [CommonService, FirebaseUploadService],
+  exports: [CommonService],
 })
 export class CommonModule {}

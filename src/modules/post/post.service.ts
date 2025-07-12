@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { NotificationEntity, NotificationType, UserEntity } from 'src/entities';
-import { PostEntity, PostStatus } from 'src/entities/post.entity';
+import { PostRejectionEntity } from 'src/entities/post-rejection.entity';
+import {
+  PostEntity,
+  PostStatus,
+  PostStatusData,
+} from 'src/entities/post.entity';
 import { coreHelper } from 'src/helpers';
 import { UserRepository } from 'src/repositories';
 import { PostRepository } from 'src/repositories/blog.repository';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { CreateNotificationDto } from '../notification/dto';
 import { NotificationService } from '../notification/notification.service';
+import { RejectPostDTO } from './dto';
 
 @Injectable()
 export class PostService {
@@ -99,9 +106,9 @@ export class PostService {
   }
 
   /** admin service  */
-  adminPagination(data: PaginationDto<any>) {
+  async adminPagination(data: PaginationDto<any>) {
     const { skip, take, where } = data;
-    return this.repo.findAndCount({
+    const [res, total]: any = await this.repo.findAndCount({
       where: {
         ...where,
       },
@@ -111,9 +118,28 @@ export class PostService {
         createdAt: 'DESC',
       },
     });
+
+    const userIds = res.map((item: any) => item.userId);
+    const users = await this.userRepo.find({
+      where: {
+        id: In(userIds),
+      },
+    });
+
+    const dictUserById: any = coreHelper.toDict(users, 'id');
+    for (const item of res) {
+      item.user = dictUserById[item.userId];
+      item.statusData =
+        PostStatusData[item.status as keyof typeof PostStatusData];
+      item.isReject = item.status !== PostStatus.REJECTED;
+    }
+    return {
+      data: res,
+      total,
+    };
   }
 
-  async rejected(id: string, user: UserEntity) {
+  async rejected(id: string, user: UserEntity, body: RejectPostDTO) {
     const post = await this.repo.findOneBy({ id });
     if (!post) {
       throw new Error('Post not found');
@@ -125,8 +151,22 @@ export class PostService {
     return this.repo.manager.transaction(async (trans) => {
       const repo = trans.getRepository(PostEntity);
       const notificationRepo = trans.getRepository(NotificationEntity);
+      const postRejectionRepo = trans.getRepository(PostRejectionEntity);
 
       await repo.save(post);
+
+      // add post rejection record
+      const rejectPost = new PostRejectionEntity();
+      rejectPost.id = uuidv4();
+      rejectPost.reason = body.reason;
+      rejectPost.details = body.details;
+      rejectPost.adminId = user.id;
+      rejectPost.postId = post.id;
+      rejectPost.rejectedAt = new Date();
+      rejectPost.createdBy = user.id;
+      rejectPost.createdAt = new Date();
+
+      await postRejectionRepo.insert(rejectPost);
 
       // send notification to user
       const notificationDto: CreateNotificationDto = {
@@ -136,6 +176,7 @@ export class PostService {
         isRead: false,
         metaData: {
           post,
+          reason: rejectPost,
         },
         userId: post.userId,
         scheduledNotificationId: null,

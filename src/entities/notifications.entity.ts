@@ -50,6 +50,11 @@ export const NotificationTypeData = {
     name: 'New Content',
     description: 'Notifications about new content available in the app.',
   },
+  [NotificationType.POST_REJECTED]: {
+    color: '#E91E63',
+    name: 'Post Rejected',
+    description: 'Notifications for posts that have been rejected.',
+  },
 };
 
 export const NotificationChannelData = {

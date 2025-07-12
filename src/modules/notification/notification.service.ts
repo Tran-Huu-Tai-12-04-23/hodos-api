@@ -13,6 +13,7 @@ import {
 import {
   NotificationRepository,
   ScheduledNotificationRepository,
+  UserDeviceRepository,
 } from 'src/repositories';
 import { In, Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,6 +23,7 @@ import {
   CreateScheduledNotificationDto,
   UpdateScheduleNotificationDto,
 } from './dto';
+import { FirebaseService } from './firebase.service';
 
 @Injectable()
 export class NotificationService {
@@ -30,6 +32,8 @@ export class NotificationService {
     private readonly repo: NotificationRepository,
     private readonly scheduleNotificationRepo: ScheduledNotificationRepository,
     private readonly emailService: EmailService,
+    private readonly firebaseService: FirebaseService,
+    private readonly userDeviceRepo: UserDeviceRepository,
   ) {}
 
   //#region  channel schedule notification
@@ -374,10 +378,20 @@ export class NotificationService {
       notification.scheduledNotificationId = data.scheduledNotificationId;
     }
     await repo.insert(notification);
-    await this.pushNotification();
+
+    // get devices of users
+    const devices = await this.userDeviceRepo.find({
+      where: { userId: In([userId]) },
+      select: ['deviceId', 'fcmToken', 'platform'],
+    });
+
+    await this.firebaseService.sendFCMNotifications(
+      devices.map((device) => device.fcmToken),
+      data.title,
+      data.message,
+    );
   }
 
-  async pushNotification() {}
   //#endregion
 
   //#endregion admin notification pagination
