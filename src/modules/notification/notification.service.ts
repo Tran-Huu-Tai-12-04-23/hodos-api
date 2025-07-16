@@ -391,7 +391,6 @@ export class NotificationService {
       data.message,
     );
   }
-
   //#endregion
 
   //#endregion admin notification pagination
@@ -455,5 +454,14 @@ export class NotificationService {
       take,
       unreadCount,
     };
+  }
+
+  getTotalUnreadNotificationCount(userId: string): Promise<number> {
+    return this.repo.count({
+      where: {
+        userId,
+        isRead: false,
+      },
+    });
   }
 }

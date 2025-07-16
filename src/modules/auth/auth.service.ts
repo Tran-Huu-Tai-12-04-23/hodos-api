@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { SubscriptionStatus } from 'src/entities';
 import { UserDeviceEntity } from 'src/entities/user-device.entity';
 import { UserDetailEntity } from 'src/entities/userDetail.entity';
+import { EntityManager } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { enumData } from '../../constants/enum-data';
 import { UserEntity } from '../../entities/user.entity';
@@ -381,7 +382,13 @@ export class AuthService {
 
       // add fcm token if not exist
       const devices: any = [];
-      await this.checkDevices(devices, deviceId, user.id, data.fcmToken);
+      await this.checkDevices(
+        devices,
+        deviceId,
+        newUser.id,
+        data.fcmToken,
+        trans,
+      );
     });
 
     return await this.signIn({
@@ -521,6 +528,7 @@ export class AuthService {
     deviceId: string,
     userId: string,
     fcmToken?: string,
+    trans?: EntityManager,
   ) {
     // check if device already exists
     const existingDevice = devices.find(
@@ -538,7 +546,11 @@ export class AuthService {
       newDevice.deviceId = deviceId;
       newDevice.fcmToken = fcmToken;
       newDevice.userId = userId;
-      await this.repo.manager.getRepository(UserDeviceEntity).insert(newDevice);
+      await (
+        trans
+          ? trans.getRepository(UserDeviceEntity)
+          : this.repo.manager.getRepository(UserDeviceEntity)
+      ).insert(newDevice);
     }
   }
   /// remove old devices when token expired

@@ -240,25 +240,31 @@ Do not include any additional text or explanation, just the list. Ensure that th
 
     const dictLocationById = coreHelper.toDict([...locations, ...foods], 'id');
 
-    const instruction = `
-You are an AI travel assistant for tourists visiting Ho Chi Minh City.
-Use the location and food data provided below to answer the user's question.
+    const instruction = `You are an AI travel assistant for tourists visiting Ho Chi Minh City.
+    Use the location and food data provided below to answer the user's question.
 
-Here is the list of **locations**:
-${JSON.stringify(locations, null, 2)}
+    Here is the list of **locations**:
+    ${JSON.stringify(locations, null, 2)}
 
-Here is the list of **foods**:
-${JSON.stringify(foods, null, 2)}
+    Here is the list of **foods**:
+    ${JSON.stringify(foods, null, 2)}
 
-The user's message is:
-"${body.message}"
+    The user's message is:
+    "${body.message}"
+
+    Your task:
+    - Analyze the user's message to determine if it relates to locations, foods, or both.
+    - Based on the data provided, suggest a **maximum of 2** relevant locations or foods.
+    - Provide a brief **reason** why it's suitable and a short **description** of the place or food to help the user decide.
 
 Please respond in **JSON format** using this structure:
 {
   "type": "location" | "food" | "mixed",
   "recommendations": [
     { "id": "..." }
-  ]
+  ],
+  reason: "string",
+  description: "string",
 }
 `;
 
@@ -274,6 +280,8 @@ Please respond in **JSON format** using this structure:
         type: 'unknown',
         recommendations: [],
         message: 'Invalid response format. Please try again.',
+        reason: '',
+        description: '',
       };
     }
 
