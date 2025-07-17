@@ -15,7 +15,7 @@ import {
   ScheduledNotificationRepository,
   UserDeviceRepository,
 } from 'src/repositories';
-import { In, Raw } from 'typeorm';
+import { EntityManager, In, Raw } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { EmailService } from './../email/email.service';
 import {
@@ -41,8 +41,6 @@ export class NotificationService {
   async runScheduledNotification() {
     return this.repo.manager.transaction(async (trans) => {
       const scheduleRepo = trans.getRepository(ScheduledNotificationEntity);
-      const notificationRepo = trans.getRepository(NotificationEntity);
-      const userRepo = trans.getRepository(UserEntity);
       const now = new Date();
 
       // Use UTC for time zone correctness since scheduledTime is 'timestamp with time zone'
@@ -74,48 +72,7 @@ export class NotificationService {
       });
 
       for (const schedule of schedules) {
-        await scheduleRepo.update(schedule.id, {
-          status: ScheduledNotificationStatus.SENT,
-          updatedAt: new Date(),
-          history: {
-            ...schedule.history,
-            [new Date().toISOString()]: {
-              status: ScheduledNotificationStatus.SENT,
-              message: 'Scheduled notification is being sent',
-            },
-          },
-        });
-        const whereUser: any = {};
-        if (!schedule.isAllUser) {
-          whereUser.id = In(schedule.targetUserIds);
-        }
-        const users = await userRepo.find({
-          where: whereUser,
-          select: ['id', 'email'],
-        });
-
-        for (const user of users) {
-          const notification = new NotificationEntity();
-          notification.id = uuidv4();
-          notification.userId = user.id;
-          notification.title = schedule.title;
-          notification.message = schedule.message;
-          notification.type = schedule.notificationType;
-          notification.metadata = schedule.payload || {};
-          notification.isRead = false;
-          notification.createdBy = 'SYSTEM';
-          notification.createdAt = new Date();
-          if (
-            schedule.channels?.includes(NotificationChannel.EMAIL) &&
-            user.email
-          ) {
-            this.emailService.sendEmailNotification(user, notification);
-          }
-          if (schedule.channels?.includes(NotificationChannel.PUSH)) {
-            console.log(`Sending push notification to user ${user.id}`);
-          }
-          await notificationRepo.insert(notification);
-        }
+        await this.send(schedule, trans);
       }
 
       return {
@@ -463,5 +420,79 @@ export class NotificationService {
         isRead: false,
       },
     });
+  }
+
+  async sendNotificationSchedule(id: string) {
+    const schedule = await this.scheduleNotificationRepo.findOne({
+      where: { id },
+    });
+    if (!schedule) {
+      throw new Error('Scheduled notification not found');
+    }
+    if (schedule.status === ScheduledNotificationStatus.SENT) {
+      throw new Error('Scheduled notification already sent');
+    }
+    return this.repo.manager.transaction(async (trans) => {
+      const scheduleRepo = trans.getRepository(ScheduledNotificationEntity);
+
+      await scheduleRepo.update(id, {
+        status: ScheduledNotificationStatus.SENT,
+        updatedAt: new Date(),
+      });
+
+      await this.send(schedule, trans);
+      return {
+        message: 'Scheduled notification sent successfully',
+        data: schedule,
+      };
+    });
+  }
+
+  async send(schedule: ScheduledNotificationEntity, trans: EntityManager) {
+    const notificationRepo = trans.getRepository(NotificationEntity);
+    const userRepo = trans.getRepository(UserEntity);
+
+    const whereUser: any = {};
+    if (!schedule.isAllUser) {
+      whereUser.id = In(schedule.targetUserIds);
+    }
+    const users = await userRepo.find({
+      where: whereUser,
+      select: ['id', 'email'],
+    });
+
+    for (const user of users) {
+      const notification = new NotificationEntity();
+      notification.id = uuidv4();
+      notification.userId = user.id;
+      notification.title = schedule.title;
+      notification.message = schedule.message;
+      notification.type = schedule.notificationType;
+      notification.metadata = schedule.payload || {};
+      notification.isRead = false;
+      notification.createdBy = 'SYSTEM';
+      notification.createdAt = new Date();
+
+      if (
+        schedule.channels?.includes(NotificationChannel.EMAIL) &&
+        user.email
+      ) {
+        this.emailService.sendEmailNotification(user, notification);
+      }
+      if (schedule.channels?.includes(NotificationChannel.PUSH)) {
+        const devices = await this.userDeviceRepo.find({
+          where: { userId: user.id },
+          select: ['deviceId', 'fcmToken', 'platform'],
+        });
+        if (devices.length > 0) {
+          await this.firebaseService.sendFCMNotifications(
+            devices.map((device) => device.fcmToken),
+            notification.title,
+            notification.message,
+          );
+        }
+      }
+      await notificationRepo.insert(notification);
+    }
   }
 }

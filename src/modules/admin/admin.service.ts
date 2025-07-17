@@ -12,6 +12,9 @@ export class AdminService {
   constructor(private readonly notificationService: NotificationService) {}
 
   //#region notification
+  sendNotificationSchedule(id: string) {
+    return this.notificationService.sendNotificationSchedule(id);
+  }
   scheduleNotificationPagination(data: PaginationDto<any>) {
     return this.notificationService.scheduleNotificationPagination(data);
   }

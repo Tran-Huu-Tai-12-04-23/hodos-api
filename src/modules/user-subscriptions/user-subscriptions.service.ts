@@ -15,7 +15,7 @@ import {
   PricingPlanRepository,
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
-import { In } from 'typeorm';
+import { In, LessThan } from 'typeorm';
 import { SepayService } from '../se-pay/sepay.service';
 import { TransactionService } from '../transactions/transaction.service';
 
@@ -258,5 +258,41 @@ export class UserSubscriptionsService {
         isCompleted: false,
       };
     }
+  }
+
+  // check if user has expired subscription then remove or cancel subscription
+  async cancelExpiredUserSubscriptions(): Promise<{
+    message: string;
+    count: number;
+  }> {
+    const now = new Date();
+    const expiredSubscriptions = await this.repo.find({
+      where: {
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodEndDate: LessThan(now),
+      },
+    });
+
+    if (!expiredSubscriptions.length) {
+      return {
+        message: 'No expired subscriptions to cancel',
+        count: 0,
+      };
+    }
+
+    await this.repo.manager.transaction(async (trans) => {
+      const repo = trans.getRepository(UserSubscriptionEntity);
+      for (const subscription of expiredSubscriptions) {
+        await repo.update(subscription.id, {
+          status: SubscriptionStatus.EXPIRED,
+          cancelledAt: now,
+        });
+      }
+    });
+
+    return {
+      message: 'Expired subscriptions have been cancelled',
+      count: expiredSubscriptions.length,
+    };
   }
 }

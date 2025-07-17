@@ -15,6 +15,7 @@ import { MobileModule } from './modules/mobile/mobile.module';
 import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { PostModule } from './modules/post/post.module';
 import { PublicModule } from './modules/public/public.module';
+import { ScaleModule } from './modules/scale/scale.module';
 import { SepayModule } from './modules/se-pay/sepay.module';
 import { TransactionModule } from './modules/transactions/transaction.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -44,6 +45,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     AdminModule,
     UploadModule,
     PublicModule,
+    ScaleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

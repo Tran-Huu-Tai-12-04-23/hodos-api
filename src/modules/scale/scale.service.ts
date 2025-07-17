@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationService } from '../notification/notification.service';
+import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 
 @Injectable()
 export class ScaleService {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(
+    private readonly notificationService: NotificationService,
+    private readonly userSubService: UserSubscriptionsService,
+  ) {}
 
   // nếu là localhost thì ko run job
   private isLocalhost(): boolean {
@@ -17,6 +21,7 @@ export class ScaleService {
 
   /** Hàm chạy giữa đêm */
   public async autoRunMidNight() {
+    this.userSubService.cancelExpiredUserSubscriptions();
     return true;
   }
 

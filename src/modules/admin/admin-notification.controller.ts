@@ -63,5 +63,10 @@ export class AdminNotificationController {
   async getNotificationById(@Param('id') id: string) {
     return this.service.getNotificationById(id);
   }
+
+  @Patch('schedule/send/:id')
+  async sendScheduleNotification(@Param('id') id: string) {
+    return this.service.sendNotificationSchedule(id);
+  }
   //#endregion
 }
