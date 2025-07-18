@@ -149,20 +149,26 @@ export class ActionLogSubscriber implements EntitySubscriberInterface {
       // Skip storing actual parameters, just count them
 
       const logRepo = event.queryRunner.manager.getRepository(ActionLog);
-      await logRepo.save({
-        action: `REPO_${action}`,
-        entityName,
-        metadata: {
-          // Store just enough of the query to understand what happened
-          query: this.truncateQuery(event.query),
-          // Store minimal parameter info
-          paramCount: event.parameters?.length || 0,
-          // Store the calling function for context
-          caller: new Error().stack?.split('\n')[3]?.trim() || '',
-        },
-        performedBy: event.queryRunner.data?.user || null,
-        ip: event.queryRunner.data?.ip || null,
-      });
+      if (action === 'CREATE' || action === 'UPDATE' || action === 'DELETE') {
+        await logRepo.save({
+          action: `REPO_${action}`,
+          entityName,
+          metadata: {
+            // Store just enough of the query to understand what happened
+            // query: this.truncateQuery(event.query), // Do not store the full query
+            query: {
+              type: this.determineQueryAction(event.query),
+              table: this.extractEntityName(event.query),
+            },
+            // Store minimal parameter info
+            paramCount: event.parameters?.length || 0,
+            // Store the calling function for context
+            caller: new Error().stack?.split('\n')[3]?.trim() || '',
+          },
+          performedBy: event.queryRunner.data?.user || null,
+          ip: event.queryRunner.data?.ip || null,
+        });
+      }
     } catch (error) {
       // Don't crash if logging fails
       console.error('Failed to log repository action:', error);
