@@ -38,7 +38,7 @@ jobs:
           
           VIETMAP_API_KEY='9cbf0bc15d3901b7e043d8f76be8d73f370a82fe629a2d46'
           GITHUB_WEBHOOKS_TOKEN='secret'
-          GEMINI_API_KEY='AIzaSyAjU2N_DMD2nX3thZvzdobJghu27yYo8JI'
+          GEMINI_API_KEY='AIzaSyCE6p-XGCGaWZMSBMIxL3dOSpvDRvsSnkA'
           PROJECT='HODOS_ADMIN'
           SOURCE='https://github.com/Tran-Huu-Tai-12-04-23/hodos-admin'
           EMAIL_HOST='smtp.gmail.com'
