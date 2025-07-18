@@ -18,4 +18,5 @@ export const dataSource = new DataSource({
     resolve(__dirname, '../entities/master-data/*.entity{.ts,.js}'),
   ],
   migrations: [resolve(__dirname, '../migrations/*{.ts,.js}')],
+  subscribers: [resolve(__dirname, '../subscribers/*.subscriber{.ts,.js}')],
 });
