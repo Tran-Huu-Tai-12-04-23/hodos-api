@@ -43,7 +43,7 @@ export class ActionLogSubscriber implements EntitySubscriberInterface {
     await this.logRepositoryAction(event);
   }
 
-  private async saveLog(action: 'CREATE' | 'UPDATE' | 'DELETE', event: any) {
+  private async saveLog(action: 'INSERT' | 'UPDATE' | 'DELETE', event: any) {
     if (event.metadata?.target?.name === 'ActionLog') return;
 
     const logRepo = event.manager.getRepository(ActionLog);
