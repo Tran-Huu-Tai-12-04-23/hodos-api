@@ -16,6 +16,8 @@ export class ScaleService {
   /** Hàm chạy 10 phút */
   public async autoRunMightMinute() {
     this.notificationService.runScheduledNotification();
+    this.userSubService.cancelExpiredUserSubscriptions();
+
     return true;
   }
 

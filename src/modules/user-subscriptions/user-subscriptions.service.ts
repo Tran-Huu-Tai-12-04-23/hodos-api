@@ -272,7 +272,6 @@ export class UserSubscriptionsService {
         currentPeriodEndDate: LessThan(now),
       },
     });
-
     if (!expiredSubscriptions.length) {
       return {
         message: 'No expired subscriptions to cancel',
