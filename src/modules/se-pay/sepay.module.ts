@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import {
-  TransactionRepository,
-  UserSubscriptionRepository,
-} from 'src/repositories';
+
 import {
   PricingPlanRepository,
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
+import {
+  TransactionRepository,
+  UserSubscriptionRepository,
+} from 'src/repositories/transactions.repository';
 import { TypeOrmExModule } from 'src/typeorm';
 import { NotificationModule } from '../notification/notification.module';
 import { TransactionModule } from '../transactions/transaction.module';

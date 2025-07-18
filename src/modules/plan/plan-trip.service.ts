@@ -13,8 +13,10 @@ import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { UserDataDTO } from '../auth/dto';
+import { DeviceTrialService } from '../device-trial/device-trial.service';
 import { GeminiAIService } from '../geminiAI/geminiAI.service';
 import { UploadService } from '../upload/upload.service';
+import { UserSubscriptionsService } from '../user-subscriptions/user-subscriptions.service';
 import { CreateTripDTO } from './dto';
 
 @Injectable()
@@ -26,6 +28,8 @@ export class PlanTripService {
     private readonly uploadService: UploadService,
     public readonly configService: ConfigService,
     public readonly tripDirectionRepo: TripDirectionRepository,
+    private readonly userSubService: UserSubscriptionsService,
+    private readonly deviceTrialService: DeviceTrialService,
   ) {}
   GOONG_API = this.configService.get<string>('GOONG_API') || '';
   GOONG_API_KEY = this.configService.get<string>('GOONG_API_KEY') || '';
@@ -166,7 +170,8 @@ export class PlanTripService {
     ];
   }
 
-  async suggestTripPlan(body: any) {
+  async suggestTripPlan(body: any, deviceId: string) {
+    await this.checkPermissionPlanTrip(body?.userId, deviceId);
     return await this.gemAiService.suggestPlanTrip(body);
   }
   private async getRandomFourImg(data: CreateTripDTO) {
@@ -565,19 +570,6 @@ export class PlanTripService {
         .map((activity: any) => activity.coordinates),
     );
 
-    // const waypoints = [
-    //   '21.03303694945164,105.79131815992706',
-    //   '21.017654632470325,105.80350611785252',
-    //   '21.00755912449365,105.81105921853873',
-    //   '20.99834437409386,105.79148982130629',
-    //   '21.00507520431542,105.78814242441126',
-    //   '21.0191769116844,105.78822825510088',
-    //   '21.026948305457093,105.79466555682208',
-    //   '21.012767209964053,105.80256198026676',
-    //   '21.020619056604428,105.78925822337628',
-    //   '21.01028337649572,105.7894298847555',
-    // ];
-
     const queryParams = new URLSearchParams({
       origin,
       destination,
@@ -601,5 +593,40 @@ export class PlanTripService {
       result = tripDirection.trips[0];
     }
     return result;
+  }
+
+  /** check permission to plan  */
+  async checkPermissionPlanTrip(userId: string | null, deviceId: string) {
+    if (userId) {
+      const isHasTrial = await this.deviceTrialService.checkTotalRestTrial(
+        userId,
+        deviceId,
+      );
+      if (isHasTrial) {
+        throw new Error(
+          'You have reached the maximum number of trial requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
+        );
+      }
+
+      // check iff user has subscription
+      const isUserHasSubscription =
+        await this.userSubService.checkUserExpiredSubscription(userId);
+      if (!isUserHasSubscription) {
+        throw new Error(
+          'You have reached the maximum number of requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
+        );
+      }
+    } else {
+      // just check if deviceId is valid
+      const isHasTrial = await this.deviceTrialService.checkTotalRestTrial(
+        deviceId,
+        null,
+      );
+      if (isHasTrial) {
+        throw new Error(
+          'You have reached the maximum number of trial requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
+        );
+      }
+    }
   }
 }

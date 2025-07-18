@@ -13,7 +13,6 @@ import {
 } from './dto';
 
 import { ConfigService } from '@nestjs/config';
-import { SubscriptionStatus } from 'src/entities';
 import { UserDeviceEntity } from 'src/entities/user-device.entity';
 import { UserDetailEntity } from 'src/entities/userDetail.entity';
 import { EntityManager } from 'typeorm';
@@ -300,32 +299,35 @@ export class AuthService {
 
   /** get info subscriptions  */
   async getUserSubscriptionInfo(userId: string) {
+    const userFound = await this.repo.findOneBy({ id: userId });
+    if (!userFound) {
+      throw new NotFoundException('User not found!');
+    }
     if (!userId) {
       return {
         isPremium: false,
       };
     }
-    const [userSubscription, isHasPremium] = await Promise.all([
-      this.userSubscriptionService.getCurrentUserSubscription(userId),
-      this.userSubscriptionService.hasPremiumAccess(userId),
-    ]);
+    const isHasPremium =
+      await this.userSubscriptionService.hasPremiumAccess(userId);
 
     const res = {
       isPremium: isHasPremium,
-      isAutoRenew: userSubscription?.autoRenew ?? false,
-      subscriptionStatus:
-        userSubscription?.status ?? SubscriptionStatus.EXPIRED,
-      subscriptionEndDate: userSubscription?.nextPaymentDate,
     };
     if (!isHasPremium) {
       const pricingPlanSuggest =
         await this.userSubscriptionService.getSuggestPricingPlanForUser();
 
-      return { ...res, pricingPlanSuggest };
+      return {
+        ...res,
+        userSubscription: userFound?.subscriptions,
+        pricingPlanSuggest,
+      };
     }
     return {
       ...res,
-      userSubscription,
+      userSubscription: userFound?.subscriptions,
+      maxPlanningTrial: 3,
     };
   }
 

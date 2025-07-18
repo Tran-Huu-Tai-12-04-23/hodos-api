@@ -317,6 +317,7 @@ Please respond in **JSON format** using this structure:
   }
 
   async suggestPlanTrip(body: any) {
+    // check total planning to use
     const [locations, foods]: any = await Promise.all([
       this.locationRepo.find({
         where: { type: 'LOCATION' },

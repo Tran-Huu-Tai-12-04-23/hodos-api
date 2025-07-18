@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TransactionRepository } from 'src/repositories';
+import { TransactionRepository } from 'src/repositories/transactions.repository';
 import { TypeOrmExModule } from 'src/typeorm';
 import { NotificationModule } from '../notification/notification.module';
 import { TransactionController } from './transaction.controller';

@@ -8,14 +8,13 @@ import {
   UserEntity,
 } from 'src/entities';
 import { callApiHelper } from 'src/helpers/callApiHelper';
-import {
-  NotificationRepository,
-  TransactionRepository,
-} from 'src/repositories';
+
+import { NotificationRepository } from 'src/repositories';
 import {
   PricingPlanRepository,
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
+import { TransactionRepository } from 'src/repositories/transactions.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from '../notification/notification.service';
 import { TransactionService } from '../transactions/transaction.service';

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/dto/pagination.dto';
 import { CurrentUser } from 'src/helpers/decorators';
@@ -20,8 +28,11 @@ export class PlanTripController {
 
   @ApiResponse({ status: 201 })
   @Post('plan-trip')
-  async suggestTripPlan(@Body() body: any) {
-    return await this.service.suggestTripPlan(body);
+  async suggestTripPlan(
+    @Body() body: any,
+    @Headers('x-device-id') deviceId: string,
+  ) {
+    return await this.service.suggestTripPlan(body, deviceId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -60,5 +71,14 @@ export class PlanTripController {
   @Post('trip-direction')
   async tripDirection(@Body() body: CreateTripDTO) {
     return await this.service.tripDirectionAndSave(body);
+  }
+
+  @ApiResponse({ status: 201 })
+  @Post('check-permission-plan-trip')
+  async checkPermissionPlanTrip(
+    @Body() body: any,
+    @Headers('x-device-id') deviceId: string,
+  ) {
+    return await this.service.checkPermissionPlanTrip(body?.userId, deviceId);
   }
 }

@@ -7,14 +7,15 @@ import {
 } from 'src/entities';
 import { BillingCycle, PricingPlanEntity } from 'src/entities/master-data';
 import { UserEntity } from 'src/entities/user.entity';
-import {
-  TransactionRepository,
-  UserSubscriptionRepository,
-} from 'src/repositories';
+
 import {
   PricingPlanRepository,
   ReceivingBankRepository,
 } from 'src/repositories/master-data.repository';
+import {
+  TransactionRepository,
+  UserSubscriptionRepository,
+} from 'src/repositories/transactions.repository';
 import { In, LessThan } from 'typeorm';
 import { SepayService } from '../se-pay/sepay.service';
 import { TransactionService } from '../transactions/transaction.service';
@@ -281,11 +282,22 @@ export class UserSubscriptionsService {
 
     await this.repo.manager.transaction(async (trans) => {
       const repo = trans.getRepository(UserSubscriptionEntity);
+      const userRepo = trans.getRepository(UserEntity);
       for (const subscription of expiredSubscriptions) {
         await repo.update(subscription.id, {
           status: SubscriptionStatus.EXPIRED,
           cancelledAt: now,
         });
+
+        const user = await userRepo.findOne({
+          where: { id: subscription.userId },
+        });
+        if (user) {
+          // Update user's subscription info
+          await userRepo.update(user.id, {
+            subscriptions: {},
+          });
+        }
       }
     });
 
@@ -293,5 +305,18 @@ export class UserSubscriptionsService {
       message: 'Expired subscriptions have been cancelled',
       count: expiredSubscriptions.length,
     };
+  }
+
+  /** Check if user has expired subscription  */
+  async checkUserExpiredSubscription(userId: string): Promise<boolean> {
+    const now = new Date();
+    const subscription = await this.repo.findOne({
+      where: {
+        userId: userId,
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodEndDate: LessThan(now),
+      },
+    });
+    return !!subscription;
   }
 }

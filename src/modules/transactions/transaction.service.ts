@@ -14,7 +14,7 @@ import {
   getPlanDurationDays,
   PricingPlanEntity,
 } from 'src/entities/master-data';
-import { TransactionRepository } from 'src/repositories';
+import { TransactionRepository } from 'src/repositories/transactions.repository';
 import { FindOptionsWhere } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateNotificationDto } from '../notification/dto';
@@ -135,11 +135,10 @@ export class TransactionService {
           newUserSubscription,
         } as any,
       };
-      await repo.update(checkTransaction.id, updateData);
 
+      await repo.update(checkTransaction.id, updateData);
       // update user subscription status if exists
       await userRepo.update(checkTransaction.userId, { isPremium: true });
-
       // create notification for user
       const notificationDto: CreateNotificationDto = {
         title: 'Transaction Successful',
@@ -159,6 +158,26 @@ export class TransactionService {
         checkTransaction.userId,
         notificationRepo,
       );
+
+      // Convert entity to a simple JSON object for storage
+      const subscriptionData: Record<string, any> = {
+        id: newUserSubscription.id,
+        userId: newUserSubscription.userId,
+        pricingPlanId: newUserSubscription.pricingPlanId,
+        startDate: newUserSubscription.startDate,
+        nextPaymentDate: newUserSubscription.nextPaymentDate,
+        currentPeriodEndDate: newUserSubscription.currentPeriodEndDate,
+        status: newUserSubscription.status,
+        autoRenew: newUserSubscription.autoRenew,
+        isTrial: newUserSubscription.isTrial,
+        createdAt: newUserSubscription.createdAt,
+        pricingPlan: checkTransaction.metadata?.pricingPlan,
+      };
+
+      await userRepo.update(checkTransaction.userId, {
+        subscriptions: subscriptionData,
+        updatedAt: new Date(),
+      });
     });
   }
 }

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { compare, hash } from 'bcrypt';
 import {
   BeforeInsert,
@@ -10,8 +11,8 @@ import {
 import { BaseEntityCustom } from './base.entity';
 import { PostEntity } from './post.entity';
 import { TripUserEntity } from './trip-user.entity';
-import { UserDetailEntity } from './userDetail.entity';
 import { UserDeviceEntity } from './user-device.entity';
+import { UserDetailEntity } from './userDetail.entity';
 @Entity(`Users`)
 export class UserEntity extends BaseEntityCustom {
   @Column({ length: 500 })
@@ -76,6 +77,9 @@ export class UserEntity extends BaseEntityCustom {
   })
   isPremium: boolean;
 
+  @Column({ default: 0 })
+  totalPlanTripInMonth: number;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
@@ -101,4 +105,14 @@ export class UserEntity extends BaseEntityCustom {
 
   @OneToMany(() => UserDeviceEntity, (device) => device.user)
   devices: Promise<UserDeviceEntity[]>;
+
+  /** current subscriptions  */
+  @ApiProperty({
+    description: 'Current subscriptions or related metadata for the user',
+    type: 'object',
+    additionalProperties: true,
+    required: false,
+  })
+  @Column({ type: 'jsonb', nullable: true })
+  subscriptions?: Record<string, any>;
 }
