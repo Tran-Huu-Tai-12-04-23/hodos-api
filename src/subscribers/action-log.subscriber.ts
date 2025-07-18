@@ -15,7 +15,7 @@ export class ActionLogSubscriber implements EntitySubscriberInterface {
   }
 
   async afterInsert(event: InsertEvent<any>) {
-    await this.saveLog('CREATE', event);
+    await this.saveLog('INSERT', event);
   }
 
   async afterUpdate(event: UpdateEvent<any>) {
