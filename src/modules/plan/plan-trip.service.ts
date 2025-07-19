@@ -622,7 +622,7 @@ export class PlanTripService {
         deviceId,
         null,
       );
-      if (isHasTrial) {
+      if (!isHasTrial) {
         throw new Error(
           'You have reached the maximum number of trial requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
         );
