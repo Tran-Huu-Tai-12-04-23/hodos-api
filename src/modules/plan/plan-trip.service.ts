@@ -628,5 +628,7 @@ export class PlanTripService {
         );
       }
     }
+
+    await this.deviceTrialService.incrementTrialUsageCount(deviceId);
   }
 }

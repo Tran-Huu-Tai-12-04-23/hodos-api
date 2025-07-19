@@ -19,8 +19,22 @@ export class DeviceTrialService {
       return true;
     }
 
-    await this.repo.increment({ deviceId: deviceId }, 'trialUsageCount', 1);
     return deviceTrial.trialUsageCount < deviceTrial.maxTrialCount;
+  }
+
+  async incrementTrialUsageCount(
+    deviceId: string,
+    repo?: DeviceTrialRepository,
+  ): Promise<void> {
+    const deviceTrial = await (repo || this.repo).findOneBy({
+      deviceId: deviceId,
+    });
+    if (!deviceTrial) {
+      throw new Error('Device trial not found');
+    }
+    await (repo || this.repo).update(deviceTrial.id, {
+      trialUsageCount: deviceTrial.trialUsageCount,
+    });
   }
 
   private async initTrialForDevice(
