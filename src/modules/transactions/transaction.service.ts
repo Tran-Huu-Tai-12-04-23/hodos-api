@@ -160,18 +160,25 @@ export class TransactionService {
       );
 
       // Convert entity to a simple JSON object for storage
+      // Map all properties from UserSubscriptionEntity to a plain object
       const subscriptionData: Record<string, any> = {
         id: newUserSubscription.id,
         userId: newUserSubscription.userId,
         pricingPlanId: newUserSubscription.pricingPlanId,
         startDate: newUserSubscription.startDate,
-        nextPaymentDate: newUserSubscription.nextPaymentDate,
         currentPeriodEndDate: newUserSubscription.currentPeriodEndDate,
+        cancelledAt: newUserSubscription.cancelledAt,
         status: newUserSubscription.status,
         autoRenew: newUserSubscription.autoRenew,
+        lastPaymentDate: newUserSubscription.lastPaymentDate,
+        nextPaymentDate: newUserSubscription.nextPaymentDate,
+        gatewaySubscriptionId: newUserSubscription.gatewaySubscriptionId,
+        cancellationReason: newUserSubscription.cancellationReason,
         isTrial: newUserSubscription.isTrial,
+        trialEndsAt: newUserSubscription.trialEndsAt,
         createdAt: newUserSubscription.createdAt,
-        pricingPlan: checkTransaction.metadata?.pricingPlan,
+        updatedAt: newUserSubscription.updatedAt,
+        pricingPlan: newUserSubscription?.pricingPlan,
       };
 
       await userRepo.update(checkTransaction.userId, {

@@ -35,8 +35,8 @@ export class AuthService {
 
   JWT_SECRET = this.configService.get<string>('JWT_SECRET');
 
-  async getUserInfo(userId: string) {
-    const user: any = await this.repo.findOne({
+  async getUserInfo(userId: string, repo?: UserRepository) {
+    const user: any = await (repo || this.repo).findOne({
       where: { id: userId },
       relations: {
         userDetail: true,
@@ -350,13 +350,10 @@ export class AuthService {
       // add fcm token if not exist
       const devices = user?.__devices__ || [];
       await this.checkDevices(devices, deviceId, user.id, data.fcmToken);
-      return await this.signIn({
-        username: data.email,
-        password: process.env.JWT_SECRET || '',
-      });
+      return await this.getUserInfo(user.id);
     }
 
-    await this.repo.manager.transaction(async (trans) => {
+    return await this.repo.manager.transaction(async (trans) => {
       const repo = trans.getRepository(UserEntity);
       const detailRepo = trans.getRepository(UserDetailEntity);
       // If user not found, create a new one
@@ -391,11 +388,8 @@ export class AuthService {
         data.fcmToken,
         trans,
       );
-    });
 
-    return await this.signIn({
-      username: data.email,
-      password: process.env.JWT_SECRET || 'default_password',
+      return await this.getUserInfo(newUser.id, repo);
     });
   }
 
