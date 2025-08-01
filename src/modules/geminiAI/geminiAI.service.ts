@@ -8,34 +8,407 @@ import { ChatBoxDto } from './dto';
 
 @Injectable()
 export class GeminiAIService {
+  private genAI: GoogleGenerativeAI;
+  private baseModel: any;
+  private contextData: {
+    locations: any[];
+    foods: any[];
+    lastUpdated: Date;
+  } = {
+    locations: [],
+    foods: [],
+    lastUpdated: new Date(0),
+  };
+
   constructor(
     public readonly configService: ConfigService,
     private readonly locationRepo: LocationRepository,
-  ) {}
-  GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
-  genAI = new GoogleGenerativeAI(this.GEMINI_API_KEY);
-  model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  ) {
+    const GEMINI_API_KEY =
+      this.configService.get<string>('GEMINI_API_KEY') || '';
+    this.genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+    // Tạo base model với system instructions
+    this.baseModel = this.genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: `You are a professional AI travel assistant specialized in Ho Chi Minh City, Vietnam.
+
+CORE CONTEXT:
+- You have access to a comprehensive database of locations and foods in Ho Chi Minh City
+- You understand Vietnamese culture, local customs, and tourist preferences
+- You always provide practical, accurate, and helpful travel advice
+- You can suggest itineraries, recommend places, translate text, and help with travel planning
+- You prioritize authentic local experiences and consider budget constraints
+
+RESPONSE GUIDELINES:
+- Always use data from the provided database when recommending places or foods
+- Provide specific addresses, coordinates, and descriptions when available
+- Consider user preferences, budget, and travel style
+- Be friendly, professional, and culturally sensitive
+- When asked about places not in the database, politely redirect to available options`,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4096,
+      },
+    });
+  }
+
+  /**
+   * Load và cache database context
+   */
+  private async loadDatabaseContext(forceRefresh = false): Promise<void> {
+    const cacheExpiry = 5 * 60 * 1000; // 5 minutes
+    const now = new Date();
+
+    if (
+      !forceRefresh &&
+      now.getTime() - this.contextData.lastUpdated.getTime() < cacheExpiry
+    ) {
+      return; // Use cached data
+    }
+
+    try {
+      const [locations, foods]: any = await Promise.all([
+        this.locationRepo.find({
+          where: { type: 'LOCATION' },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            address: true,
+            coordinates: true,
+            lstImgs: true,
+          },
+        }),
+        this.locationRepo.find({
+          where: { type: 'FOOD' },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            address: true,
+            coordinates: true,
+            lstImgs: true,
+          },
+        }),
+      ]);
+
+      // Format images
+      for (const item of [...locations, ...foods]) {
+        item.img = item.lstImgs?.split(',')?.[0] || '';
+        delete item.lstImgs; // Remove to reduce context size
+      }
+
+      this.contextData = {
+        locations,
+        foods,
+        lastUpdated: now,
+      };
+    } catch (error) {
+      console.error('Error loading database context:', error);
+      // Keep using old cached data if available
+    }
+  }
+
+  /**
+   * Tạo context string từ database
+   */
+  private createDatabaseContext(): string {
+    return `
+CURRENT DATABASE CONTEXT (Updated: ${this.contextData.lastUpdated.toISOString()}):
+
+AVAILABLE LOCATIONS (${this.contextData.locations.length} places):
+${JSON.stringify(this.contextData.locations, null, 2)}
+
+AVAILABLE FOODS (${this.contextData.foods.length} restaurants):
+${JSON.stringify(this.contextData.foods, null, 2)}
+
+Please use only these locations and foods when making recommendations.
+`;
+  }
+
+  /**
+   * Tạo model với context từ database
+   */
+  private async getModelWithContext(): Promise<any> {
+    await this.loadDatabaseContext();
+    return this.baseModel;
+  }
 
   async test() {
-    const result = await this.model.generateContent(['Explain how AI works']);
-    console.log(result.response.text());
+    const model = await this.getModelWithContext();
+    const contextPrompt = `
+${this.createDatabaseContext()}
 
+USER QUESTION: Explain how AI works in the travel industry, specifically for Ho Chi Minh City tourism.
+
+Please provide examples using the locations and foods from our database.
+`;
+
+    const result = await model.generateContent(contextPrompt);
+    console.log(result.response.text());
     return result;
   }
 
   async translate(body: { isEngToVie: boolean; docs: string }) {
+    const model = await this.getModelWithContext();
     const { isEngToVie, docs } = body;
-    const instructionStart =
-      'You are an expert in the field of languages, especially in English and Vietnamese.';
-    const vieToEng =
-      'Translate the following passage from Vietnamese to English, please provide a clear and accurate translation while preserving the original meaning and tone of the text. Just give the translated sentence for output.';
-    const engToVie =
-      'Translate the following passage from English to Vietnamese, please provide a clear and accurate translation while preserving the original meaning and tone of the text. Just give the translated sentence for output.';
-    const instruction = isEngToVie ? engToVie : vieToEng;
-    const result = await this.model.generateContent([
-      `${instructionStart}\n${instruction}\n"${docs}"`,
-    ]);
+
+    const contextPrompt = `
+${this.createDatabaseContext()}
+
+TRANSLATION TASK:
+- Source language: ${isEngToVie ? 'English' : 'Vietnamese'}
+- Target language: ${isEngToVie ? 'Vietnamese' : 'English'}
+- Text to translate: "${docs}"
+
+INSTRUCTIONS:
+- Provide accurate translation preserving original meaning and tone
+- If the text mentions places or foods, check if they exist in our database
+- For places in our database, provide additional context (address, description)
+- Just give the translated sentence as output
+
+TEXT TO TRANSLATE: "${docs}"
+`;
+
+    const result = await model.generateContent(contextPrompt);
     return result;
+  }
+
+  async schedule(body: {
+    kind: string[];
+    long: number;
+    lat: number;
+    startTime: string;
+    endTime: string;
+  }) {
+    const model = await this.getModelWithContext();
+    const { kind, long, lat, startTime, endTime } = body;
+
+    const contextPrompt = `
+${this.createDatabaseContext()}
+
+SCHEDULE REQUEST:
+- Interests: ${kind.join(', ')}
+- Starting coordinates: ${lat}, ${long}
+- Start time: ${startTime}
+- End time: ${endTime}
+
+INSTRUCTIONS:
+- Create optimized itinerary using ONLY locations and foods from the database above
+- Minimize travel distance between locations
+- Include appropriate meal times with foods from database
+- Format as requested in original specification
+
+Please create the schedule using our available locations and foods.
+`;
+
+    try {
+      const result = await model.generateContent(contextPrompt);
+      let placesString = result.response.text();
+      placesString = placesString.replace(/[\[\]\n]/g, '');
+      console.log('Places:', placesString);
+
+      const formattedPlaces = this.formatPlaces(placesString);
+      return formattedPlaces;
+    } catch (error) {
+      console.error('Error in schedule method:', error);
+      throw new Error('Failed to retrieve places');
+    }
+  }
+
+  async scheduleDetails(body: { place: string }) {
+    const model = await this.getModelWithContext();
+    const { place } = body;
+
+    const contextPrompt = `
+${this.createDatabaseContext()}
+
+PLACE DETAILS REQUEST: "${place}"
+
+INSTRUCTIONS:
+- First check if "${place}" exists in our database
+- If found, use database information as primary source
+- Enhance with additional cultural and historical context
+- If not in database, create details but mention it's not in our current database
+- Format as JSON as specified in original request
+
+Provide detailed information about: "${place}"
+`;
+
+    try {
+      const result = await model.generateContent(contextPrompt);
+      const responseText = result.response.text().trim();
+
+      if (!responseText) {
+        throw new Error('Empty response from model');
+      }
+
+      // Find place in our database first
+      const dbPlace = [
+        ...this.contextData.locations,
+        ...this.contextData.foods,
+      ].find((item) => item.name.toLowerCase().includes(place.toLowerCase()));
+
+      const lstImgs = await this.getImagesForPlace(place);
+
+      let parsedResponse;
+      try {
+        const cleanJson = responseText.replace(/```json|```/g, '').trim();
+        parsedResponse = JSON.parse(cleanJson);
+      } catch {
+        // Fallback if JSON parsing fails
+        parsedResponse = { name: place, description: responseText };
+      }
+
+      return {
+        ...parsedResponse,
+        lstImgs,
+        databaseInfo: dbPlace || null, // Include database info if available
+      };
+    } catch (error) {
+      console.error('Error in scheduleDetails method:', error);
+      throw new Error('Failed to retrieve details for the place');
+    }
+  }
+
+  async chatBot(body: ChatBoxDto) {
+    const model = await this.getModelWithContext();
+
+    const contextPrompt = `
+${this.createDatabaseContext()}
+
+USER MESSAGE: "${body.message}"
+
+TASK:
+- Analyze user's message for travel-related queries about Ho Chi Minh City
+- Suggest maximum 2 relevant locations or foods from database
+- Provide reasons and descriptions
+- Format response as JSON as specified
+
+Please respond using our database information.
+`;
+
+    const result = await model.generateContent(contextPrompt);
+    const responseText = result.response.text().trim();
+    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
+
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(cleanedJson);
+    } catch (err) {
+      return {
+        type: 'unknown',
+        recommendations: [],
+        message: 'Invalid response format. Please try again.',
+        reason: '',
+        description: '',
+      };
+    }
+
+    // Use cached context data instead of re-querying
+    const dictLocationById = coreHelper.toDict(
+      [...this.contextData.locations, ...this.contextData.foods],
+      'id',
+    );
+
+    const processedIds = new Set();
+    const finalRecommendations = [];
+
+    for (const recommendation of parsedResult?.recommendations || []) {
+      if (processedIds.has(recommendation.id)) continue;
+
+      const location = dictLocationById[recommendation.id];
+      if (location) {
+        finalRecommendations.push({
+          id: location.id,
+          name: location.name,
+          description: location.description,
+          address: location.address,
+          coordinates: location.coordinates,
+          img: location.img,
+        });
+
+        processedIds.add(recommendation.id);
+      }
+    }
+
+    return {
+      ...parsedResult,
+      recommendations: finalRecommendations,
+      message:
+        finalRecommendations.length > 0
+          ? ''
+          : "Sorry, I don't have any recommendations for you. Please try again.",
+    };
+  }
+
+  async suggestPlanTrip(body: any) {
+    const model = await this.getModelWithContext();
+
+    const contextPrompt = `
+${this.createDatabaseContext()}
+
+TRIP PLANNING REQUEST:
+${JSON.stringify(body, null, 2)}
+
+INSTRUCTIONS:
+- Use ONLY the locations and foods from the database above
+- Create comprehensive itinerary from startDate to endDate
+- Consider user preferences: budget, group type, favorites
+- Include 3-5 activities per day with appropriate meal times
+- Format as specified JSON structure
+- Ensure all activity IDs match database IDs
+
+Create the trip plan using our available locations and foods.
+`;
+
+    const result = await model.generateContent(contextPrompt);
+    const responseText = result.response.text().trim();
+    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
+    const parsedResult = JSON.parse(cleanedJson);
+
+    // Use cached context data
+    const mergedList = [
+      ...this.contextData.locations,
+      ...this.contextData.foods,
+    ];
+    const dictLocation = mergedList.reduce<Record<string, any>>((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {});
+
+    for (const day of parsedResult.days) {
+      day.activities = day.activities
+        .map((activity: any) => {
+          const location = dictLocation[activity.id];
+          if (location) {
+            return {
+              ...activity,
+              id: location.id,
+              name: location.name,
+              description: location.description,
+              address: location.address,
+              coordinates: location.coordinates,
+              img: location.img,
+              dayName: day.dayOfWeek,
+              date: day.date,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    return {
+      result: parsedResult,
+      message:
+        parsedResult?.days.length > 0
+          ? ''
+          : "Sorry, I don't have any recommendations for you. Please try again.",
+    };
   }
 
   formatPlaces(placesString: string) {
@@ -76,99 +449,6 @@ export class GeminiAIService {
     return formattedPlaces.filter((place) => place !== null);
   }
 
-  async schedule(body: {
-    kind: string[];
-    long: number;
-    lat: number;
-    startTime: string;
-    endTime: string;
-  }) {
-    const { kind, long, lat, startTime, endTime } = body;
-    try {
-      const kindString = kind.join(', ');
-      const prompt = `You are a famous tour guide in Ho Chi Minh City. Suggest a tour focused on ${kindString}, starting at ${startTime} and ending at ${endTime}, from coordinates ${lat}, ${long}. Ensure there are food stops for breakfast, lunch, and dinner, along with historical sites. Optimize the itinerary so that the travel distance between the starting point and the ending point is minimized.
-Response format: [Location 1-(hh:mm yyyy:mm:dd, hh:mm yyyy:mm:dd)_((longitude, latitude))_description: (activities)_cost: (USD)_image: (specific URL from https://travelsaigon.org/ or another reliable source), Location 2-(hh:mm yyyy:mm:dd, hh:mm yyyy:mm:dd)_((longitude, latitude))_description: (activities)_cost: (USD)_image: (specific URL from https://travelsaigon.org/ or another reliable source)]
-Example: [Dinh Doc Lap-(10:00 2024:09:26,11:15 2024:09:26)_((10.744089, 106.683914))_description: (Visit the Independence Palace)_cost: (10 USD)_image: (https://travelsaigon.org/image1.jpg), Banh Mi Huynh Hoa-(12:00 2024:09:26,13:00 2024:09:26)_((10.744089, 106.683914))_description: (Enjoy a Vietnamese sandwich)_cost: (5 USD)_image: (https://travelsaigon.org/image2.jpg)]
-Do not include any additional text or explanation, just the list. Ensure that the image URL is a valid and specific link from https://travelsaigon.org/ or another reliable source.`;
-
-      const places = await this.model.generateContent([prompt]);
-
-      let placesString = places.response.text();
-
-      placesString = placesString.replace(/[\[\]\n]/g, '');
-
-      console.log('Places:', placesString);
-
-      const formattedPlaces = this.formatPlaces(placesString);
-
-      // const promiseAll = lstPlace.map(async (place) => {
-      //   console.log(place.trim().split('-')[0]);
-      //   const location = place.trim().split(')_((')[1]?.substring(0);
-      //   const newLocation = location?.substring(0, location.length - 1);
-      //   return await this.scheduleDetails({
-      //     place: place.trim().split('-')[0],
-      //     long,
-      //     lat,
-      //     placeLat: parseFloat(newLocation?.split('*')[0]),
-      //     placeLong: parseFloat(newLocation?.split('*')[1]),
-      //   });
-      // });
-
-      return formattedPlaces;
-    } catch (error) {
-      console.error('Error in schedule method:', error);
-      throw new Error('Failed to retrieve places');
-    }
-  }
-
-  async scheduleDetails(body: { place: string }) {
-    const { place } = body;
-    const prompt = `Provide details for "${place}" in JSON format example:
-    {
-      "name": "Café Giảng",
-      "location": "39 Nguyen Huu Huan Street, Hoan Kiem District, Hanoi",
-      "history": "Founded in 1946 by Nguyễn Văn Giảng, it is one of the oldest cafes in Hanoi.",
-      "legend": "The story goes that Giảng, a former chef, ran out of milk one day. In a moment of ingenuity, he decided to use egg yolks instead. The result was the creation of egg coffee, a drink that quickly gained popularity.",
-      "coffee": "Café Giảng serves a rich, strong coffee with a distinct eggy flavour. The coffee is brewed with robusta beans and topped with a thick layer of whipped egg yolk mixed with condensed milk and sugar.",
-      "ambiance": "Café Giảng retains a traditional, almost nostalgic atmosphere, with its simple wooden furniture, vintage decor, and bustling atmosphere.",
-      "popularity": "It remains a popular tourist destination and a must-visit for coffee lovers.",
-      "special": {
-        "originality": "It is considered the birthplace of egg coffee, a unique Vietnamese specialty that has spread worldwide.",
-        "historicalSignificance": "The cafe has been a staple of Hanoi for over 70 years, witnessing the city's transformation.",
-        "authenticity": "Café Giảng offers a taste of traditional Vietnamese coffee culture and an experience that captures the spirit of Hanoi."
-      },
-      "beyondCoffee": {
-        "otherDrinks": "Café Giảng also serves other Vietnamese coffee specialties, such as cà phê sữa đá (iced coffee with condensed milk) and cà phê đen (black coffee).",
-        "snacks": "They offer light snacks like pastries and sandwiches."
-      },
-      "visiting": {
-        "bestTimeToVisit": "Weekdays during the afternoon or early evening, as it can get crowded during peak hours.",
-        "expectQueue": "The cafe is always popular, so be prepared to wait for a table.",
-        "mustTry": "Don't forget to try the Egg Coffee: The reason for its popularity is the unique flavor, so make sure to try the signature drink!"
-      },
-      "summary": "Café Giảng is not just a cafe; it is a historical landmark, a culinary icon, and a testament to the ingenuity of Vietnamese coffee culture."
-    }`;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const responseText = result.response.text().trim();
-
-      if (!responseText) {
-        throw new Error('Empty response from model');
-      }
-
-      const lstImgs = await this.getImagesForPlace(place);
-
-      return {
-        ...JSON.parse(responseText.substring(7, responseText.length - 3)),
-        lstImgs,
-      };
-    } catch (error) {
-      console.error('Error in scheduleDetails method:', error);
-      throw new Error('Failed to retrieve details for the place');
-    }
-  }
-
   async getImagesForPlace(place: string) {
     const data = await callApiHelper.get(
       'https://serpapi.com/search.json?engine=google_images&q=' +
@@ -205,236 +485,5 @@ Do not include any additional text or explanation, just the list. Ensure that th
         img: 'https://media-cdn.tripadvisor.com/media/photo-s/1c/90/b1/d5/a-chill-afternoon-at.jpg',
       },
     ];
-  }
-  async chatBot(body: ChatBoxDto) {
-    const [locations, foods]: any = await Promise.all([
-      this.locationRepo.find({
-        where: { type: 'LOCATION' },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          address: true,
-          coordinates: true,
-          lstImgs: true,
-        },
-      }),
-      this.locationRepo.find({
-        where: { type: 'FOOD' },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          address: true,
-          coordinates: true,
-          lstImgs: true,
-        },
-      }),
-    ]);
-
-    // Format images
-    for (const item of [...locations, ...foods]) {
-      item.img = item.lstImgs?.split(',')?.[0] || '';
-      item.lstImgs = []; // Clear to avoid sending unnecessary data
-    }
-
-    const dictLocationById = coreHelper.toDict([...locations, ...foods], 'id');
-
-    const instruction = `You are an AI travel assistant for tourists visiting Ho Chi Minh City.
-    Use the location and food data provided below to answer the user's question.
-
-    Here is the list of **locations**:
-    ${JSON.stringify(locations, null, 2)}
-
-    Here is the list of **foods**:
-    ${JSON.stringify(foods, null, 2)}
-
-    The user's message is:
-    "${body.message}"
-
-    Your task:
-    - Analyze the user's message to determine if it relates to locations, foods, or both.
-    - Based on the data provided, suggest a **maximum of 2** relevant locations or foods.
-    - Provide a brief **reason** why it's suitable and a short **description** of the place or food to help the user decide.
-
-Please respond in **JSON format** using this structure:
-{
-  "type": "location" | "food" | "mixed",
-  "recommendations": [
-    { "id": "..." }
-  ],
-  reason: "string",
-  description: "string",
-}
-`;
-
-    const result = await this.model.generateContent(instruction);
-    const responseText = result.response.text().trim();
-    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
-
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(cleanedJson);
-    } catch (err) {
-      return {
-        type: 'unknown',
-        recommendations: [],
-        message: 'Invalid response format. Please try again.',
-        reason: '',
-        description: '',
-      };
-    }
-
-    const processedIds = new Set();
-    const finalRecommendations = [];
-
-    for (const recommendation of parsedResult?.recommendations || []) {
-      if (processedIds.has(recommendation.id)) continue;
-
-      const location = dictLocationById[recommendation.id];
-      if (location) {
-        finalRecommendations.push({
-          id: location.id,
-          name: location.name,
-          description: location.description,
-          address: location.address,
-          coordinates: location.coordinates,
-          img: location.img,
-        });
-
-        processedIds.add(recommendation.id);
-      }
-    }
-
-    return {
-      ...parsedResult,
-      recommendations: finalRecommendations,
-      message:
-        finalRecommendations.length > 0
-          ? ''
-          : "Sorry, I don't have any recommendations for you. Please try again.",
-    };
-  }
-
-  async suggestPlanTrip(body: any) {
-    // check total planning to use
-    const [locations, foods]: any = await Promise.all([
-      this.locationRepo.find({
-        where: { type: 'LOCATION' },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          address: true,
-          coordinates: true,
-          lstImgs: true,
-        },
-      }),
-      this.locationRepo.find({
-        where: { type: 'FOOD' },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          address: true,
-          coordinates: true,
-          lstImgs: true,
-        },
-      }),
-    ]);
-
-    for (const location of locations) {
-      location.img =
-        location.lstImgs?.split(',').length > 0
-          ? location.lstImgs?.split(',')[0]
-          : '';
-      location.lstImgs = [];
-    }
-    for (const food of foods) {
-      food.img =
-        food.lstImgs?.split(',').length > 0 ? food.lstImgs?.split(',')[0] : '';
-      food.lstImgs = [];
-    }
-    const instruction = `
-You are an AI assistant creating daily itineraries in Ho Chi Minh City based on user preferences.
-
-## User Preferences:
-${JSON.stringify(body, null, 2)}
-
-## Locations:
-${JSON.stringify(locations, null, 2)}
-
-## Foods:
-${JSON.stringify(foods, null, 2)}
-
-## Instructions:
-- Use only the above locations and foods.
-- Create an itinerary for **each day from startDate to endDate, inclusive**.
-- Each day should have 3–5 slots (morning, afternoon, evening).
-- Include suitable meals from "foods".
-- Respect group type and budget.
-- Format response as JSON like this:
-  {
-    totalDays: number,
-    typeTrip: single | couple | family | group,
-    startDate: "dd-mm-yyyy",
-    endDate: "dd-mm-yyyy",
-    budget: string,
-    favorites: ['Culture', 'Food', 'Nature', ...],
-    days: [
-      dayNumber: number,
-      date: "dd-mm-yyyy",
-      dayOfWeek: "Monday",
-      activities: [
-        {
-          id:string,
-          timeStart: "hh:mm",
-          timeEnd: "hh:mm",
-          totalTime: "hh:mm",
-        }
-      ]
-    ]
-  }
-Respond with pure JSON only, no extra text.
-`;
-
-    const result = await this.model.generateContent(instruction);
-    const responseText = result.response.text().trim();
-    const cleanedJson = responseText.replace(/```json|```/g, '').trim();
-    const parsedResult = JSON.parse(cleanedJson);
-
-    const mergedList = [...locations, ...foods];
-    const dictLocation = mergedList.reduce<Record<string, any>>((acc, item) => {
-      acc[item.id] = item;
-      return acc;
-    }, {});
-
-    for (const day of parsedResult.days) {
-      day.activities = day.activities.map((activity: any) => {
-        const location = dictLocation[activity.id];
-        if (location) {
-          return {
-            ...activity,
-            id: location.id,
-            name: location.name,
-            description: location.description,
-            address: location.address,
-            coordinates: location.coordinates,
-            img: location.img,
-            dayName: day.dayOfWeek,
-            date: day.date,
-          };
-        }
-        return null;
-      });
-    }
-
-    return {
-      result: parsedResult,
-      message:
-        parsedResult?.days.length > 0
-          ? ''
-          : "Sorry, I don't have any recommendations for you. Please try again.",
-    };
   }
 }
