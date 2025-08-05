@@ -20,6 +20,7 @@ async function bootstrap() {
   const errorLogService = app.get(ErrorLogService);
   const authService = app.get(AuthService);
   const port = configService.get<string>('PORT');
+  app.getHttpServer().setTimeout(0);
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
   app.enableCors({
