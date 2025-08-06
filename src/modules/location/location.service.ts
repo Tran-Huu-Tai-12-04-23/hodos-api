@@ -86,6 +86,7 @@ export class LocationService {
         'location.label',
         'location.description',
         'location.address',
+        'location.lstImgs',
       ])
       .where('location.isDeleted = false');
 
@@ -96,8 +97,9 @@ export class LocationService {
     queryBuilder.orderBy('location.name', 'ASC').take(top || 10);
 
     const result = await queryBuilder.getMany();
+    const count = await queryBuilder.getCount();
 
-    return [result, result.length];
+    return [result, count];
   }
   async pagination(body: PaginationDto<LocationFilter>) {
     const queryBuilder = this.repo
