@@ -77,17 +77,28 @@ export class LocationService {
   }
 
   async findAndCountTop(top?: number, type?: string) {
-    const [result, total] = await this.repo.findAndCount({
-      where: {
-        type: type,
-        isDeleted: false,
-      },
-      order: {
-        name: 'ASC',
-      },
-      take: top || 10,
-    });
-    return [result, total];
+    const queryBuilder = this.repo
+      .createQueryBuilder('location')
+      .select([
+        'location.id',
+        'location.name',
+        'location.type',
+        'location.label',
+        'location.description',
+        'location.address',
+        'location.lstImgs',
+      ])
+      .where('location.isDeleted = false');
+
+    if (type) {
+      queryBuilder.andWhere('location.type = :type', { type });
+    }
+
+    queryBuilder.orderBy('location.name', 'ASC').take(top || 10);
+
+    const result = await queryBuilder.getMany();
+
+    return result;
   }
   async pagination(body: PaginationDto<LocationFilter>) {
     const queryBuilder = this.repo
@@ -127,12 +138,12 @@ export class LocationService {
       total = await queryBuilder.getCount();
     }
 
-    // for (const location of result) {
-    //   const imgs = location.lstImgs?.split(',') || [];
-    //   location.img = imgs[0] || '';
-    //   location.lstImgs = imgs;
-    //   delete location.detail;
-    // }
+    for (const location of result) {
+      const imgs = location.lstImgs?.split(',') || [];
+      location.img = imgs[0] || '';
+      location.lstImgs = imgs;
+      delete location.detail;
+    }
 
     return {
       data: result,

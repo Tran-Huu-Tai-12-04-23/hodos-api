@@ -2,7 +2,7 @@ import { check, sleep } from 'k6';
 import http from 'k6/http';
 
 export let options = {
-  vus: 5,
+  vus: 10,
   duration: '10s',
 };
 
@@ -29,12 +29,10 @@ export default function () {
 
   const res = http.post(url, payload, { headers });
 
-  console.log({
-    res,
-  });
+  console.log(`Response time: ${res.timings.duration <= 200} ms`);
   check(res, {
-    'status is 201': () => res && (res.status == 201 || res.status == 200),
-    'response time < 200ms': () => res && res.timings.duration < 200,
+    'status is 201': (r) => r.status == 201 || r.status == 200,
+    'response time < 200ms': (r) => r.timings.duration < 200,
   });
 
   sleep(1);
