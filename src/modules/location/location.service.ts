@@ -92,6 +92,16 @@ export class LocationService {
   async pagination(body: PaginationDto<LocationFilter>) {
     const queryBuilder = this.repo
       .createQueryBuilder('location')
+      .select([
+        'location.id',
+        'location.name',
+        'location.type',
+        'location.label',
+        'location.description',
+        'location.address',
+        'location.lstImgs',
+        'location.createdAt',
+      ])
       .where('location.isDeleted = :isDeleted', { isDeleted: false });
 
     if (body.where?.type) {
