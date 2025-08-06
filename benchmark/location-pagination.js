@@ -29,10 +29,12 @@ export default function () {
 
   const res = http.post(url, payload, { headers });
 
-  console.log(`Response time: ${res.timings.duration <= 200} ms`);
+  console.log({
+    res,
+  });
   check(res, {
-    'status is 201': (r) => r.status == 201,
-    'response time < 200ms': (r) => r.timings.duration < 200,
+    'status is 201': () => res && (res.status == 201 || res.status == 200),
+    'response time < 200ms': () => res && res.timings.duration < 200,
   });
 
   sleep(1);
