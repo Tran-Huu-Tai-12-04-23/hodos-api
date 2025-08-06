@@ -100,9 +100,8 @@ export class LocationService {
         'location.description',
         'location.address',
         'location.lstImgs',
-        'location.createdAt',
       ])
-      .where('location.isDeleted = :isDeleted', { isDeleted: false });
+      .where('location.isDeleted = false');
 
     if (body.where?.type) {
       queryBuilder.andWhere('location.type = :type', { type: body.where.type });
@@ -111,7 +110,7 @@ export class LocationService {
     if (body.where?.name) {
       const name = `%${body.where.name}%`;
       queryBuilder.andWhere(
-        '(location.name LIKE :name OR location.label LIKE :name OR location.description LIKE :name OR location.address LIKE :name)',
+        `(location.name LIKE :name OR location.label LIKE :name OR location.description LIKE :name OR location.address LIKE :name)`,
         { name },
       );
     }
@@ -121,22 +120,25 @@ export class LocationService {
       .skip(body.skip)
       .take(body.take);
 
-    const [result, total]: any = await queryBuilder.getManyAndCount();
+    const result: any = await queryBuilder.getMany();
+
+    let total = 0;
+    if (body.skip === 0) {
+      total = await queryBuilder.getCount();
+    }
 
     for (const location of result) {
-      location.img =
-        location.lstImgs.split(',')?.length > 0
-          ? location.lstImgs.split(',')[0]
-          : '';
-      location.lstImgs = location.lstImgs.split(',');
+      const imgs = location.lstImgs?.split(',') || [];
+      location.img = imgs[0] || '';
+      location.lstImgs = imgs;
       delete location.detail;
     }
 
     return {
       data: result,
-      total: total,
+      total,
       nextSkip: body.skip + body.take,
-      hasNext: body.skip + body.take < total,
+      hasNext: total ? body.skip + body.take < total : true,
       take: body.take,
     };
   }

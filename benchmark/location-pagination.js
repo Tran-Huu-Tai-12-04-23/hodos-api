@@ -29,9 +29,9 @@ export default function () {
 
   const res = http.post(url, payload, { headers });
 
-  console.log(`Response time: ${res.timings.duration} ms`);
+  console.log(`Response time: ${res.timings.duration <= 200} ms`);
   check(res, {
-    'status is 201': (r) => r.status === 201,
+    'status is 201': (r) => r.status == 201,
     'response time < 200ms': (r) => r.timings.duration < 200,
   });
 
