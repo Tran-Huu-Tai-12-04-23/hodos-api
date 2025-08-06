@@ -8,7 +8,7 @@ import { PaginationDto } from 'src/dto/pagination.dto';
 import { LocationEntity } from 'src/entities/location.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationRepository } from 'src/repositories/location.repository';
-import { In, Like } from 'typeorm';
+import { In } from 'typeorm';
 import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
 import { PredictDTO } from './dto/predict.dto';
@@ -89,51 +89,35 @@ export class LocationService {
     });
     return [result, total];
   }
-
   async pagination(body: PaginationDto<LocationFilter>) {
-    const where: any = [];
-    const commonWhere: any = {
-      isDeleted: false,
-    };
+    const queryBuilder = this.repo
+      .createQueryBuilder('location')
+      .where('location.isDeleted = :isDeleted', { isDeleted: false });
 
     if (body.where?.type) {
-      commonWhere.type = body.where.type;
-    }
-    if (body.where?.name) {
-      where.push({
-        ...commonWhere,
-        name: Like(`%${body.where.name}%`),
-      });
-      where.push({
-        ...commonWhere,
-        label: Like(`%${body.where.name}%`),
-      });
-      where.push({
-        ...commonWhere,
-        description: Like(`%${body.where.name}%`),
-      });
-      where.push({
-        ...commonWhere,
-        address: Like(`%${body.where.name}%`),
-      });
-    } else {
-      where.push(commonWhere);
+      queryBuilder.andWhere('location.type = :type', { type: body.where.type });
     }
 
-    const [result, total]: any = await this.repo.findAndCount({
-      where: where,
-      order: {
-        createdAt: 'DESC',
-      },
-      skip: body.skip,
-      take: body.take,
-    });
+    if (body.where?.name) {
+      const name = `%${body.where.name}%`;
+      queryBuilder.andWhere(
+        '(location.name LIKE :name OR location.label LIKE :name OR location.description LIKE :name OR location.address LIKE :name)',
+        { name },
+      );
+    }
+
+    queryBuilder
+      .orderBy('location.createdAt', 'DESC')
+      .skip(body.skip)
+      .take(body.take);
+
+    const [result, total]: any = await queryBuilder.getManyAndCount();
+
     for (const location of result) {
       location.img =
         location.lstImgs.split(',')?.length > 0
           ? location.lstImgs.split(',')[0]
           : '';
-
       location.lstImgs = location.lstImgs.split(',');
       delete location.detail;
     }

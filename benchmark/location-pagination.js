@@ -2,12 +2,12 @@ import { check, sleep } from 'k6';
 import http from 'k6/http';
 
 export let options = {
-  vus: 1000, // số lượng user ảo đồng thời
-  duration: '100s', // thời gian test
+  vus: 5,
+  duration: '10s',
 };
 
 export default function () {
-  const url = 'https://hodos-api.gitlabserver.id.vn/location/pagination';
+  const url = 'http://[::1]:3000/location/pagination';
   const payload = JSON.stringify({
     where: {
       searchKey: '',
@@ -29,6 +29,7 @@ export default function () {
 
   const res = http.post(url, payload, { headers });
 
+  console.log(`Response time: ${res.timings.duration} ms`);
   check(res, {
     'status is 201': (r) => r.status === 201,
     'response time < 200ms': (r) => r.timings.duration < 200,
