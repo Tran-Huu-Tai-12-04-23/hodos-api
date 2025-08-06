@@ -86,7 +86,6 @@ export class LocationService {
         'location.label',
         'location.description',
         'location.address',
-        'location.lstImgs',
       ])
       .where('location.isDeleted = false');
 
