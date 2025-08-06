@@ -90,6 +90,8 @@ export class LocationService {
     return [result, total];
   }
   async pagination(body: PaginationDto<LocationFilter>) {
+    const { where, skip, take } = body;
+
     const queryBuilder = this.repo
       .createQueryBuilder('location')
       .select([
@@ -103,43 +105,56 @@ export class LocationService {
       ])
       .where('location.isDeleted = false');
 
-    if (body.where?.type) {
-      queryBuilder.andWhere('location.type = :type', { type: body.where.type });
+    if (where?.type) {
+      queryBuilder.andWhere('location.type = :type', { type: where.type });
     }
 
-    if (body.where?.name) {
-      const name = `%${body.where.name}%`;
+    if (where?.name) {
+      const name = `%${where.name}%`;
       queryBuilder.andWhere(
-        `(location.name LIKE :name OR location.label LIKE :name OR location.description LIKE :name OR location.address LIKE :name)`,
+        `(
+        location.name ILIKE :name OR
+        location.label ILIKE :name OR
+        location.description ILIKE :name OR
+        location.address ILIKE :name
+      )`,
         { name },
       );
     }
 
-    queryBuilder
-      .orderBy('location.createdAt', 'DESC')
-      .skip(body.skip)
-      .take(body.take);
+    queryBuilder.orderBy('location.createdAt', 'DESC').skip(skip).take(take);
 
-    const result: any = await queryBuilder.getMany();
+    // Get data + total count in parallel if skip = 0
+    const [result, total]: any = await Promise.all([
+      queryBuilder.getMany(),
+      skip === 0
+        ? queryBuilder
+            .clone()
+            .select('COUNT(*)', 'count')
+            .getRawOne()
+            .then((r) => Number(r.count))
+        : Promise.resolve(0),
+    ]);
 
-    let total = 0;
-    if (body.skip === 0) {
-      total = await queryBuilder.getCount();
-    }
+    // Optimize post-processing: avoid for-loop if no lstImgs
+    // for (const location of result) {
+    //   if (location.lstImgs) {
+    //     const imgs = location.lstImgs.split(',');
+    //     location.img = imgs[0] || '';
+    //     location.lstImgs = imgs;
+    //   } else {
+    //     location.img = '';
+    //     location.lstImgs = [];
+    //   }
 
-    for (const location of result) {
-      const imgs = location.lstImgs?.split(',') || [];
-      location.img = imgs[0] || '';
-      location.lstImgs = imgs;
-      delete location.detail;
-    }
+    // }
 
     return {
       data: result,
       total,
-      nextSkip: body.skip + body.take,
-      hasNext: total ? body.skip + body.take < total : true,
-      take: body.take,
+      nextSkip: skip + take,
+      hasNext: total ? skip + take < total : result.length === take,
+      take,
     };
   }
 
