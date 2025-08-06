@@ -7,7 +7,7 @@ export let options = {
 };
 
 export default function () {
-  const url = 'http://[::1]:3000/location/pagination';
+  const url = 'https://hodos-api.gitlabserver.id.vn/location/pagination';
   const payload = JSON.stringify({
     where: {
       searchKey: '',
