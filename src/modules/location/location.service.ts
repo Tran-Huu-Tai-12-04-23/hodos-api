@@ -98,7 +98,7 @@ export class LocationService {
 
     const result = await queryBuilder.getMany();
 
-    return result;
+    return [result, result.length];
   }
   async pagination(body: PaginationDto<LocationFilter>) {
     const queryBuilder = this.repo
