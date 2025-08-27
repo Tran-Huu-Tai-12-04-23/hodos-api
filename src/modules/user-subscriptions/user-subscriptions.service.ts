@@ -309,12 +309,13 @@ export class UserSubscriptionsService {
 
   /** Check if user has expired subscription  */
   async checkUserExpiredSubscription(userId: string): Promise<boolean> {
-    const now = new Date();
+    // const now = new Date();
+    // đóng tạm rule hết hạn premium
     const subscription = await this.repo.findOne({
       where: {
         userId: userId,
         status: SubscriptionStatus.ACTIVE,
-        currentPeriodEndDate: LessThan(now),
+        // currentPeriodEndDate: LessThan(now),
       },
     });
     return !!subscription;

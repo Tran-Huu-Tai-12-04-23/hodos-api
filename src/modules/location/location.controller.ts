@@ -19,6 +19,16 @@ import { LocationService } from './location.service';
 @Controller('location')
 export class LocationController {
   constructor(private readonly service: LocationService) {}
+
+  @ApiOperation({
+    summary: 'Find by label',
+  })
+  @ApiResponse({ status: 201 })
+  @Get('select-box')
+  async selectBox() {
+    return await this.service.selectBox();
+  }
+
   @ApiOperation({
     summary: 'Find by label',
   })

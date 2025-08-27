@@ -364,6 +364,15 @@ export class PlanTripService {
         id: In(locationIds),
         isDeleted: false,
       },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        description: true,
+        coordinates: true,
+        type: true,
+        lstImgs: true,
+      },
     });
 
     const locationMap = new Map(locations.map((loc) => [loc.id, loc]));
@@ -598,6 +607,15 @@ export class PlanTripService {
   /** check permission to plan  */
   async checkPermissionPlanTrip(userId: string | null, deviceId: string) {
     if (userId) {
+      // check iff user has subscription
+      const isUserHasSubscription =
+        await this.userSubService.checkUserExpiredSubscription(userId);
+      if (isUserHasSubscription) return;
+      if (!isUserHasSubscription) {
+        throw new Error(
+          'You have reached the maximum number of requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
+        );
+      }
       const isHasTrial = await this.deviceTrialService.checkTotalRestTrial(
         userId,
         deviceId,
@@ -605,15 +623,6 @@ export class PlanTripService {
       if (isHasTrial) {
         throw new Error(
           'You have reached the maximum number of trial requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
-        );
-      }
-
-      // check iff user has subscription
-      const isUserHasSubscription =
-        await this.userSubService.checkUserExpiredSubscription(userId);
-      if (!isUserHasSubscription) {
-        throw new Error(
-          'You have reached the maximum number of requests ( max 3 plan for each device). Please subscribe to continue using this feature.',
         );
       }
     } else {

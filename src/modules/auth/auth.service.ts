@@ -472,16 +472,15 @@ export class AuthService {
       },
     });
 
-    // add fcm token if not exist
-    const devices = user?.__devices__ || [];
-    await this.checkDevices(devices, deviceId, user.id, signInDto.fcmToken);
-
     if (!user) {
       throw new NotFoundException('User not found!');
     }
     if (!user.isActive) {
       throw new UnauthorizedException('User not active!');
     }
+    // add fcm token if not exist
+    const devices = user?.__devices__ || [];
+    await this.checkDevices(devices, deviceId, user.id, signInDto.fcmToken);
 
     const isMatch = await user.comparePassword(signInDto.password);
     if (!isMatch) {

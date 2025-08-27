@@ -359,6 +359,8 @@ export class LocationService {
       const images = location.lstImgs.split(',');
       location.lstImgs = images;
       location.img = images.length > 0 ? images[0] : '';
+      delete location.img;
+      delete location.lstImgs;
     }
 
     return result;
@@ -410,5 +412,25 @@ export class LocationService {
     return {
       message: 'Init gallery success',
     };
+  }
+
+  /** select all trip plans */
+  async selectBox() {
+    const result: any = await this.repo.find({
+      where: { isDeleted: false },
+      select: {
+        name: true,
+        lstImgs: true,
+        coordinates: true,
+        description: true,
+        id: true,
+        type: true,
+      },
+    });
+    for (const res of result) {
+      res.img = res.lstImgs?.split(',')[0] || '';
+      res.lstImgs = res.lstImgs?.split(',') || [];
+    }
+    return result;
   }
 }

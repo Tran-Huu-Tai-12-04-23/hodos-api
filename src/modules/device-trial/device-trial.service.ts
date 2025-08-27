@@ -33,7 +33,7 @@ export class DeviceTrialService {
       throw new Error('Device trial not found');
     }
     await (repo || this.repo).update(deviceTrial.id, {
-      trialUsageCount: deviceTrial.trialUsageCount,
+      trialUsageCount: ++deviceTrial.trialUsageCount,
     });
   }
 
@@ -44,6 +44,7 @@ export class DeviceTrialService {
     const deviceTrial = new DeviceTrialEntity();
     deviceTrial.deviceId = deviceId;
     deviceTrial.trialUsageCount = 1;
+    deviceTrial.maxTrialCount = 5;
     if (userId) {
       deviceTrial.userId = userId;
     }

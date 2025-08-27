@@ -70,17 +70,17 @@ export class UploadService {
     filename = 'merged.png',
     folder = 'images',
   ): Promise<string> {
-    if (imagePaths.length !== 4) {
-      throw new Error('Phải có đúng 4 ảnh để ghép');
-    }
     const size = 500;
     const gridSize = size * 2;
 
-    const compositeImages = await Promise.all(
-      imagePaths.map(async (imagePath, index) => {
-        const top = index < 2 ? 0 : size;
-        const left = index % 2 === 0 ? 0 : size;
+    // Download and resize images, skip if cannot download/read
+    const compositeImages: { input: Buffer; top: number; left: number }[] = [];
+    for (let index = 0; index < imagePaths.length; index++) {
+      const imagePath = imagePaths[index];
+      const top = index < 2 ? 0 : size;
+      const left = index % 2 === 0 ? 0 : size;
 
+      try {
         const imageBuffer = imagePath.startsWith('http')
           ? await this.downloadImageBuffer(imagePath)
           : await fs.readFile(imagePath);
@@ -89,13 +89,20 @@ export class UploadService {
           .resize(size, size)
           .toBuffer();
 
-        return {
+        compositeImages.push({
           input: resizedBuffer,
           top,
           left,
-        };
-      }),
-    );
+        });
+      } catch (error) {
+        // Skip image if cannot download/read
+        continue;
+      }
+    }
+
+    if (compositeImages.length === 0) {
+      throw new Error('Không có ảnh nào hợp lệ để ghép');
+    }
 
     const finalImageBuffer = await sharp({
       create: {
