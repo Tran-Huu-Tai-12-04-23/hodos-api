@@ -69,7 +69,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const url = this.configService.get<string>('LOG_URL');
       if (!url) {
         try {
-          await this.errorLogService.handleBugLog(obj as any);
+          // await this.errorLogService.handleBugLog(obj as any);
         } catch (error) {
           console.error('Error logging exception:', error);
         }

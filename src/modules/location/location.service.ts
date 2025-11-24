@@ -8,6 +8,7 @@ import { LocationEntity } from 'src/entities/location.entity';
 import { callApiHelper } from 'src/helpers/callApiHelper';
 import { LocationRepository } from 'src/repositories/location.repository';
 import { In } from 'typeorm';
+import { OpenRouterService } from '../open-router/open-router.service';
 import { LocationCreateDTO, LocationCreateMultiDTO } from './dto/create.dto';
 import { LocationFilter } from './dto/location.pagination.dto';
 import { PredictDTO } from './dto/predict.dto';
@@ -18,6 +19,7 @@ export class LocationService {
   constructor(
     public readonly configService: ConfigService,
     private readonly repo: LocationRepository,
+    private readonly openRouterService: OpenRouterService,
   ) {}
   GEMINI_API_KEY = this.configService.get<string>('GEMINI_API_KEY') || '';
   MODEL_API_LINK = this.configService.get<string>('MODEL_API_LINK') || '';
@@ -432,5 +434,67 @@ export class LocationService {
       res.lstImgs = res.lstImgs?.split(',') || [];
     }
     return result;
+  }
+
+  /** query top 10 food or location by vector base text */
+  async embTopQueryByText(body: { text: string }) {
+    const embedding: number[] = await this.openRouterService.createEmbedding(
+      body.text,
+    );
+    console.log('Embedding text: ' + body.text + ' done !', embedding.length);
+
+    const embeddingStr = `[${embedding.join(',')}]`; // convert array -> pgvector format
+
+    const queryBuilder = this.repo
+      .createQueryBuilder('location')
+      .select([
+        'location.id',
+        'location.name',
+        'location.type',
+        'location.label',
+        'location.description',
+        'location.address',
+        'location.lstImgs',
+        'location.embedding',
+      ])
+      .where('location.isDeleted = false')
+      .andWhere('location.embedding IS NOT NULL')
+      .orderBy(`1 - (location.embedding <=> :embedding)`, 'DESC')
+      .setParameter('embedding', embeddingStr)
+      .limit(4);
+
+    const result: any = await queryBuilder.getMany();
+
+    for (const location of result) {
+      const images = location.lstImgs?.split(',') ?? [];
+      location.lstImgs = images;
+      location.img = images.length > 0 ? images[0] : '';
+      delete location.detail;
+      delete location.embedding;
+    }
+
+    return result;
+  }
+
+  /** init data embedding */
+  async initDataEmbedding() {
+    const locations = await this.repo.find({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    for (const location of locations) {
+      const em =
+        await this.openRouterService.createEmbeddingForLocation(location);
+      await this.repo.update(location.id, {
+        embedding: em,
+      });
+      console.log('Embedding location ' + location.name + ' done !' + em);
+    }
+
+    return {
+      message: 'Init embedding success',
+    };
   }
 }

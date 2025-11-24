@@ -1,0 +1,83 @@
+{
+  "info": {
+    "name": "DB Manager API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "API for managing database connections and backups"
+  },
+  "item": [
+    {
+      "name": "Create Database Connection",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"My MySQL DB\",\n    \"type\": \"mysql\",\n    \"host\": \"localhost\",\n    \"port\": 3306,\n    \"username\": \"root\",\n    \"password\": \"password\",\n    \"database\": \"test_db\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/db",
+          "host": ["{{baseUrl}}"],
+          "path": ["db"]
+        },
+        "description": "Create a new database connection"
+      }
+    },
+    {
+      "name": "Get All Database Connections",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/db",
+          "host": ["{{baseUrl}}"],
+          "path": ["db"]
+        },
+        "description": "Get all database connections"
+      }
+    },
+    {
+      "name": "Backup Database",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/db/{{dbId}}/backup",
+          "host": ["{{baseUrl}}"],
+          "path": ["db", "{{dbId}}", "backup"]
+        },
+        "description": "Create a backup for the specified database"
+      }
+    },
+    {
+      "name": "Get Database Backups",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/db/{{dbId}}/backups",
+          "host": ["{{baseUrl}}"],
+          "path": ["db", "{{dbId}}", "backups"]
+        },
+        "description": "Get all backups for the specified database"
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "dbId",
+      "value": "replace-with-real-db-id",
+      "type": "string"
+    }
+  ]
+}

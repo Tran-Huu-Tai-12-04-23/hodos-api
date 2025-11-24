@@ -13,6 +13,7 @@ import { LocationModule } from './modules/location/location.module';
 import { LogModule } from './modules/log/log.module';
 import { MasterDataModule } from './modules/master-data/master-data.module';
 import { MobileModule } from './modules/mobile/mobile.module';
+import { OpenRouterModule } from './modules/open-router/open-router.module';
 import { PlanTripModule } from './modules/plan/plan-trip.module';
 import { PostModule } from './modules/post/post.module';
 import { PublicModule } from './modules/public/public.module';
@@ -47,6 +48,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
     UploadModule,
     PublicModule,
     ScaleModule,
+    OpenRouterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

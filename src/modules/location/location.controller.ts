@@ -19,7 +19,17 @@ import { LocationService } from './location.service';
 @Controller('location')
 export class LocationController {
   constructor(private readonly service: LocationService) {}
-
+  /** Update location embedding */
+  @ApiResponse({ status: 201 })
+  @Get('init-embedding')
+  async initDataEmbedding() {
+    return await this.service.initDataEmbedding();
+  }
+  @ApiResponse({ status: 201 })
+  @Post('emb-query-top')
+  async embTopQueryByText(@Body() body: { text: string }) {
+    return await this.service.embTopQueryByText(body);
+  }
   @ApiOperation({
     summary: 'Find by label',
   })

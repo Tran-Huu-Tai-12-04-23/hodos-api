@@ -6,8 +6,8 @@ import {
   RemoveEvent,
   UpdateEvent,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { ActionLog } from '../entities/action-log.entity';
-
 @EventSubscriber()
 export class ActionLogSubscriber implements EntitySubscriberInterface {
   listenTo() {
@@ -57,6 +57,7 @@ export class ActionLogSubscriber implements EntitySubscriberInterface {
     };
 
     await logRepo.save({
+      id: uuidv4(),
       action,
       entityName: event.metadata?.targetName || '',
       metadata,

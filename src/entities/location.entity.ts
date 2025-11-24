@@ -40,4 +40,22 @@ export class LocationEntity extends BaseEntityCustom {
     (interaction) => interaction.location,
   )
   interactions: LocationInteractionEntity[];
+
+  @Column({
+    type: 'float',
+    array: true,
+    nullable: true,
+    comment: 'Embedding vector for RAG (Retrieval-Augmented Generation)',
+    transformer: {
+      to: (value: number[]) => (value ? `[${value.join(',')}]` : null),
+      from: (value: string) =>
+        value
+          ? value
+              .replace(/[\[\]]/g, '')
+              .split(',')
+              .map(Number)
+          : null,
+    },
+  })
+  embedding: number[];
 }
