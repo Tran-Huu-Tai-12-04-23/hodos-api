@@ -43,20 +43,20 @@ yarn run start:debug
 Make sure to set up your `.env` file with the necessary environment variables. Here is an example:
 
 ```properties
-APP_NAME='hodoshackathon'
+APP_NAME=''
 PORT='3000'
 ENV='development'
 NODE_ENV='development'
-DB_HOST='103.216.117.115'
-DB_PORT='3306'
-DB_USERNAME='root'
-DB_PASSWORD='gennydev@123'
-DB_DATABASE='hodoshackathon'
+DB_HOST=''
+DB_PORT=''
+DB_USERNAME=''
+DB_PASSWORD=''
+DB_DATABASE=''
 DB_LOGGING='false'
 JWT_SECRET='hello'
 JWT_EXPIRY='24h'
 MODEL_API_LINK='http://103.216.117.115:3005'
-GEMINI_API_KEY='AIzaSyCZBg2Jr7v0EMkugfmEoA9ujyU52S_nVKA'
+GEMINI_API_KEY=
 ```
 
 ### Building the App
